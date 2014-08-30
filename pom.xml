@@ -1,0 +1,67 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.elmakers.mine.bukkit.plugins</groupId>
+	<artifactId>MagicArenas</artifactId>
+	<version>0.5-SNAPSHOT</version>
+	<name>elMakers - Bukkit Plugins : Magic Arenas</name>
+	<dependencyManagement>
+		<dependencies>
+		</dependencies>
+	</dependencyManagement>
+
+	<licenses>
+		<license>
+			<name>GNU General Public License 2.0</name>
+			<url>LICENSE</url>
+			<distribution>repo</distribution>
+			<comments>Free as in Everything</comments>
+		</license>
+	</licenses>
+  
+  	<scm>
+    	<connection>scm:git:git://github.com/elBukkit/MagicArenas.git</connection>
+    	<developerConnection>scm:git:git@github.com:elBukkit/MagicArenas.git</developerConnection>
+    	<url>https://github.com/elBukkit/MagicArenas</url>
+    	<tag>master</tag>
+  	</scm>
+  	
+	<properties>
+		<build.version>1.0</build.version>
+        	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+	
+	<dependencies>
+		<dependency>
+			<groupId>org.bukkit</groupId>
+			<artifactId>bukkit</artifactId>
+			<version>1.6.4-R2.0</version>
+			<scope>provided</scope>
+		</dependency>
+        </dependencies>
+	<repositories>
+       <repository>
+            <id>bukkit-repo</id>
+            <url>http://repo.bukkit.org/content/groups/public/</url>
+      </repository>
+    </repositories>
+	<build>
+		<resources>
+		    <resource>
+		        <directory>src/main/resources/</directory>
+		        <filtering>true</filtering>
+		    </resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.0.2</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

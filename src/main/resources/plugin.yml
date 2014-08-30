@@ -1,0 +1,9 @@
+name: Dueling
+version: ${project.version}
+authors: [NathanWolf, KmanCrazy]
+main: com.elmakers.mine.bukkit.arenas.dueling.ArenasPlugin
+commands:
+   dueling:
+     description: Duel with a friend or an enemy or a group
+   options:
+     description: Set the options of an arena
