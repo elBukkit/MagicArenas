@@ -8,11 +8,17 @@ import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.util.Vector;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 public class Arena {
     private static Random random = new Random();
@@ -20,7 +26,7 @@ public class Arena {
     private ArenaState state = ArenaState.LOBBY;
     private Set<String> players = new HashSet<String>();
     private List<Location> spawns = new ArrayList<Location>();
-    private final Plugin plugin;
+    private final ArenaController controller;
 
     private Location spectating;
     //private Location spawn;
@@ -34,11 +40,11 @@ public class Arena {
 
     private String arenaType;
 
-    public Arena(Plugin plugin) {
-        this.plugin = plugin;
+    public Arena(ArenaController controller) {
+        this.controller = controller;
     }
 
-    public Arena(Plugin plugin, Location location, int min, int max,String type) {
+    public Arena(ArenaController plugin, Location location, int min, int max, String type) {
         this(plugin);
         spectating = location.clone();
         treasure = location.clone();
@@ -118,7 +124,7 @@ public class Arena {
         arenaType = configuration.getString("type");
 
         spectating = new Location(
-                plugin.getServer().getWorld(configuration.getString("spec.world")),
+                controller.getPlugin().getServer().getWorld(configuration.getString("spec.world")),
                 configuration.getInt("spec.x"),
                 configuration.getInt("spec.y"),
                 configuration.getInt("spec.z")
@@ -127,7 +133,7 @@ public class Arena {
         spectating.setYaw(configuration.getInt("spec.yaw"));
 
         lobby = new Location(
-                plugin.getServer().getWorld(configuration.getString("lobby.world")),
+                controller.getPlugin().getServer().getWorld(configuration.getString("lobby.world")),
                 configuration.getInt("lobby.x"),
                 configuration.getInt("lobby.y"),
                 configuration.getInt("lobby.z")
@@ -137,7 +143,7 @@ public class Arena {
 
         if (configuration.contains("spawn.world")) {
             Location legacySpawn = new Location(
-                    plugin.getServer().getWorld(configuration.getString("spawn.world")),
+                    controller.getPlugin().getServer().getWorld(configuration.getString("spawn.world")),
                     configuration.getInt("spawn.x"),
                     configuration.getInt("spawn.y"),
                     configuration.getInt("spawn.z")
@@ -150,7 +156,7 @@ public class Arena {
         }
 
         treasure = new Location(
-                plugin.getServer().getWorld(configuration.getString("treasureroom.world")),
+                controller.getPlugin().getServer().getWorld(configuration.getString("treasureroom.world")),
                 configuration.getInt("treasureroom.x"),
                 configuration.getInt("treasureroom.y"),
                 configuration.getInt("treasureroom.z")
@@ -203,7 +209,7 @@ public class Arena {
 
     public void start() {
         state = ArenaState.ACTIVE;
-        Server server = plugin.getServer();
+        Server server = controller.getPlugin().getServer();
         int num = 0;
         for (String playerName : players) {
             Player player = server.getPlayer(playerName);
@@ -232,6 +238,7 @@ public class Arena {
 
     public void remove(Player player) {
         players.remove(player.getName());
+        player.removeMetadata("arena", controller.getPlugin());
     }
 
     public Player getWinner() {
@@ -239,7 +246,7 @@ public class Arena {
             state = ArenaState.LOBBY;
             String winner = players.iterator().next();
             players.clear();
-            return plugin.getServer().getPlayer(winner);
+            return controller.getPlugin().getServer().getPlayer(winner);
         }
 
         return null;
@@ -276,7 +283,7 @@ public class Arena {
     }
 
     public void messagePlayers(String message) {
-        Server server = plugin.getServer();
+        Server server = controller.getPlugin().getServer();
         Collection<String> names = new ArrayList<String>(players);
         for (String playerName : names) {
             Player player = server.getPlayer(playerName);
@@ -307,8 +314,8 @@ public class Arena {
         if (time == 10 || time <= 5) {
             messagePlayers("Match is starting in " + time + " seconds");
         }
-        BukkitScheduler scheduler = plugin.getServer().getScheduler();
-        scheduler.runTaskLater(plugin, new Runnable() {
+        BukkitScheduler scheduler = controller.getPlugin().getServer().getScheduler();
+        scheduler.runTaskLater(controller.getPlugin(), new Runnable() {
             @Override
             public void run() {
                 countdown(time - 1);
@@ -335,6 +342,7 @@ public class Arena {
     public void add(Player player) {
         players.add(player.getName());
         player.teleport(lobby);
+        player.setMetadata("arena", new FixedMetadataValue(controller.getPlugin(), this));
     }
 
     public void setSpectatingRoom(Location location) {
@@ -421,5 +429,38 @@ public class Arena {
 
     public void setRandomizeSpawn(Vector vector) {
         randomizeSpawn = vector;
+    }
+
+    public void check() {
+        final Player winner = getWinner();
+        if (winner != null) {
+            Server server = controller.getPlugin().getServer();
+            winner.sendMessage(ChatColor.AQUA + "You have won! Congratulations!");
+            server.broadcastMessage(ChatColor.GOLD + winner.getDisplayName() + " has won a battle with "+ ChatColor.RED +  + winner.getHealth()/2 + " hearts!");
+            Bukkit.getScheduler().runTaskLater(controller.getPlugin(), new Runnable() {
+                @Override
+                public void run() {
+                    winner.sendMessage(ChatColor.AQUA + "Enjoy the treasure!");
+                    winner.teleport(getTreasureRoom());
+                    winner.setHealth(20.0);
+                    winner.setFoodLevel(20);
+                    winner.setFireTicks(0);
+                }
+            }, 5 * 20);
+        } else {
+            checkActive();
+        }
+    }
+
+    public void cancel() {
+        messagePlayers("This match has been cancelled");
+        Server server = controller.getPlugin().getServer();
+        for (String playerId : players) {
+            Player player = server.getPlayer(playerId);
+            if (player != null) {
+                player.removeMetadata("arena", controller.getPlugin());
+            }
+        }
+        players.clear();
     }
 }
