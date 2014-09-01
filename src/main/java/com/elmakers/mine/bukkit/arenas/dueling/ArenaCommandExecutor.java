@@ -20,7 +20,11 @@ public class ArenaCommandExecutor implements TabExecutor {
     };
 
     private final static String[] ARENA_PROPERTIES = {
-            "max", "min", "win", "lose", "lobby", "spawn", "addspawn", "removespawn"
+            "max", "min", "win", "lose", "lobby", "spawn", "exit", "center", "add", "remove"
+    };
+
+    private final static String[] ARENA_LISTS = {
+            "spawn"
     };
 
     private final ArenaController controller;
@@ -43,6 +47,8 @@ public class ArenaCommandExecutor implements TabExecutor {
             }
         } else if (args.length == 3 && args[0].equalsIgnoreCase("configure")) {
             allOptions.addAll(Arrays.asList(ARENA_PROPERTIES));
+        } else if (args.length == 4 && args[0].equalsIgnoreCase("configure") && (args[2].equalsIgnoreCase("add") || args[2].equalsIgnoreCase("remove"))) {
+            allOptions.addAll(Arrays.asList(ARENA_LISTS));
         }
 
         completeCommand = completeCommand.toLowerCase();
@@ -146,7 +152,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             if (arena == null) {
                 arena = controller.addArena(arenaName, location, 2, 20, arenaType);
                 controller.save();
-                player.sendMessage(ChatColor.AQUA + "Arena Created: " + arenaName);
+                player.sendMessage(ChatColor.AQUA + "Arena Created: " + arena.getName());
             } else {
                 sender.sendMessage(ChatColor.AQUA + "Arena already exists!");
             }
@@ -215,6 +221,7 @@ public class ArenaCommandExecutor implements TabExecutor {
                propertyName.equalsIgnoreCase("lobby") || propertyName.equalsIgnoreCase("spawn")
             || propertyName.equalsIgnoreCase("win") || propertyName.equalsIgnoreCase("lose")
             || propertyName.equalsIgnoreCase("addspawn") || propertyName.equalsIgnoreCase("removespawn")
+            || propertyName.equalsIgnoreCase("add") || propertyName.equalsIgnoreCase("remove")
             ) {
                 if (!(sender instanceof Player)) {
                     sender.sendMessage(ChatColor.RED + "Must be used in-game");
@@ -223,26 +230,56 @@ public class ArenaCommandExecutor implements TabExecutor {
                 Player player = (Player) sender;
                 Location location = player.getLocation();
 
+                boolean addLocation = propertyName.equalsIgnoreCase("add");
+                boolean removeLocation = propertyName.equalsIgnoreCase("remove");
+                if (addLocation || removeLocation)
+                {
+                    if (args.length < 4) {
+                        sender.sendMessage(ChatColor.RED + "Must specify a location list");
+                        sender.sendMessage(ChatColor.AQUA + "Options: " + StringUtils.join(ARENA_LISTS, ", "));
+                        return true;
+                    }
+
+                    String locList = args[3];
+                    if (locList.equalsIgnoreCase("spawn")) {
+                        if (addLocation) {
+                            arena.addSpawn(location);
+                            controller.save();
+                            sender.sendMessage(ChatColor.AQUA + "You have added a spawn location!");
+                        } else {
+                            Location removed = arena.removeSpawn(location);
+                            if (removed != null) {
+                                controller.save();
+                                sender.sendMessage(ChatColor.AQUA + "You have removed a spawn location at: " + removed.toVector());
+                            } else {
+                                sender.sendMessage(ChatColor.RED + "No nearby spawn locations");
+                            }
+                        }
+
+                        return true;
+                    }
+
+                    sender.sendMessage(ChatColor.RED + "Not a valid location list: " + locList);
+                    sender.sendMessage(ChatColor.AQUA + "Options: " + StringUtils.join(ARENA_LISTS, ", "));
+                    return true;
+                }
+
                 if (propertyName.equalsIgnoreCase("lobby")) {
                     arena.setLobby(location);
                     controller.save();
                     sender.sendMessage(ChatColor.AQUA + "You have set the lobby!");
-                } else if (propertyName.equalsIgnoreCase("addspawn")) {
-                    arena.addSpawn(location);
-                    controller.save();
-                    sender.sendMessage(ChatColor.AQUA + "You have added a spawn location!");
                 } else if (propertyName.equalsIgnoreCase("spawn")) {
                     arena.setSpawn(location);
                     controller.save();
                     sender.sendMessage(ChatColor.AQUA + "You have set the spawn location!");
-                } else if (propertyName.equalsIgnoreCase("removespawn")) {
-                    Location removed = arena.removeSpawn(location);
-                    if (removed != null) {
-                        controller.save();
-                        sender.sendMessage(ChatColor.AQUA + "You have removed a spawn location at: " + removed.toVector());
-                    } else {
-                        sender.sendMessage(ChatColor.RED + "No nearby spawn locations");
-                    }
+                } else if (propertyName.equalsIgnoreCase("exit")) {
+                    arena.setExit(location);
+                    controller.save();
+                    sender.sendMessage(ChatColor.AQUA + "You have set the spawn location!");
+                } else if (propertyName.equalsIgnoreCase("center")) {
+                    arena.setCenter(location);
+                    controller.save();
+                    sender.sendMessage(ChatColor.AQUA + "You have set the spawn location!");
                 } else if (propertyName.equalsIgnoreCase("lose")) {
                     arena.setLoseLocation(location);
                     controller.save();
@@ -263,7 +300,7 @@ public class ArenaCommandExecutor implements TabExecutor {
 
             String propertyValue = args[3];
             if (propertyName.equalsIgnoreCase("min") || propertyName.equalsIgnoreCase("max")) {
-                Integer intValue = null;
+                Integer intValue;
                 try {
                     intValue = Integer.parseInt(propertyValue);
                 } catch (Exception ex) {
@@ -290,10 +327,13 @@ public class ArenaCommandExecutor implements TabExecutor {
             }
 
             sender.sendMessage(ChatColor.RED + "Not a valid property: " + propertyName);
+            sender.sendMessage(ChatColor.AQUA + "Options: " + StringUtils.join(ARENA_PROPERTIES, ", "));
+
             return true;
         }
 
         sender.sendMessage(ChatColor.RED + "Not a valid option: " + subCommand);
+        sender.sendMessage(ChatColor.AQUA + "Options: " + StringUtils.join(SUB_COMMANDS, ", "));
         return true;
     }
 }

@@ -343,6 +343,10 @@ public class Arena {
         exit = location == null ? null : exit.clone();
     }
 
+    public void setCenter(Location location) {
+        center = location.clone();
+    }
+
     public void setLobby(Location location) {
         lobby = location == null ? null : location.clone();
     }
@@ -363,21 +367,11 @@ public class Arena {
     }
 
     public Location removeSpawn(Location location) {
-        Location l = location;
-        int range = 3;
-        int minX = l.getBlockX() - range / 2;
-        int minY = l.getBlockY() - range / 2;
-        int minZ = l.getBlockZ() - range / 2;
-
-        for (int x = minX; x < minX + range; x++) {
-            for (int y = minY; y < minY + range; y++) {
-                for (int z = minZ; z < minZ + range; z++) {
-                    Location loc = location.getWorld().getBlockAt(x, y, z).getLocation();
-                    if (spawns.contains(loc)) {
-                        spawns.remove(loc);
-                        return loc;
-                    }
-                }
+        int rangeSquared = 3 * 3;
+        for (Location spawn : spawns) {
+            if (spawn.distanceSquared(location) < rangeSquared) {
+                spawns.remove(spawn);
+                return spawn;
             }
         }
 
@@ -491,7 +485,6 @@ public class Arena {
                 player.sendMessage(ChatColor.RED + "You are already in " + currentArena.getName());
                 return;
             } else {
-                player.sendMessage(ChatColor.DARK_RED + "Leaving current game: " + currentArena.getName());
                 controller.leave(player);
             }
         }
