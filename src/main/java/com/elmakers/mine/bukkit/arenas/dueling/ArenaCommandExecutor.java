@@ -8,7 +8,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.bukkit.potion.PotionEffect;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -198,32 +197,7 @@ public class ArenaCommandExecutor implements TabExecutor {
                 return true;
             }
 
-            if (!arena.has(player)) {
-                if (!arena.isStarted()) {
-                    if (!arena.isFull()) {
-                        arena.add(player);
-                        Bukkit.broadcastMessage(ChatColor.AQUA + player.getDisplayName() + " has joined the queue for " + arenaName);
-                        player.sendMessage(ChatColor.AQUA + "You have joined the game!");
-                        player.setHealth(20.0);
-                        player.setFoodLevel(20);
-                        player.setFireTicks(0);
-                        for (PotionEffect pt : player.getActivePotionEffects()) {
-                            player.removePotionEffect(pt.getType());
-                        }
-                        if (arena.isReady()) {
-                            arena.startCountdown(10);
-                        } else {
-                            arena.lobbyMessage();
-                        }
-                    } else {
-                        Bukkit.getPlayer(args[3]).sendMessage(ChatColor.RED + "There are too many players! Wait until next round!");
-                    }
-                } else {
-                    Bukkit.getPlayer(args[3]).sendMessage(ChatColor.RED + "There are too many players! Wait until next round!");
-                }
-            } else {
-                Bukkit.getPlayer(args[3]).sendMessage(ChatColor.RED + "Already in game!");
-            }
+            arena.join(player);
             return true;
         }
 

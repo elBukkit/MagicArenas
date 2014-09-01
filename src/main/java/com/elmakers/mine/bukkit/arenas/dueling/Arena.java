@@ -10,6 +10,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.util.Vector;
 
@@ -479,5 +480,34 @@ public class Arena {
 
     public String getName() {
         return name;
+    }
+
+    public void join(Player player) {
+        if (!has(player)) {
+            if (!isStarted()) {
+                if (!isFull()) {
+                    add(player);
+                    Bukkit.broadcastMessage(ChatColor.AQUA + player.getDisplayName() + " has joined the queue for " + name);
+                    player.sendMessage(ChatColor.AQUA + "You have joined the game!");
+                    player.setHealth(20.0);
+                    player.setFoodLevel(20);
+                    player.setFireTicks(0);
+                    for (PotionEffect pt : player.getActivePotionEffects()) {
+                        player.removePotionEffect(pt.getType());
+                    }
+                    if (isReady()) {
+                        startCountdown(10);
+                    } else {
+                        lobbyMessage();
+                    }
+                } else {
+                    player.sendMessage(ChatColor.RED + "There are too many players! Wait until next round!");
+                }
+            } else {
+                player.sendMessage(ChatColor.RED + "There are too many players! Wait until next round!");
+            }
+        } else {
+            player.sendMessage(ChatColor.RED + "Already in game!");
+        }
     }
 }
