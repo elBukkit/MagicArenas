@@ -73,15 +73,13 @@ public class ArenaController {
     }
 
     public boolean playerLeft(Player player) {
-        for (Arena arena : arenas.values()) {
-            if (arena.has(player)) {
-                player.teleport(arena.getLoseLocation());
-                arena.remove(player);
-                arena.check();
-                return true;
-            }
+        Arena arena = getArena(player);
+        if (arena != null) {
+            player.teleport(arena.getLoseLocation());
+            arena.remove(player);
+            arena.check();
+            return true;
         }
-
         return false;
     }
 
@@ -136,5 +134,9 @@ public class ArenaController {
             player.sendMessage("You have left " + arena.getName());
             player.teleport(arena.getExit());
         }
+    }
+
+    public boolean isInArena(Player player) {
+        return player.hasMetadata("arena");
     }
 }

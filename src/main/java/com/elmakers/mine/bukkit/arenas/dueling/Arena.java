@@ -16,7 +16,9 @@ import org.bukkit.util.Vector;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
 
@@ -24,6 +26,7 @@ public class Arena {
     private static Random random = new Random();
 
     private ArenaState state = ArenaState.LOBBY;
+    private Queue<String> queue = new LinkedList<String>();
     private Set<String> players = new HashSet<String>();
     private List<Location> spawns = new ArrayList<Location>();
     private final ArenaController controller;
@@ -135,9 +138,14 @@ public class Arena {
         for (String s : configuration.getStringList("spawns")){
             spawns.add(toLocation(s));
         }
-;
+
         if (configuration.contains("randomize.spawn")) {
             randomizeSpawn = toVector(configuration.getString("randomize.spawn"));
+        }
+
+        // Legacy backup check
+        if (center == null) {
+            center = lose;
         }
     }
 
@@ -168,9 +176,19 @@ public class Arena {
         state = ArenaState.ACTIVE;
         Server server = controller.getPlugin().getServer();
         int num = 0;
+        players.clear();
+        while (queue.size() > 0 && players.size() < maxPlayers) {
+            players.add(queue.remove());
+        }
         List<Location> spawns = getSpawns();
         for (String playerName : players) {
             Player player = server.getPlayer(playerName);
+            player.setHealth(20.0);
+            player.setFoodLevel(20);
+            player.setFireTicks(0);
+            for (PotionEffect pt : player.getActivePotionEffects()) {
+                player.removePotionEffect(pt.getType());
+            }
             player.sendMessage("Begin!");
 
             Location spawn = spawns.get(num);
@@ -190,12 +208,9 @@ public class Arena {
         }
     }
 
-    public boolean has(Player player) {
-        return players.contains(player.getName());
-    }
-
     public void remove(Player player) {
         players.remove(player.getName());
+        queue.remove(player.getName());
         player.removeMetadata("arena", controller.getPlugin());
     }
 
@@ -241,28 +256,33 @@ public class Arena {
     }
 
     public boolean isReady() {
-        return state == ArenaState.LOBBY && players.size() >= minPlayers;
+        return state == ArenaState.LOBBY && queue.size() >= minPlayers;
     }
 
     public void lobbyMessage() {
-        int playerCount = players.size();
+        int playerCount = queue.size();
         if (playerCount < minPlayers) {
-            String message = ChatColor.AQUA + String.valueOf(playerCount) + ChatColor.GOLD + "/" + ChatColor.AQUA + String.valueOf(maxPlayers) + " players.";
+            String message = ChatColor.AQUA + String.valueOf(playerCount) + ChatColor.GOLD + "/" + ChatColor.AQUA + String.valueOf(minPlayers) + " players.";
             messagePlayers(message);
         }
     }
 
-    public void messagePlayers(String message) {
+    protected void messagePlayers(String message, Collection<String> playerNames) {
         Server server = controller.getPlugin().getServer();
-        Collection<String> names = new ArrayList<String>(players);
-        for (String playerName : names) {
+        for (String playerName : playerNames) {
             Player player = server.getPlayer(playerName);
-            if (player == null) {
-                players.remove(playerName);
-            } else {
+            if (player != null) {
                 player.sendMessage(message);
             }
         }
+    }
+
+    public void messagePlayers(String message) {
+        messagePlayers(message, getAllPlayers());
+    }
+
+    public void messageInGamePlayers(String message) {
+        messagePlayers(message, players);
     }
 
     public void startCountdown(int time) {
@@ -281,7 +301,7 @@ public class Arena {
             return;
         }
 
-        if (time == 10 || time <= 5) {
+        if (time % 10 == 0 || time <= 5) {
             messagePlayers("Match is starting in " + time + " seconds");
         }
         BukkitScheduler scheduler = controller.getPlugin().getServer().getScheduler();
@@ -306,11 +326,11 @@ public class Arena {
     }
 
     public boolean isFull() {
-        return players.size() >= maxPlayers;
+        return queue.size() >= maxPlayers;
     }
 
     public void add(Player player) {
-        players.add(player.getName());
+        queue.add(player.getName());
         player.teleport(getLobby());
         player.setMetadata("arena", new FixedMetadataValue(controller.getPlugin(), this));
     }
@@ -449,13 +469,15 @@ public class Arena {
     public void cancel() {
         messagePlayers("This match has been cancelled");
         Server server = controller.getPlugin().getServer();
-        for (String playerId : players) {
+        Collection<String> allPlayers = getAllPlayers();
+        for (String playerId : allPlayers) {
             Player player = server.getPlayer(playerId);
             if (player != null) {
                 player.removeMetadata("arena", controller.getPlugin());
             }
         }
         players.clear();
+        queue.clear();
     }
 
     public String getName() {
@@ -463,31 +485,40 @@ public class Arena {
     }
 
     public void join(Player player) {
-        if (!has(player)) {
-            if (!isStarted()) {
-                if (!isFull()) {
-                    add(player);
-                    Bukkit.broadcastMessage(ChatColor.AQUA + player.getDisplayName() + " has joined the queue for " + name);
-                    player.sendMessage(ChatColor.AQUA + "You have joined the game!");
-                    player.setHealth(20.0);
-                    player.setFoodLevel(20);
-                    player.setFireTicks(0);
-                    for (PotionEffect pt : player.getActivePotionEffects()) {
-                        player.removePotionEffect(pt.getType());
-                    }
-                    if (isReady()) {
-                        startCountdown(10);
-                    } else {
-                        lobbyMessage();
-                    }
-                } else {
-                    player.sendMessage(ChatColor.RED + "There are too many players! Wait until next round!");
-                }
+        Arena currentArena = controller.getArena(player);
+        if (currentArena != null) {
+            if (currentArena == this) {
+                player.sendMessage(ChatColor.RED + "You are already in " + currentArena.getName());
+                return;
             } else {
-                player.sendMessage(ChatColor.RED + "There are too many players! Wait until next round!");
+                player.sendMessage(ChatColor.DARK_RED + "Leaving current game: " + currentArena.getName());
+                controller.leave(player);
+            }
+        }
+
+        add(player);
+        Bukkit.broadcastMessage(ChatColor.AQUA + player.getDisplayName() + " has joined the queue for " + name);
+        player.sendMessage(ChatColor.AQUA + "You have joined the game!");
+        checkStart();
+    }
+
+    protected void checkStart() {
+        if (isStarted()) return;
+
+        if (isReady()) {
+            if (isFull()) {
+                startCountdown(10);
+            } else {
+                startCountdown(30);
             }
         } else {
-            player.sendMessage(ChatColor.RED + "Already in game!");
+            lobbyMessage();
         }
+    }
+
+    protected Collection<String> getAllPlayers() {
+        List<String> allPlayers = new ArrayList<String>(players);
+        allPlayers.addAll(queue);
+        return allPlayers;
     }
 }
