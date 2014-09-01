@@ -36,13 +36,13 @@ public class ArenaCommandExecutor implements TabExecutor {
         List<String> allOptions = new ArrayList<String>();
         if (args.length < 2) {
             allOptions.addAll(Arrays.asList(SUB_COMMANDS));
-        } else if (args.length == 3) {
+        } else if (args.length == 2) {
             Collection<Arena> arenas = controller.getArenas();
             for (Arena arena : arenas) {
                 allOptions.add(arena.getName());
             }
         } else if (args.length == 3 && args[0].equalsIgnoreCase("configure")) {
-            allOptions.addAll(Arrays.asList(SUB_COMMANDS));
+            allOptions.addAll(Arrays.asList(ARENA_PROPERTIES));
         }
 
         completeCommand = completeCommand.toLowerCase();
