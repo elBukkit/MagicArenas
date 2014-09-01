@@ -21,14 +21,14 @@ public class ArenaController {
         this.plugin = plugin;
     }
 
-    public Arena addArena(String arenaName, Location location, int min, int max, String type) {
-        Arena arena = new Arena(this, location, min, max, type);
+    public Arena addArena(String arenaName, Location location, int min, int max, ArenaType type) {
+        Arena arena = new Arena(arenaName, this, location, min, max, type);
         arenas.put(arenaName, arena);
         return arena;
     }
 
     public void save() {
-        File arenaSaveFile = getDataFile("arenas.yml");
+        File arenaSaveFile = getDataFile("arenas");
         YamlConfiguration arenaSaves = new YamlConfiguration();
         save(arenaSaves);
         try {
@@ -40,7 +40,7 @@ public class ArenaController {
     }
 
     public void load() {
-        ConfigurationSection arenaSaves = loadDataFile("arenas.yml");
+        ConfigurationSection arenaSaves = loadDataFile("arenas");
         load(arenaSaves);
     }
 
@@ -60,7 +60,7 @@ public class ArenaController {
 
         arenas.clear();
         for (String arenaKey : arenaKeys) {
-            Arena arena = new Arena(this);
+            Arena arena = new Arena(arenaKey, this);
             arena.load(configuration.getConfigurationSection(arenaKey));
             arenas.put(arenaKey, arena);
         }
@@ -122,6 +122,18 @@ public class ArenaController {
         if (arena != null) {
             arena.cancel();
             arenas.remove(arenaName);
+        }
+    }
+
+    public Collection<Arena> getArenas() {
+        return arenas.values();
+    }
+
+    public void leave(Player player) {
+        Arena arena = getArena(player);
+        if (arena != null) {
+            arena.remove(player);
+            player.sendMessage("You have left " + arena.getName());
         }
     }
 }

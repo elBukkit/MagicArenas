@@ -1,22 +1,27 @@
 package com.elmakers.mine.bukkit.arenas.dueling;
 
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 public class ArenaCommandExecutor implements TabExecutor {
     private final static String[] SUB_COMMANDS = {
-            "start", "stop", "add", "remove", "configure", "describe", "join", "leave"
+        "start", "stop", "add", "remove", "configure", "describe", "join", "leave", "load"
+    };
+
+    private final static String[] ARENA_PROPERTIES = {
+            "max", "min", "win", "lose", "lobby", "spawn", "addspawn", "removespawn"
     };
 
     private final ArenaController controller;
@@ -29,8 +34,19 @@ public class ArenaCommandExecutor implements TabExecutor {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         String completeCommand = args.length > 0 ? args[args.length - 1] : "";
 
+        List<String> allOptions = new ArrayList<String>();
+        if (args.length < 2) {
+            allOptions.addAll(Arrays.asList(SUB_COMMANDS));
+        } else if (args.length == 3) {
+            Collection<Arena> arenas = controller.getArenas();
+            for (Arena arena : arenas) {
+                allOptions.add(arena.getName());
+            }
+        } else if (args.length == 3 && args[0].equalsIgnoreCase("configure")) {
+            allOptions.addAll(Arrays.asList(SUB_COMMANDS));
+        }
+
         completeCommand = completeCommand.toLowerCase();
-        List<String> allOptions = Arrays.asList(SUB_COMMANDS);
         List<String> options = new ArrayList<String>();
         for (String option : allOptions) {
             String lowercase = option.toLowerCase();
@@ -42,260 +58,268 @@ public class ArenaCommandExecutor implements TabExecutor {
         return options;
     }
 
+    protected void sendNoPermission(CommandSender sender)
+    {
+        if (sender != null) sender.sendMessage(ChatColor.RED + "You are not allowed to use that command.");
+    }
+
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (command.getName().equalsIgnoreCase("dueling")) {
-            if (args.length == 0) {
-                sender.sendMessage(ChatColor.YELLOW + "---------" +  ChatColor.WHITE  + "Help: HP Dueling " + ChatColor.YELLOW +   "--------");
-                sender.sendMessage(ChatColor.GOLD + "Player Commands:\n" + ChatColor.WHITE + " /dueling info\n /dueling help");
-                if (sender.hasPermission("dueling.admin")) {
-                    sender.sendMessage( "/dueling admin help");
-                }
-                sender.sendMessage(ChatColor.YELLOW + "-----------------------------------------------");
-            } else if (args.length == 1) {
-                if (args[0].equalsIgnoreCase("info")) {
-                    sender.sendMessage(ChatColor.BLUE + "-----------------");
-                    sender.sendMessage(ChatColor.GOLD + "Plugin Creator: KmanCrazy");
-                    sender.sendMessage(ChatColor.GOLD + "Plugin Website: kplugins.weebly.com");
-                    sender.sendMessage(ChatColor.GOLD + "Hope you enjoy!");
-                    sender.sendMessage(ChatColor.RED.toString() + ChatColor.BOLD + "Report any bugs or glitches to KmanCrazy, Dr00bles, NathanWolf! -Thanks!");
-                    sender.sendMessage(ChatColor.BLUE + "-----------------");
-                }
-                if (args[0].equalsIgnoreCase("help")) {
-                    sender.sendMessage(ChatColor.YELLOW + "---------" +  ChatColor.WHITE  + "Help: HP Dueling " + ChatColor.YELLOW +   "--------");
-                    sender.sendMessage(ChatColor.GOLD + "Player Commands\n" + ChatColor.WHITE + " /dueling info\n /dueling help");
-                    if (sender.hasPermission("dueling.admin")) {
-                        sender.sendMessage( "/dueling admin help");
-                    }
-                    sender.sendMessage(ChatColor.YELLOW + "-----------------------------------------------");
-                }
-                if (args[0].equalsIgnoreCase("admin")) {
-                    if (sender.hasPermission("dueling.admin")) {
-                        sender.sendMessage(ChatColor.RED + "Please specify something to do! Create, Remove, Start, End");
-                    }
-                }
-            } else if (args.length == 2) {
-                if (args[0].equalsIgnoreCase("admin") && (sender instanceof ConsoleCommandSender || sender.hasPermission("dueling.admin"))) {
-                    if (args[1].equalsIgnoreCase("load")) {
-                        controller.load();
-                        sender.sendMessage("Configuration reloaded");
-                    }
-                    if (args[1].equalsIgnoreCase("create")) {
-                        sender.sendMessage("You must specify an arena! (Optional: ArenaType) (Normal ArenaType: FFA)");
-                    }
-                    if (args[1].equalsIgnoreCase("join")) {
-                        sender.sendMessage("You must specify a name and a player!");
-                    }
-                    if (args[1].equalsIgnoreCase("start")) {
-                        sender.sendMessage("You must specify an arena!");
-                    }
-                    if (args[1].equalsIgnoreCase("remove")) {
-                        sender.sendMessage("You must specify an arena!");
-                    }
-                    if (args[1].equalsIgnoreCase("help")){
-                        sender.sendMessage(ChatColor.YELLOW + "---------" +  ChatColor.WHITE  + "Help: HP Dueling " + ChatColor.YELLOW +   "--------");
-                        sender.sendMessage(ChatColor.GOLD + "Player Commands:\n" + ChatColor.WHITE + " /dueling info\n /dueling help");
-                        sender.sendMessage(ChatColor.GOLD + "Admin Commands:\n" + ChatColor.WHITE + " /dueling admin help\n /dueling admin create <Arena Name> <Type>\n/dueling admin remove <Arena Name>\n /dueling admin join <Arena Name> <Player>\n dueling admin start <Arena Name>");
-                        sender.sendMessage(ChatColor.GOLD + "Types:" + ChatColor.WHITE + " FFA, Spleef, OneVOne, TwoVTwo, ThreeVThree, FourVFour");
-                        sender.sendMessage(ChatColor.GOLD + "Options:" + ChatColor.WHITE + " SetLobby, SetSpec, SetTreasureRoom, SetType, SetMinPlayers, SetMaxPlayers, AddSpawn, RemoveSpawn");
-                        sender.sendMessage(ChatColor.YELLOW + "-----------------------------------------------");
-                    }
-                }
-            } else if (args.length == 3) {
-                if (args[0].equalsIgnoreCase("admin")) {
-                    if (args[1].equalsIgnoreCase("create")) {
-                        if (sender instanceof Player) {
-                            Player p = (Player) sender;
-                            p.sendMessage(ChatColor.RED + "Please specify an arena type!");
+        if (!command.getName().equalsIgnoreCase("arena")) {
+            return false;
+        }
 
-                        } else {
-                            sender.sendMessage(ChatColor.RED + "Silly console! Creating arenas are for players!");
-                        }
-                    }
-                    if (args[1].equalsIgnoreCase("join")) {
-                        sender.sendMessage(ChatColor.AQUA + "You must specify an arena!");
-                    }
+        if (!sender.hasPermission("MagicArenas.commands.arena")) {
+            sendNoPermission(sender);
+            return true;
+        }
 
-                    if (args[1].equalsIgnoreCase("start")) {
-                        String arenaName = args[2];
-                        final Arena arena = controller.getArena(arenaName);
+        if (args.length == 0) {
+            sender.sendMessage(ChatColor.YELLOW + "---------" +  ChatColor.WHITE  + "Help: MagicArenas " + ChatColor.YELLOW +   "--------");
+            sender.sendMessage("/arena add [name] <type> : Add a new arena");
+            sender.sendMessage("/arena remove [name] : Remove an existing arena");
+            sender.sendMessage("/arena start [name] : Manually start an arena");
+            sender.sendMessage("/arena stop [name] : Manually stop an arena");
+            sender.sendMessage("/arena describe [name] : List properties of an arena");
+            sender.sendMessage("/arena join [name] <player> : Force a player to join an arena");
+            sender.sendMessage("/arena leave [name] <player> : Force a player to leave an arena");
+            sender.sendMessage("/arena configure [name] [property] <value> : Reconfigure an arena");
+            sender.sendMessage(ChatColor.YELLOW + "-----------------------------------------------");
+            return true;
+        }
 
-                        if (arena != null) {
-                            if (arena.isReady()) {
-                                arena.startCountdown(10);
-                            } else {
-                                sender.sendMessage(ChatColor.AQUA + "Not enough players!");
-                            }
-                        }
-                    }
-                    if (args[1].equalsIgnoreCase("remove")) {
-                        controller.remove(args[2]);
-                        controller.save();
-                    }
-                    if (args[1].equalsIgnoreCase("stop")) {
-                        Arena arena = controller.getArena(args[2]);
-                        if (arena != null) {
-                            if (arena.stop()) {
-                                sender.sendMessage(ChatColor.AQUA + "Match stopped!");
-                            } else {
-                                sender.sendMessage(ChatColor.AQUA + "Arena not active");
-                            }
-                        } else {
-                            sender.sendMessage(ChatColor.AQUA + "Unknown arena");
-                        }
-                    }
+        String subCommand = args[0];
+        if (!sender.hasPermission("MagicArenas.commands.arena." + subCommand)) {
+            sendNoPermission(sender);
+            return true;
+        }
+
+        if (subCommand.equalsIgnoreCase("load")) {
+            controller.load();
+            sender.sendMessage("Configuration reloaded");
+            return true;
+        }
+
+        if (subCommand.equalsIgnoreCase("leave")) {
+            Player player = null;
+            String playerName = null;
+            if (args.length > 1) {
+                playerName = args[1];
+                player = Bukkit.getPlayer(playerName);
+            } else if (sender instanceof Player) {
+                player = (Player) sender;
+            }
+
+            if (player == null) {
+                if (playerName != null) {
+                    sender.sendMessage(ChatColor.RED + "Unknown player: " + playerName);
+                } else {
+                    sender.sendMessage(ChatColor.RED + "You must specify a player name");
                 }
-            } else if (args.length == 4) {
-                if (args[0].equalsIgnoreCase("admin")) {
-                    if (sender.hasPermission("dueling.admin")) {
-                        if (args[1].equalsIgnoreCase("join")) {
-                            Arena arena = controller.getArena(args[2]);
-                            if (arena != null) {
-                                Player player = Bukkit.getPlayer(args[3]);
-                                if (player != null) {
-                                    if (!arena.has(player)) {
-                                        if (!arena.isStarted()) {
-                                            if (!arena.isFull()) {
-                                                arena.add(player);
-                                                Bukkit.broadcastMessage(ChatColor.AQUA + args[3] + " has joined the queue for " + args[2]);
-                                                player.sendMessage(ChatColor.AQUA + "You have joined the game!");
-                                                player.setHealth(20.0);
-                                                player.setFoodLevel(20);
-                                                player.setFireTicks(0);
-                                                for (PotionEffect pt : player.getActivePotionEffects()) {
-                                                    player.removePotionEffect(pt.getType());
-                                                }
-                                                final String ar = args[2];
-                                                if (arena.isReady()) {
-                                                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "dueling admin start " + ar);
-                                                } else {
-                                                    arena.lobbyMessage();
-                                                }
-                                            } else {
-                                                Bukkit.getPlayer(args[3]).sendMessage(ChatColor.RED + "There are too many players! Wait until next round!");
-                                            }
-                                        } else {
-                                            Bukkit.getPlayer(args[3]).sendMessage(ChatColor.RED + "There are too many players! Wait until next round!");
-                                        }
-                                    } else {
-                                        Bukkit.getPlayer(args[3]).sendMessage(ChatColor.RED + "Already in game!");
-                                    }
-                                } else {
-                                    sender.sendMessage(ChatColor.AQUA + "Unknown player!");
-                                }
-                            } else {
-                                sender.sendMessage(ChatColor.AQUA + "Unknown arena!");
-                            }
-                        } else if (args[1].equalsIgnoreCase("create")) {
-                            if (sender instanceof Player) {
-                                Player player = (Player) sender;
-                                Location location = player.getLocation();
-                                String arenaName = args[2];
-                                Arena arena = controller.getArena(arenaName);
-                                if (ArenaType.valueOf(args[3].toUpperCase()) != null) {
-                                    if (arena == null) {
-                                        arena = controller.addArena(arenaName, location, 2, 20,args[3].toUpperCase());
-                                        controller.save();
-                                        player.sendMessage(ChatColor.AQUA + "Arena Created now do /options setlobby, setspawn, setspec, settreasureroom!");
-                                    } else {
-                                        sender.sendMessage(ChatColor.AQUA + "Arena already exists!");
-                                    }
-                                } else {
-                                    player.sendMessage(ChatColor.RED + "Unknown arena type please select one of the following: Spleef, FFA, 1v1, 2v2, 3v3");
-                                }
-                            }
-                        } else {
-                            sender.sendMessage(ChatColor.RED + "Silly console! Creating arenas are for players!");
-                        }
-                    }
+                return true;
+            }
+            return true;
+        }
+
+        if (args.length < 2) {
+            sender.sendMessage(ChatColor.RED + "You must provide an arena name");
+            return true;
+        }
+
+        String arenaName = args[1];
+        Arena arena = controller.getArena(arenaName);
+        if (subCommand.equalsIgnoreCase("add")) {
+            if (!(sender instanceof Player)) {
+                sender.sendMessage(ChatColor.RED + "Must be used in-game");
+                return true;
+            }
+            Player player = (Player) sender;
+            Location location = player.getLocation();
+            ArenaType arenaType = ArenaType.FFA;
+            if (args.length > 2) {
+                String arenaTypeName = args[2];
+                arenaType = ArenaType.parse(arenaTypeName);
+                if (arenaType == null) {
+                    sender.sendMessage(ChatColor.RED + "Unknown arena type: " + arenaTypeName);
+                    return true;
                 }
             }
+            if (arena == null) {
+                arena = controller.addArena(arenaName, location, 2, 20, arenaType);
+                controller.save();
+                player.sendMessage(ChatColor.AQUA + "Arena Created: " + arenaName);
+            } else {
+                sender.sendMessage(ChatColor.AQUA + "Arena already exists!");
+            }
+            return true;
         }
-        if (command.getName().equalsIgnoreCase("options")) {
-            if (sender.hasPermission("dueling.options")) {
-                if (sender instanceof Player) {
 
-                    Player p = (Player) sender;
-                    Location location = p.getLocation();
-                    if (args.length == 0) {
-                        sender.sendMessage(ChatColor.AQUA + "Please specify a setting and arena name!");
-                    } else if (args.length == 1) {
-                        sender.sendMessage(ChatColor.AQUA + "Please specify a arena name!");
-                    } else if (args.length == 2) {
-                        Arena arena = controller.getArena(args[1]);
-                        if (arena != null) {
-                            if (args[0].equalsIgnoreCase("setlobby")) {
-                                arena.setLobby(location);
-                                controller.save();
-                                p.sendMessage(ChatColor.AQUA + "You have set the lobby!");
-                            } else if (args[0].equalsIgnoreCase("addspawn")) {
-                                arena.addSpawn(location);
-                                controller.save();
-                                p.sendMessage(ChatColor.AQUA + "You have added a spawn location!");
-                            }  else if (args[0].equalsIgnoreCase("removespawn")) {
-                                arena.removeSpawn(location);
-                                controller.save();
-                                p.sendMessage(ChatColor.AQUA + "You have removed a spawn location!");
-                            } else if (args[0].equalsIgnoreCase("setspec")) {
-                                arena.setSpectatingRoom(location);
-                                controller.save();
-                                p.sendMessage(ChatColor.AQUA + "You have set the spectating room!");
-                            } else if (args[0].equalsIgnoreCase("settreasureroom")) {
-                                arena.setTreasureRoom(location);
-                                controller.save();
-                                p.sendMessage(ChatColor.AQUA + "You have set the treasure room!");
-                            } else if (args[0].equalsIgnoreCase("setminplayers")){
-                                p.sendMessage(ChatColor.DARK_RED + "You must specify a number of minimum players!");
-                            }
-                            else if (args[0].equalsIgnoreCase("setmaxplayers")) {
-                                p.sendMessage(ChatColor.DARK_RED + "You must specify a number of maximum players!");
-                            } else if (args[0].equalsIgnoreCase("settype")) {
-                                p.sendMessage(ChatColor.DARK_RED + "You must specify an arena type!");
-                            } else if (args[0].equalsIgnoreCase("setrandomize")) {
-                                p.sendMessage(ChatColor.DARK_RED + "You must specify a vector x,y,z");
-                            } else {
-                                sender.sendMessage(ChatColor.DARK_RED + "Unknown option!");
-                            }
+        if (arena == null) {
+            sender.sendMessage(ChatColor.RED + "Unknown arena: " + arenaName);
+            return true;
+        }
+
+        if (subCommand.equalsIgnoreCase("remove")) {
+            controller.remove(arenaName);
+            controller.save();
+            return true;
+        }
+
+        if (subCommand.equalsIgnoreCase("start")) {
+            arena.startCountdown(10);
+            return true;
+        }
+
+        if (subCommand.equalsIgnoreCase("stop")) {
+            if (arena.stop()) {
+                sender.sendMessage(ChatColor.AQUA + "Match stopped!");
+            } else {
+                sender.sendMessage(ChatColor.AQUA + "Arena not active");
+            }
+            return true;
+        }
+
+        if (subCommand.equalsIgnoreCase("join")) {
+            Player player = null;
+            String playerName = null;
+            if (args.length > 2) {
+                playerName = args[2];
+                player = Bukkit.getPlayer(playerName);
+            } else if (sender instanceof Player) {
+                player = (Player) sender;
+            }
+
+            if (player == null) {
+                if (playerName != null) {
+                    sender.sendMessage(ChatColor.RED + "Unknown player: " + playerName);
+                } else {
+                    sender.sendMessage(ChatColor.RED + "You must specify a player name");
+                }
+                return true;
+            }
+
+            if (!arena.has(player)) {
+                if (!arena.isStarted()) {
+                    if (!arena.isFull()) {
+                        arena.add(player);
+                        Bukkit.broadcastMessage(ChatColor.AQUA + player.getDisplayName() + " has joined the queue for " + arenaName);
+                        player.sendMessage(ChatColor.AQUA + "You have joined the game!");
+                        player.setHealth(20.0);
+                        player.setFoodLevel(20);
+                        player.setFireTicks(0);
+                        for (PotionEffect pt : player.getActivePotionEffects()) {
+                            player.removePotionEffect(pt.getType());
                         }
-                    } else if (args.length == 3) {
-                        Arena arena = controller.getArena(args[1]);
-                        if (arena != null) {
-                            if (args[0].equalsIgnoreCase("setminplayers")) {
-                                arena.setMinPlayers(Integer.parseInt(args[2]));
-                                sender.sendMessage(ChatColor.AQUA + "Set min players");
-                                controller.save();
-                            } else if (args[0].equalsIgnoreCase("setmaxplayers")) {
-                                arena.setMaxPlayers(Integer.parseInt(args[2]));
-                                sender.sendMessage(ChatColor.AQUA + "Set max players");
-                                controller.save();
-                            } else if (args[0].equalsIgnoreCase("settype")){
-                                if (ArenaType.valueOf(args[2].toUpperCase() )!= null){
-                                    arena.setType(ArenaType.valueOf(args[2]));
-                                    sender.sendMessage(ChatColor.AQUA + "Set arena type");
-                                    controller.save();
-                                } else{
-                                    p.sendMessage(ChatColor.RED + "Unknown ArenaType!");
-                                }
-                            } else if (args[0].equalsIgnoreCase("setrandomize")) {
-                                if (args[2].isEmpty()) {
-                                    p.sendMessage(ChatColor.RED + "Cleared randomized spawn!");
-                                    arena.setRandomizeSpawn(null);
-                                } else {
-                                    sender.sendMessage(ChatColor.AQUA + "Set randomized spawn");
-                                    arena.setRandomizeSpawn(Arena.toVector(args[2]));
-                                }
-                            }
-                        } else{
-                            p.sendMessage(ChatColor.RED + "Unknown arena!");
+                        if (arena.isReady()) {
+                            arena.startCountdown(10);
+                        } else {
+                            arena.lobbyMessage();
                         }
                     } else {
-                        sender.sendMessage(ChatColor.RED + "Invalid parameters!");
+                        Bukkit.getPlayer(args[3]).sendMessage(ChatColor.RED + "There are too many players! Wait until next round!");
                     }
+                } else {
+                    Bukkit.getPlayer(args[3]).sendMessage(ChatColor.RED + "There are too many players! Wait until next round!");
                 }
             } else {
-                sender.sendMessage(ChatColor.AQUA + "You don't have permissions!");
+                Bukkit.getPlayer(args[3]).sendMessage(ChatColor.RED + "Already in game!");
             }
+            return true;
         }
+
+        if (subCommand.equalsIgnoreCase("configure")) {
+            if (args.length < 3) {
+                sender.sendMessage(ChatColor.RED + "Must specify a property name: ");
+                sender.sendMessage(ChatColor.YELLOW + StringUtils.join(ARENA_PROPERTIES, ','));
+                return true;
+            }
+
+            String propertyName = args[2];
+
+            if
+            (
+               propertyName.equalsIgnoreCase("lobby") || propertyName.equalsIgnoreCase("spawn")
+            || propertyName.equalsIgnoreCase("win") || propertyName.equalsIgnoreCase("lose")
+            || propertyName.equalsIgnoreCase("addspawn") || propertyName.equalsIgnoreCase("removespawn")
+            ) {
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage(ChatColor.RED + "Must be used in-game");
+                    return true;
+                }
+                Player player = (Player) sender;
+                Location location = player.getLocation();
+
+                if (propertyName.equalsIgnoreCase("lobby")) {
+                    arena.setLobby(location);
+                    controller.save();
+                    sender.sendMessage(ChatColor.AQUA + "You have set the lobby!");
+                } else if (propertyName.equalsIgnoreCase("addspawn")) {
+                    arena.addSpawn(location);
+                    controller.save();
+                    sender.sendMessage(ChatColor.AQUA + "You have added a spawn location!");
+                } else if (propertyName.equalsIgnoreCase("spawn")) {
+                    arena.setSpawn(location);
+                    controller.save();
+                    sender.sendMessage(ChatColor.AQUA + "You have set the spawn location!");
+                } else if (propertyName.equalsIgnoreCase("removespawn")) {
+                    Location removed = arena.removeSpawn(location);
+                    if (removed != null) {
+                        controller.save();
+                        sender.sendMessage(ChatColor.AQUA + "You have removed a spawn location at: " + removed.toVector());
+                    } else {
+                        sender.sendMessage(ChatColor.RED + "No nearby spawn locations");
+                    }
+                } else if (propertyName.equalsIgnoreCase("lose")) {
+                    arena.setSpectatingRoom(location);
+                    controller.save();
+                    sender.sendMessage(ChatColor.AQUA + "You have set the spectating room!");
+                } else if (propertyName.equalsIgnoreCase("win")) {
+                    arena.setTreasureRoom(location);
+                    controller.save();
+                    sender.sendMessage(ChatColor.AQUA + "You have set the treasure room!");
+                }
+
+                return true;
+            }
+
+            if (args.length < 4) {
+                sender.sendMessage(ChatColor.RED + "Must specify a property value");
+                return true;
+            }
+
+            String propertyValue = args[3];
+            if (propertyName.equalsIgnoreCase("min") || propertyName.equalsIgnoreCase("max")) {
+                Integer intValue = null;
+                try {
+                    intValue = Integer.parseInt(propertyValue);
+                } catch (Exception ex) {
+                    intValue = null;
+                }
+
+                if (intValue == null) {
+                    sender.sendMessage(ChatColor.RED + "Not a valid integer: " + propertyValue);
+                    return true;
+                }
+                if (propertyName.equalsIgnoreCase("min")) {
+                    arena.setMinPlayers(intValue);
+                    sender.sendMessage(ChatColor.AQUA + "Set min players");
+                    controller.save();
+                    return true;
+                }
+
+                if (propertyName.equalsIgnoreCase("max")) {
+                    arena.setMaxPlayers(intValue);
+                    sender.sendMessage(ChatColor.AQUA + "Set max players");
+                    controller.save();
+                    return true;
+                }
+            }
+
+            sender.sendMessage(ChatColor.RED + "Not a valid property: " + propertyName);
+            return true;
+        }
+
+        sender.sendMessage(ChatColor.RED + "Not a valid option: " + subCommand);
         return true;
     }
 }

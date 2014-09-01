@@ -1,9 +1,51 @@
-name: Dueling
+name: MagicArenas
 version: ${project.version}
 authors: [NathanWolf, KmanCrazy]
 main: com.elmakers.mine.bukkit.arenas.dueling.ArenasPlugin
 commands:
-   dueling:
-     description: Duel with a friend or an enemy or a group
-   options:
-     description: Set the options of an arena
+   arena:
+     description: Admin commands for managing arenas
+     usage: /arena [load, add, remove, describe, configure, start, stop, join, leave]
+     permission: MagicArenas.commands.arena
+
+permissions:
+  MagicArenas.commands.arena:
+    description: Player may use the base /arena command
+    type: boolean
+    default: op
+  MagicArenas.commands.arena.load:
+    description: Player may use the /arena load command
+    type: boolean
+    default: op
+  MagicArenas.commands.arena.add:
+    description: Player may use the /arena add command
+    type: boolean
+    default: op
+  MagicArenas.commands.arena.remove:
+    description: Player may use the /arena remove command
+    type: boolean
+    default: op
+  MagicArenas.commands.arena.start:
+    description: Player may use the /arena start command
+    type: boolean
+    default: op
+  MagicArenas.commands.arena.stop:
+    description: Player may use the /arena stop command
+    type: boolean
+    default: op
+  MagicArenas.commands.arena.join:
+    description: Player may use the /arena join command
+    type: boolean
+    default: op
+  MagicArenas.commands.arena.leave:
+    description: Player may use the /arena leave command
+    type: boolean
+    default: op
+  MagicArenas.commands.arena.join.other:
+    description: Player may use the /arena join command on others
+    type: boolean
+    default: op
+  MagicArenas.commands.arena.leave.other:
+    description: Player may use the /arena leave command on others
+    type: boolean
+    default: op

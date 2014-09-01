@@ -38,14 +38,16 @@ public class Arena {
     private int maxPlayers;
     private int minPlayers;
 
-    private String arenaType;
+    private ArenaType arenaType;
+    private final String name;
 
-    public Arena(ArenaController controller) {
+    public Arena(final String name, final ArenaController controller) {
+        this.name = name;
         this.controller = controller;
     }
 
-    public Arena(ArenaController plugin, Location location, int min, int max, String type) {
-        this(plugin);
+    public Arena(final String name, final ArenaController plugin, Location location, int min, int max, ArenaType type) {
+        this(name, plugin);
         spectating = location.clone();
         treasure = location.clone();
         lobby = location.clone();
@@ -121,7 +123,10 @@ public class Arena {
         minPlayers = configuration.getInt("minplayers");
         maxPlayers = configuration.getInt("maxplayers");
 
-        arenaType = configuration.getString("type");
+        arenaType = ArenaType.parse(configuration.getString("type"));
+        if (arenaType == null) {
+            arenaType = ArenaType.FFA;
+        }
 
         spectating = new Location(
                 controller.getPlugin().getServer().getWorld(configuration.getString("spec.world")),
@@ -173,7 +178,7 @@ public class Arena {
         configuration.set("minplayers", minPlayers);
         configuration.set("maxplayers", maxPlayers);
 
-        configuration.set("type",arenaType);
+        configuration.set("type", arenaType.name());
 
         configuration.set("spec.world", spectating.getWorld().getName());
         configuration.set("spec.x", spectating.getBlockX());
@@ -361,7 +366,12 @@ public class Arena {
         spawns.add(location.clone());
     }
 
-    public void removeSpawn(Location location) {
+    public void setSpawn(Location location) {
+        spawns.clear();
+        addSpawn(location);
+    }
+
+    public Location removeSpawn(Location location) {
         Location l = location;
         int range = 3;
         int minX = l.getBlockX() - range / 2;
@@ -374,10 +384,13 @@ public class Arena {
                     Location loc = location.getWorld().getBlockAt(x, y, z).getLocation();
                     if (spawns.contains(loc)) {
                         spawns.remove(loc);
+                        return loc;
                     }
                 }
             }
         }
+
+        return null;
     }
 
     public void setMinPlayers(int players) {
@@ -393,37 +406,37 @@ public class Arena {
             case FFA:
                 setMinPlayers(2);
                 setMaxPlayers(20);
-                arenaType = types.name();
+                arenaType = types;
                 break;
             case FOURVFOUR:
                 setMinPlayers(8);
                 setMaxPlayers(8);
-                arenaType = types.name();
+                arenaType = types;
                 break;
             case ONEVONE:
                 setMinPlayers(2);
                 setMinPlayers(2);
-                arenaType = types.name();
+                arenaType = types;
                 break;
             case TWOVTWO:
                 setMinPlayers(4);
                 setMaxPlayers(4);
-                arenaType = types.name();
+                arenaType = types;
                 break;
             case THREEVTHREE:
                 setMinPlayers(6);
                 setMaxPlayers(6);
-                arenaType = types.name();
+                arenaType = types;
                 break;
             case SPLEEF:
                 setMinPlayers(5);
                 setMaxPlayers(15);
-                arenaType = types.name();
+                arenaType = types;
                 break;
         }
     }
 
-    public String getType(){
+    public ArenaType getType(){
         return arenaType;
     }
 
@@ -462,5 +475,9 @@ public class Arena {
             }
         }
         players.clear();
+    }
+
+    public String getName() {
+        return name;
     }
 }

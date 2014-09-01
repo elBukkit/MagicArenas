@@ -102,11 +102,7 @@ public class ArenaListener implements Listener {
         if (e.getAction() == Action.RIGHT_CLICK_BLOCK && (clickedBlock.getType() == Material.SIGN || clickedBlock.getType() == Material.SIGN_POST || clickedBlock.getType() == Material.WALL_SIGN)) {
             Sign sign = (Sign) e.getClickedBlock().getState();
             if (sign.getLine(0).contains("Leave")) {
-                Player player = e.getPlayer();
-                Arena arena = controller.getArena(player);
-                if (arena != null) {
-                    arena.remove(player);
-                }
+                controller.leave(e.getPlayer());
             }
         }
     }
