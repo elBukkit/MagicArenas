@@ -445,7 +445,14 @@ public class Arena {
         if (winner != null) {
             Server server = controller.getPlugin().getServer();
             winner.sendMessage(ChatColor.AQUA + "You have won! Congratulations!");
-            server.broadcastMessage(ChatColor.GOLD + winner.getDisplayName() + " has won a battle with "+ ChatColor.RED +  + winner.getHealth()/2 + " hearts!");
+            double health = winner.getHealth() / 2;
+            int hearts = (int)Math.floor(health);
+            String heartDescription = Integer.toString(hearts);
+            health = health - hearts;
+            if (health >= 0.5) {
+                heartDescription = heartDescription + " 1/2";
+            }
+            server.broadcastMessage(ChatColor.GOLD + winner.getDisplayName() + " has won a battle with "+ ChatColor.RED + heartDescription + " hearts!");
             Bukkit.getScheduler().runTaskLater(controller.getPlugin(), new Runnable() {
                 @Override
                 public void run() {
