@@ -105,6 +105,28 @@ public class ArenaCommandExecutor implements TabExecutor {
             return true;
         }
 
+        if (subCommand.equalsIgnoreCase("describe") && args.length < 2) {
+            Collection<Arena> arenas = controller.getArenas();
+            sender.sendMessage(ChatColor.BLUE + "Arenas: " + ChatColor.DARK_AQUA + arenas.size());
+            for (Arena arena : arenas) {
+                String arenaMessage = ChatColor.AQUA + arena.getName() + ": ";
+                if (arena.isStarted()) {
+                    arenaMessage = arenaMessage + ChatColor.GREEN + "ACTIVE";
+                } else if (arena.isStarted()) {
+                    arenaMessage = arenaMessage + ChatColor.RED + "INACTIVE";
+                }
+                int minPlayers = arena.getMinPlayers();
+                int maxPlayers = arena.getMaxPlayers();
+                int queuedPlayers = arena.getQueuedPlayers();
+                int inGamePlayers = arena.getInGamePlayers();
+                arenaMessage = arenaMessage + ChatColor.WHITE + " (" + ChatColor.GREEN + inGamePlayers + ChatColor.WHITE
+                        + ", " + ChatColor.YELLOW + queuedPlayers + ChatColor.WHITE + " / "
+                        + ChatColor.GRAY + minPlayers + "-" + maxPlayers + ChatColor.WHITE + ")";
+                sender.sendMessage(arenaMessage);
+            }
+            return true;
+        }
+
         if (subCommand.equalsIgnoreCase("leave")) {
             Player player = null;
             String playerName = null;
@@ -172,6 +194,11 @@ public class ArenaCommandExecutor implements TabExecutor {
 
         if (subCommand.equalsIgnoreCase("start")) {
             arena.startCountdown(10);
+            return true;
+        }
+
+        if (subCommand.equalsIgnoreCase("describe")) {
+            arena.describe(sender);
             return true;
         }
 

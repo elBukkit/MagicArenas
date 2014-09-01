@@ -6,6 +6,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Server;
 import org.bukkit.World;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -513,5 +514,52 @@ public class Arena {
         List<String> allPlayers = new ArrayList<String>(players);
         allPlayers.addAll(queue);
         return allPlayers;
+    }
+
+    public void describe(CommandSender sender) {
+        sender.sendMessage(ChatColor.DARK_AQUA + getName() + ": ");
+        sender.sendMessage(ChatColor.AQUA + "State: " + ChatColor.DARK_AQUA + state);
+        int queuedPlayers = getQueuedPlayers();
+        int inGamePlayers = getInGamePlayers();
+        sender.sendMessage(ChatColor.AQUA + "Active / Queued: " + ChatColor.DARK_AQUA + inGamePlayers +
+            ChatColor.WHITE + " / " + ChatColor.DARK_AQUA + queuedPlayers);
+        int minPlayers = getMinPlayers();
+        int maxPlayers = getMaxPlayers();
+        sender.sendMessage(ChatColor.AQUA + "Min / Max: " + ChatColor.DARK_AQUA + minPlayers +
+                ChatColor.WHITE + " / " + ChatColor.DARK_AQUA + maxPlayers);
+
+        int spawnSize = spawns.size();
+        if (spawnSize == 1) {
+            sender.sendMessage(ChatColor.AQUA + "Spawn: " + ChatColor.DARK_AQUA + printLocation(spawns.get(0)));
+        } else {
+            sender.sendMessage(ChatColor.AQUA + "Spawns: " + ChatColor.DARK_AQUA + spawnSize);
+        }
+        sender.sendMessage(ChatColor.AQUA + "Lobby: " + ChatColor.DARK_AQUA + printLocation(lobby));
+        sender.sendMessage(ChatColor.AQUA + "Win: " + ChatColor.DARK_AQUA + printLocation(win));
+        sender.sendMessage(ChatColor.AQUA + "Lose: " + ChatColor.DARK_AQUA + printLocation(lose));
+        sender.sendMessage(ChatColor.AQUA + "Exit: " + ChatColor.DARK_AQUA + printLocation(exit));
+        sender.sendMessage(ChatColor.AQUA + "Center: " + ChatColor.DARK_AQUA + printLocation(center));
+    }
+
+    protected String printLocation(Location location) {
+        if (location == null) return ChatColor.DARK_GRAY + "(None)";
+
+        return location.toVector().toString() + " : " + location.getWorld().getName();
+    }
+
+    public int getMinPlayers() {
+        return minPlayers;
+    }
+
+    public int getMaxPlayers() {
+        return maxPlayers;
+    }
+
+    public int getQueuedPlayers() {
+        return queue.size();
+    }
+
+    public int getInGamePlayers() {
+        return players.size();
     }
 }
