@@ -145,6 +145,13 @@ public class ArenaCommandExecutor implements TabExecutor {
                 }
                 return true;
             }
+            Arena leftArena = controller.leave(player);
+            if (leftArena != null) {
+                sender.sendMessage(ChatColor.AQUA + playerName + " has left " + leftArena.getName())
+            } else {
+                sender.sendMessage(ChatColor.AQUA + playerName + ChatColor.RED + " is not in an arena");
+            }
+
             return true;
         }
 
@@ -247,7 +254,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             (
                propertyName.equalsIgnoreCase("lobby") || propertyName.equalsIgnoreCase("spawn")
             || propertyName.equalsIgnoreCase("win") || propertyName.equalsIgnoreCase("lose")
-            || propertyName.equalsIgnoreCase("addspawn") || propertyName.equalsIgnoreCase("removespawn")
+            || propertyName.equalsIgnoreCase("center") || propertyName.equalsIgnoreCase("exit")
             || propertyName.equalsIgnoreCase("add") || propertyName.equalsIgnoreCase("remove")
             ) {
                 if (!(sender instanceof Player)) {

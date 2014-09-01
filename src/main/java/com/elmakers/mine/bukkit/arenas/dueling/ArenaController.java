@@ -127,13 +127,15 @@ public class ArenaController {
         return arenas.values();
     }
 
-    public void leave(Player player) {
+    public Arena leave(Player player) {
         Arena arena = getArena(player);
         if (arena != null) {
             arena.remove(player);
             player.sendMessage("You have left " + arena.getName());
             player.teleport(arena.getExit());
         }
+
+        return arena;
     }
 
     public boolean isInArena(Player player) {

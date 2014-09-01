@@ -217,9 +217,7 @@ public class Arena {
 
     public Player getWinner() {
         if (state == ArenaState.ACTIVE && players.size() == 1) {
-            state = ArenaState.LOBBY;
             String winner = players.iterator().next();
-            players.clear();
             return controller.getPlugin().getServer().getPlayer(winner);
         }
 
@@ -317,9 +315,16 @@ public class Arena {
     public boolean stop() {
         if (state == ArenaState.LOBBY) return false;
         messagePlayers("This match has been cancelled!");
+        finish();
+        return true;
+    }
+
+    protected void finish() {
         state = ArenaState.LOBBY;
         players.clear();
-        return true;
+
+        // Check for a new start
+        checkStart();
     }
 
     public boolean isStarted() {
@@ -461,6 +466,7 @@ public class Arena {
                     winner.setHealth(20.0);
                     winner.setFoodLevel(20);
                     winner.setFireTicks(0);
+                    stop();
                 }
             }, 5 * 20);
         } else {
@@ -478,7 +484,7 @@ public class Arena {
                 player.removeMetadata("arena", controller.getPlugin());
             }
         }
-        players.clear();
+        stop();
         queue.clear();
     }
 
