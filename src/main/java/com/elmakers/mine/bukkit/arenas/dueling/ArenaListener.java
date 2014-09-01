@@ -47,7 +47,7 @@ public class ArenaListener implements Listener {
             arena.remove(player);
             Location specroom = arena.getSpectatingRoom();
             player.setMetadata("respawnLocation", new FixedMetadataValue(controller.getPlugin(), specroom));
-            player.sendMessage(ChatColor.AQUA + "You have lost :( Better luck next time!");
+            player.sendMessage(ChatColor.AQUA + "You have lost - Better luck next time!");
             arena.check();
         }
     }
@@ -61,8 +61,13 @@ public class ArenaListener implements Listener {
     }
 
     @EventHandler
-    public void onSignChange(SignChangeEvent e){
-        if (e.getLine(0).contains("Duel")) {
+    public void onSignChange(SignChangeEvent e) {
+        Player player = e.getPlayer();
+        if (!player.hasPermission("MagicArenas.signs.create")) {
+            return;
+        }
+        String firstLine = e.getLine(0);
+        if (firstLine.contains("Duel")) {
             if (!e.getLine(1).isEmpty()) {
                 String arenaName = e.getLine(1);
                 Arena arena = controller.getArena(arenaName);
@@ -76,32 +81,25 @@ public class ArenaListener implements Listener {
                 e.getBlock().breakNaturally();
                 e.getPlayer().sendMessage(ChatColor.RED + "You must specify an arena!");
             }
-        }
-    }
-
-    @EventHandler
-    public void onPlayerRightClickSign(PlayerInteractEvent e){
-        Block clickedBlock = e.getClickedBlock();
-        if (e.getAction() == Action.RIGHT_CLICK_BLOCK && (clickedBlock.getType() == Material.SIGN || clickedBlock.getType() == Material.SIGN_POST || clickedBlock.getType() == Material.WALL_SIGN)) {
-            Sign sign = (Sign) e.getClickedBlock().getState();
-            if (sign.getLine(0).contains("Duel")) {
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "dueling admin join " + sign.getLine(1) + " " + e.getPlayer().getName());
-            }
-        }
-    }
-    @EventHandler
-    public void onSignChange2(SignChangeEvent e){
-        if (e.getLine(0).contains("Leave")) {
+        } else if (firstLine.contains("Leave")) {
             e.setLine(0,ChatColor.GOLD + "[" + ChatColor.BLUE + "Leave" + ChatColor.GOLD + "]");
         }
     }
 
     @EventHandler
-    public void onPlayerRightClickSign2(PlayerInteractEvent e){
+    public void onPlayerInteract(PlayerInteractEvent e) {
+        Player player = e.getPlayer();
+        if (!player.hasPermission("MagicArenas.signs.use")) {
+            return;
+        }
+
         Block clickedBlock = e.getClickedBlock();
         if (e.getAction() == Action.RIGHT_CLICK_BLOCK && (clickedBlock.getType() == Material.SIGN || clickedBlock.getType() == Material.SIGN_POST || clickedBlock.getType() == Material.WALL_SIGN)) {
             Sign sign = (Sign) e.getClickedBlock().getState();
-            if (sign.getLine(0).contains("Leave")) {
+            String firstLine = sign.getLine(0);
+            if (firstLine.contains("Duel")) {
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "dueling admin join " + sign.getLine(1) + " " + e.getPlayer().getName());
+            } else if (firstLine.contains("Leave")) {
                 controller.leave(e.getPlayer());
             }
         }

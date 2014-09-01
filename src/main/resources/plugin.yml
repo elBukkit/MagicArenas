@@ -49,3 +49,11 @@ permissions:
     description: Player may use the /arena leave command on others
     type: boolean
     default: op
+  MagicArenas.signs.create:
+    description: Player may create arena signs
+    type: boolean
+    default: op
+  MagicArenas.signs.use:
+    description: Player may use arena signs
+    type: boolean
+    default: true
