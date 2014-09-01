@@ -244,11 +244,11 @@ public class ArenaCommandExecutor implements TabExecutor {
                         sender.sendMessage(ChatColor.RED + "No nearby spawn locations");
                     }
                 } else if (propertyName.equalsIgnoreCase("lose")) {
-                    arena.setSpectatingRoom(location);
+                    arena.setLoseLocation(location);
                     controller.save();
                     sender.sendMessage(ChatColor.AQUA + "You have set the spectating room!");
                 } else if (propertyName.equalsIgnoreCase("win")) {
-                    arena.setTreasureRoom(location);
+                    arena.setWinLocation(location);
                     controller.save();
                     sender.sendMessage(ChatColor.AQUA + "You have set the treasure room!");
                 }

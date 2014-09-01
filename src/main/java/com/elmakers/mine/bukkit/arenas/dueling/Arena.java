@@ -9,7 +9,6 @@ import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.util.Vector;
@@ -29,9 +28,10 @@ public class Arena {
     private List<Location> spawns = new ArrayList<Location>();
     private final ArenaController controller;
 
-    private Location spectating;
-    //private Location spawn;
-    private Location treasure;
+    private Location center;
+    private Location exit;
+    private Location lose;
+    private Location win;
     private Location lobby;
 
     private Vector randomizeSpawn;
@@ -49,10 +49,7 @@ public class Arena {
 
     public Arena(final String name, final ArenaController plugin, Location location, int min, int max, ArenaType type) {
         this(name, plugin);
-        spectating = location.clone();
-        treasure = location.clone();
-        lobby = location.clone();
-        spawns.add(location.clone());
+        center = location.clone();
 
         maxPlayers = max;
         minPlayers = min;
@@ -129,47 +126,16 @@ public class Arena {
             arenaType = ArenaType.FFA;
         }
 
-        spectating = new Location(
-                controller.getPlugin().getServer().getWorld(configuration.getString("spec.world")),
-                configuration.getInt("spec.x"),
-                configuration.getInt("spec.y"),
-                configuration.getInt("spec.z")
-        );
-        spectating.setPitch(configuration.getInt("spec.pitch"));
-        spectating.setYaw(configuration.getInt("spec.yaw"));
-
-        lobby = new Location(
-                controller.getPlugin().getServer().getWorld(configuration.getString("lobby.world")),
-                configuration.getInt("lobby.x"),
-                configuration.getInt("lobby.y"),
-                configuration.getInt("lobby.z")
-        );
-        lobby.setPitch(configuration.getInt("lobby.pitch"));
-        lobby.setYaw(configuration.getInt("lobby.yaw"));
-
-        if (configuration.contains("spawn.world")) {
-            Location legacySpawn = new Location(
-                    controller.getPlugin().getServer().getWorld(configuration.getString("spawn.world")),
-                    configuration.getInt("spawn.x"),
-                    configuration.getInt("spawn.y"),
-                    configuration.getInt("spawn.z")
-            );
-            spawns.add(legacySpawn);
-        }
+        lose = toLocation(configuration.getString("lose"));
+        win = toLocation(configuration.getString("win"));
+        lobby = toLocation(configuration.getString("lobby"));
+        center = toLocation(configuration.getString("center"));
+        exit = toLocation(configuration.getString("exit"));
 
         for (String s : configuration.getStringList("spawns")){
             spawns.add(toLocation(s));
         }
-
-        treasure = new Location(
-                controller.getPlugin().getServer().getWorld(configuration.getString("treasureroom.world")),
-                configuration.getInt("treasureroom.x"),
-                configuration.getInt("treasureroom.y"),
-                configuration.getInt("treasureroom.z")
-
-        );
-        treasure.setPitch(configuration.getInt("treasureroom.pitch"));
-        treasure.setYaw(configuration.getInt("treasureroom.yaw"));
+;
         if (configuration.contains("randomize.spawn")) {
             randomizeSpawn = toVector(configuration.getString("randomize.spawn"));
         }
@@ -181,32 +147,17 @@ public class Arena {
 
         configuration.set("type", arenaType.name());
 
-        configuration.set("spec.world", spectating.getWorld().getName());
-        configuration.set("spec.x", spectating.getBlockX());
-        configuration.set("spec.y", spectating.getBlockY());
-        configuration.set("spec.z", spectating.getBlockZ());
-        configuration.set("spec.pitch", spectating.getPitch());
-        configuration.set("spec.yaw", spectating.getYaw());
-
-        configuration.set("lobby.world", lobby.getWorld().getName());
-        configuration.set("lobby.x", lobby.getBlockX());
-        configuration.set("lobby.y", lobby.getBlockY());
-        configuration.set("lobby.z", lobby.getBlockZ());
-        configuration.set("lobby.pitch", lobby.getPitch());
-        configuration.set("lobby.yaw", lobby.getYaw());
+        configuration.set("lobby", fromLocation(lobby));
+        configuration.set("win", fromLocation(win));
+        configuration.set("lose", fromLocation(lose));
+        configuration.set("center", fromLocation(center));
+        configuration.set("exit", fromLocation(exit));
 
         List<String> spawnList = new ArrayList<String>();
         for (Location spawn : spawns) {
             spawnList.add(fromLocation(spawn));
         }
         configuration.set("spawns", spawnList);
-
-        configuration.set("treasureroom.world", treasure.getWorld().getName());
-        configuration.set("treasureroom.x", treasure.getBlockX());
-        configuration.set("treasureroom.y", treasure.getBlockY());
-        configuration.set("treasureroom.z", treasure.getBlockZ());
-        configuration.set("treasureroom.pitch", treasure.getPitch());
-        configuration.set("treasureroom.yaw", treasure.getYaw());
 
         if (randomizeSpawn != null) {
             configuration.set("randomize.spawn", fromVector(randomizeSpawn));
@@ -217,6 +168,7 @@ public class Arena {
         state = ArenaState.ACTIVE;
         Server server = controller.getPlugin().getServer();
         int num = 0;
+        List<Location> spawns = getSpawns();
         for (String playerName : players) {
             Player player = server.getPlayer(playerName);
             player.sendMessage("Begin!");
@@ -258,12 +210,24 @@ public class Arena {
         return null;
     }
 
-    public Location getSpectatingRoom() {
-        return spectating;
+    public Location getLobby() {
+        return lobby == null ? center : lobby;
     }
 
-    public Location getTreasureRoom() {
-        return treasure;
+    public Location getLoseLocation() {
+        return lose == null ? center : lose;
+    }
+
+    public Location getWinLocation() {
+        return win == null ? center : win;
+    }
+
+    public Location getCenter() {
+        return center;
+    }
+
+    public Location getExit() {
+        return exit == null ? center : exit;
     }
 
     public boolean checkActive() {
@@ -347,20 +311,24 @@ public class Arena {
 
     public void add(Player player) {
         players.add(player.getName());
-        player.teleport(lobby);
+        player.teleport(getLobby());
         player.setMetadata("arena", new FixedMetadataValue(controller.getPlugin(), this));
     }
 
-    public void setSpectatingRoom(Location location) {
-        spectating = location.clone();
+    public void setLoseLocation(Location location) {
+        lose = location == null ? null : location.clone();
+    }
+
+    public void setExit(Location location) {
+        exit = location == null ? null : exit.clone();
     }
 
     public void setLobby(Location location) {
-        lobby = location.clone();
+        lobby = location == null ? null : location.clone();
     }
 
-    public void setTreasureRoom(Location location) {
-        treasure = location.clone();
+    public void setWinLocation(Location location) {
+        win = location == null ? null : location.clone();
     }
 
     public void addSpawn(Location location) {
@@ -369,7 +337,9 @@ public class Arena {
 
     public void setSpawn(Location location) {
         spawns.clear();
-        addSpawn(location);
+        if (location != null) {
+            addSpawn(location);
+        }
     }
 
     public Location removeSpawn(Location location) {
@@ -392,6 +362,16 @@ public class Arena {
         }
 
         return null;
+    }
+
+    public List<Location> getSpawns() {
+        if (spawns.size() == 0) {
+            List<Location> centerList = new ArrayList<Location>();
+            centerList.add(center);
+            return centerList;
+        }
+
+        return spawns;
     }
 
     public void setMinPlayers(int players) {
@@ -455,7 +435,7 @@ public class Arena {
                 @Override
                 public void run() {
                     winner.sendMessage(ChatColor.AQUA + "Enjoy the treasure!");
-                    winner.teleport(getTreasureRoom());
+                    winner.teleport(getWinLocation());
                     winner.setHealth(20.0);
                     winner.setFoodLevel(20);
                     winner.setFireTicks(0);

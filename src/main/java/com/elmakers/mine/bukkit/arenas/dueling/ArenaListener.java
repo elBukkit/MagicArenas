@@ -1,6 +1,5 @@
 package com.elmakers.mine.bukkit.arenas.dueling;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -46,7 +45,7 @@ public class ArenaListener implements Listener {
         Arena arena = controller.getArena(player);
         if (arena != null) {
             arena.remove(player);
-            Location specroom = arena.getSpectatingRoom();
+            Location specroom = arena.getLoseLocation();
             player.setMetadata("respawnLocation", new FixedMetadataValue(controller.getPlugin(), specroom));
             player.sendMessage(ChatColor.AQUA + "You have lost - Better luck next time!");
             arena.check();

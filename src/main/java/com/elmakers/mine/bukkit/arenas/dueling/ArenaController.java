@@ -75,7 +75,7 @@ public class ArenaController {
     public boolean playerLeft(Player player) {
         for (Arena arena : arenas.values()) {
             if (arena.has(player)) {
-                player.teleport(arena.getSpectatingRoom());
+                player.teleport(arena.getLoseLocation());
                 arena.remove(player);
                 arena.check();
                 return true;
@@ -134,6 +134,7 @@ public class ArenaController {
         if (arena != null) {
             arena.remove(player);
             player.sendMessage("You have left " + arena.getName());
+            player.teleport(arena.getExit());
         }
     }
 }
