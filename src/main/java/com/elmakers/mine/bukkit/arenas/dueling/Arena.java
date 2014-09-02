@@ -500,6 +500,7 @@ public class Arena {
             if (!isReady()) {
                 messagePlayers(ChatColor.RED + " Countdown cancelled");
                 state = ArenaState.LOBBY;
+                checkStart();
             }
             return;
         }
