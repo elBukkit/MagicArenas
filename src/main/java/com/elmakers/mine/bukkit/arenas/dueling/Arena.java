@@ -208,16 +208,20 @@ public class Arena {
             player.teleport(spawn);
         }
 
+        messageNextRoundPlayerList(ChatColor.GOLD + "You are up for the next round!");
+    }
+
+    protected void messageNextRoundPlayerList(String message) {
         Collection<String> nextUpPlayers = getNextRoundPlayers();
         for (String messagePlayer : nextUpPlayers) {
             Player player = Bukkit.getPlayer(messagePlayer);
             if (player != null) {
-                player.sendMessage(ChatColor.GOLD + "You are up for the next round!");
+                player.sendMessage(message);
                 for (String otherPlayerName : nextUpPlayers) {
                     if (!otherPlayerName.equals(messagePlayer)) {
                         Player otherPlayer = Bukkit.getPlayer(otherPlayerName);
                         if (otherPlayer != null) {
-                            player.sendMessage(ChatColor.YELLOW + " vs " + ChatColor.DARK_AQUA + otherPlayer.getDisplayName());
+                            player.sendMessage(ChatColor.YELLOW + " with " + ChatColor.DARK_AQUA + otherPlayer.getDisplayName());
                         }
                     }
                 }
@@ -308,6 +312,7 @@ public class Arena {
     public void startCountdown(int time) {
         if (state != ArenaState.LOBBY) return;
         state = ArenaState.COUNTDOWN;
+        messageNextRoundPlayerList(ChatColor.YELLOW + "A round of " + getName() + " is about to start!");
         countdown(time);
     }
 
