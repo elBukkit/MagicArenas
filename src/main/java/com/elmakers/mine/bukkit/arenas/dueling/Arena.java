@@ -207,6 +207,22 @@ public class Arena {
             num = (num + 1) % spawns.size();
             player.teleport(spawn);
         }
+
+        Collection<String> nextUpPlayers = getNextRoundPlayers();
+        for (String messagePlayer : nextUpPlayers) {
+            Player player = Bukkit.getPlayer(messagePlayer);
+            if (player != null) {
+                player.sendMessage(ChatColor.GOLD + "You are up for the next round!");
+                for (String otherPlayerName : nextUpPlayers) {
+                    if (!otherPlayerName.equals(messagePlayer)) {
+                        Player otherPlayer = Bukkit.getPlayer(otherPlayerName);
+                        if (otherPlayer != null) {
+                            player.sendMessage(ChatColor.YELLOW + " vs " + ChatColor.DARK_AQUA + otherPlayer.getDisplayName());
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public void remove(Player player) {
@@ -306,7 +322,7 @@ public class Arena {
         }
 
         if (time % 10 == 0 || time <= 5) {
-            messageNextRoundPlayers("Match is starting in " + time + " seconds");
+            messageNextRoundPlayers(ChatColor.DARK_AQUA + "Match is starting in " + ChatColor.AQUA + Integer.toString(time) + ChatColor.DARK_AQUA + " seconds");
         }
         BukkitScheduler scheduler = controller.getPlugin().getServer().getScheduler();
         scheduler.runTaskLater(controller.getPlugin(), new Runnable() {
@@ -319,7 +335,7 @@ public class Arena {
 
     public boolean stop() {
         if (state == ArenaState.LOBBY) return false;
-        messageInGamePlayers("This match has been cancelled!");
+        messageInGamePlayers(ChatColor.DARK_RED + "This match has been cancelled!");
         finish();
         return true;
     }
@@ -490,7 +506,7 @@ public class Arena {
             Bukkit.getScheduler().runTaskLater(controller.getPlugin(), new Runnable() {
                 @Override
                 public void run() {
-                    winner.sendMessage(ChatColor.AQUA + "Enjoy the treasure!");
+                    winner.sendMessage(ChatColor.YELLOW + "Enjoy the treasure!");
                     winner.teleport(getWinLocation());
                     winner.setHealth(20.0);
                     winner.setFoodLevel(20);
@@ -505,7 +521,7 @@ public class Arena {
     }
 
     public void remove() {
-        messagePlayers("This arena has been removed");
+        messagePlayers(ChatColor.RED + "This arena has been removed");
         stop();
         clearQueue();
     }
@@ -518,7 +534,7 @@ public class Arena {
         Arena currentArena = controller.getArena(player);
         if (currentArena != null) {
             if (currentArena == this) {
-                player.sendMessage(ChatColor.RED + "You are already in " + currentArena.getName());
+                player.sendMessage(ChatColor.RED + "You are already in " + ChatColor.AQUA + currentArena.getName());
                 return;
             } else {
                 controller.leave(player);
@@ -526,12 +542,12 @@ public class Arena {
         }
 
         if (isFull()) {
-            player.sendMessage(ChatColor.GOLD + "You have joined the queue for the next round of " + name);
+            player.sendMessage(ChatColor.GOLD + "You have joined the queue for the next round of " + ChatColor.AQUA + name);
         } else {
-            player.sendMessage(ChatColor.YELLOW + "You have entered the current round of " + name);
+            player.sendMessage(ChatColor.YELLOW + "You have entered the current round of " + ChatColor.AQUA + name);
         }
         add(player);
-        Bukkit.broadcastMessage(ChatColor.AQUA + player.getDisplayName() + " has joined the queue for " + name);
+        Bukkit.broadcastMessage(ChatColor.AQUA + player.getDisplayName() + ChatColor.DARK_AQUA + " has joined the queue for " + ChatColor.AQUA + name);
         checkStart();
     }
 
