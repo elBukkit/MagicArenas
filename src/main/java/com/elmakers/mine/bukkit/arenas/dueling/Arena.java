@@ -190,7 +190,7 @@ public class Arena {
             for (PotionEffect pt : player.getActivePotionEffects()) {
                 player.removePotionEffect(pt.getType());
             }
-            player.sendMessage("Begin!");
+            player.sendMessage(ChatColor.GOLD + "BEGIN!");
 
             Location spawn = spawns.get(num);
             if (randomizeSpawn != null) {
@@ -261,8 +261,9 @@ public class Arena {
     public void lobbyMessage() {
         int playerCount = queue.size();
         if (playerCount < minPlayers) {
-            String message = ChatColor.AQUA + String.valueOf(playerCount) + ChatColor.GOLD + "/" + ChatColor.AQUA + String.valueOf(minPlayers) + " players.";
-            messagePlayers(message);
+            int playersRemaining = minPlayers = playerCount;
+            String playerDescription = playersRemaining == 1 ? "1 more player" : (playersRemaining + " more players");
+            messageNextRoundPlayers(ChatColor.AQUA + "Waiting for " + playerDescription);
         }
     }
 
@@ -284,6 +285,10 @@ public class Arena {
         messagePlayers(message, players);
     }
 
+    public void messageNextRoundPlayers(String message) {
+        messagePlayers(message, getNextRoundPlayers());
+    }
+
     public void startCountdown(int time) {
         if (state != ArenaState.LOBBY) return;
         state = ArenaState.COUNTDOWN;
@@ -301,7 +306,7 @@ public class Arena {
         }
 
         if (time % 10 == 0 || time <= 5) {
-            messagePlayers("Match is starting in " + time + " seconds");
+            messageNextRoundPlayers("Match is starting in " + time + " seconds");
         }
         BukkitScheduler scheduler = controller.getPlugin().getServer().getScheduler();
         scheduler.runTaskLater(controller.getPlugin(), new Runnable() {
@@ -519,9 +524,13 @@ public class Arena {
             }
         }
 
+        if (isFull()) {
+            player.sendMessage(ChatColor.GOLD + "You have joined the queue for the next round of " + name);
+        } else {
+            player.sendMessage(ChatColor.YELLOW + "You have entered the current round of " + name);
+        }
         add(player);
         Bukkit.broadcastMessage(ChatColor.AQUA + player.getDisplayName() + " has joined the queue for " + name);
-        player.sendMessage(ChatColor.AQUA + "You have joined the game!");
         checkStart();
     }
 
@@ -542,6 +551,15 @@ public class Arena {
     protected Collection<String> getAllPlayers() {
         List<String> allPlayers = new ArrayList<String>(players);
         allPlayers.addAll(queue);
+        return allPlayers;
+    }
+
+    protected Collection<String> getNextRoundPlayers() {
+        List<String> allPlayers = new ArrayList<String>(players);
+        for (String queuedPlayer : queue) {
+            if (allPlayers.size() > maxPlayers) break;
+            allPlayers.add(queuedPlayer);
+        }
         return allPlayers;
     }
 
