@@ -486,7 +486,7 @@ public class Arena {
             if (health >= 0.5) {
                 heartDescription = heartDescription + " 1/2";
             }
-            server.broadcastMessage(ChatColor.GOLD + winner.getDisplayName() + " has won a battle with "+ ChatColor.RED + heartDescription + " hearts!");
+            server.broadcastMessage(ChatColor.GOLD + winner.getDisplayName() + " is the champion of " + ChatColor.YELLOW + name + ChatColor.GOLD + " with "+ ChatColor.RED + heartDescription + " hearts!");
             Bukkit.getScheduler().runTaskLater(controller.getPlugin(), new Runnable() {
                 @Override
                 public void run() {
@@ -495,6 +495,7 @@ public class Arena {
                     winner.setHealth(20.0);
                     winner.setFoodLevel(20);
                     winner.setFireTicks(0);
+                    remove(winner);
                     finish();
                 }
             }, 5 * 20);
@@ -557,7 +558,7 @@ public class Arena {
     protected Collection<String> getNextRoundPlayers() {
         List<String> allPlayers = new ArrayList<String>(players);
         for (String queuedPlayer : queue) {
-            if (allPlayers.size() > maxPlayers) break;
+            if (allPlayers.size() >= maxPlayers) break;
             allPlayers.add(queuedPlayer);
         }
         return allPlayers;
