@@ -566,10 +566,16 @@ public class Arena {
     public void describe(CommandSender sender) {
         sender.sendMessage(ChatColor.DARK_AQUA + getName() + ": ");
         sender.sendMessage(ChatColor.AQUA + "State: " + ChatColor.DARK_AQUA + state);
-        int queuedPlayers = getQueuedPlayers();
         int inGamePlayers = getInGamePlayers();
-        sender.sendMessage(ChatColor.AQUA + "Active / Queued: " + ChatColor.DARK_AQUA + inGamePlayers +
-            ChatColor.WHITE + " / " + ChatColor.DARK_AQUA + queuedPlayers);
+        sender.sendMessage(ChatColor.AQUA + "Active Players: " + ChatColor.DARK_AQUA + inGamePlayers);
+        for (String playerName : players) {
+            sender.sendMessage(ChatColor.GOLD + " " + playerName);
+        }
+        int queuedPlayers = getQueuedPlayers();
+        sender.sendMessage(ChatColor.AQUA + "Queued Players: " + ChatColor.DARK_AQUA + queuedPlayers);
+        for (String playerName : queue) {
+            sender.sendMessage(ChatColor.YELLOW + " " + playerName);
+        }
         int minPlayers = getMinPlayers();
         int maxPlayers = getMaxPlayers();
         sender.sendMessage(ChatColor.AQUA + "Min / Max: " + ChatColor.DARK_AQUA + minPlayers +
@@ -580,6 +586,9 @@ public class Arena {
             sender.sendMessage(ChatColor.AQUA + "Spawn: " + ChatColor.DARK_AQUA + printLocation(spawns.get(0)));
         } else {
             sender.sendMessage(ChatColor.AQUA + "Spawns: " + ChatColor.DARK_AQUA + spawnSize);
+            for (Location spawn : spawns) {
+                sender.sendMessage(ChatColor.DARK_AQUA + " " + printLocation(spawn));
+            }
         }
         sender.sendMessage(ChatColor.AQUA + "Lobby: " + ChatColor.DARK_AQUA + printLocation(lobby));
         sender.sendMessage(ChatColor.AQUA + "Win: " + ChatColor.DARK_AQUA + printLocation(win));
