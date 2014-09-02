@@ -8,6 +8,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,10 +21,14 @@ public class ArenaCommandExecutor implements TabExecutor {
     };
 
     private final static String[] ARENA_PROPERTIES = {
-            "max", "min", "win", "lose", "lobby", "spawn", "exit", "center", "add", "remove"
+            "max", "min", "win", "lose", "lobby", "spawn", "exit", "center", "add", "remove", "randomize"
     };
 
     private final static String[] ARENA_LISTS = {
+            "spawn"
+    };
+
+    private final static String[] ARENA_RANDOMIZE = {
             "spawn"
     };
 
@@ -49,6 +54,8 @@ public class ArenaCommandExecutor implements TabExecutor {
             allOptions.addAll(Arrays.asList(ARENA_PROPERTIES));
         } else if (args.length == 4 && args[0].equalsIgnoreCase("configure") && (args[2].equalsIgnoreCase("add") || args[2].equalsIgnoreCase("remove"))) {
             allOptions.addAll(Arrays.asList(ARENA_LISTS));
+        } else if (args.length == 4 && args[0].equalsIgnoreCase("configure") && args[2].equalsIgnoreCase("randomize")) {
+            allOptions.addAll(Arrays.asList(ARENA_RANDOMIZE));
         }
 
         completeCommand = completeCommand.toLowerCase();
@@ -249,6 +256,33 @@ public class ArenaCommandExecutor implements TabExecutor {
             }
 
             String propertyName = args[2];
+            if (propertyName.equalsIgnoreCase("randomize"))
+            {
+                String randomizeType = "spawn";
+                if (args.length >= 4) {
+                    randomizeType = args[3];
+                }
+                String vectorParameter = null;
+                if (args.length >= 5) {
+                    vectorParameter = args[4];
+                }
+
+                if (randomizeType.equalsIgnoreCase("spawn")) {
+                    if (vectorParameter == null || vectorParameter.isEmpty()) {
+                        sender.sendMessage(ChatColor.RED + "Cleared randomized spawn of " + arena.getName());
+                        arena.setRandomizeSpawn(null);
+                    } else {
+                        Vector vector = Arena.toVector(vectorParameter);
+                        sender.sendMessage(ChatColor.AQUA + "Set randomized spawn of " + arena.getName() + " to " + vector);
+                        arena.setRandomizeSpawn(vector);
+                    }
+                    return true;
+                }
+
+                sender.sendMessage(ChatColor.RED + "Not a valid randomization option: " + randomizeType);
+                sender.sendMessage(ChatColor.AQUA + "Options: " + StringUtils.join(ARENA_RANDOMIZE, ", "));
+                return true;
+            }
 
             if
             (
@@ -268,13 +302,11 @@ public class ArenaCommandExecutor implements TabExecutor {
                 boolean removeLocation = propertyName.equalsIgnoreCase("remove");
                 if (addLocation || removeLocation)
                 {
-                    if (args.length < 4) {
-                        sender.sendMessage(ChatColor.RED + "Must specify a location list");
-                        sender.sendMessage(ChatColor.AQUA + "Options: " + StringUtils.join(ARENA_LISTS, ", "));
-                        return true;
+                    String locList = "spawn";
+                    if (args.length >= 4) {
+                        locList = args[3];
                     }
 
-                    String locList = args[3];
                     if (locList.equalsIgnoreCase("spawn")) {
                         if (addLocation) {
                             arena.addSpawn(location);

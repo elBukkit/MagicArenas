@@ -619,6 +619,9 @@ public class Arena {
         sender.sendMessage(ChatColor.AQUA + "Lose: " + ChatColor.DARK_AQUA + printLocation(lose));
         sender.sendMessage(ChatColor.AQUA + "Exit: " + ChatColor.DARK_AQUA + printLocation(exit));
         sender.sendMessage(ChatColor.AQUA + "Center: " + ChatColor.DARK_AQUA + printLocation(center));
+        if (randomizeSpawn != null) {
+            sender.sendMessage(ChatColor.AQUA + "Randomize: " + ChatColor.DARK_AQUA + randomizeSpawn);
+        }
     }
 
     protected String printLocation(Location location) {
