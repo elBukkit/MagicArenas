@@ -277,7 +277,7 @@ public class Arena {
     public void lobbyMessage() {
         int playerCount = queue.size();
         if (playerCount < minPlayers) {
-            int playersRemaining = minPlayers = playerCount;
+            int playersRemaining = minPlayers - playerCount;
             String playerDescription = playersRemaining == 1 ? "1 more player" : (playersRemaining + " more players");
             messageNextRoundPlayers(ChatColor.AQUA + "Waiting for " + playerDescription);
         }
