@@ -347,14 +347,14 @@ public class ArenaCommandExecutor implements TabExecutor {
                 }
                 if (propertyName.equalsIgnoreCase("min")) {
                     arena.setMinPlayers(intValue);
-                    sender.sendMessage(ChatColor.AQUA + "Set min players");
+                    sender.sendMessage(ChatColor.AQUA + "Set min players of " + arena.getName() + " to " + intValue);
                     controller.save();
                     return true;
                 }
 
                 if (propertyName.equalsIgnoreCase("max")) {
                     arena.setMaxPlayers(intValue);
-                    sender.sendMessage(ChatColor.AQUA + "Set max players");
+                    sender.sendMessage(ChatColor.AQUA + "Set max players of " + arena.getName() + " to " + intValue);
                     controller.save();
                     return true;
                 }
