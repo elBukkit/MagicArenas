@@ -1,5 +1,6 @@
 package com.elmakers.mine.bukkit.arenas.dueling;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -13,6 +14,7 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerKickEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
@@ -53,10 +55,11 @@ public class ArenaListener implements Listener {
     }
 
     @EventHandler
-    public void onPlayerKick(PlayerKickEvent e) {
+    public void onPlayerQuit(PlayerQuitEvent e) {
         Player player = e.getPlayer();
-        if (controller.playerLeft(player)) {
-            e.setLeaveMessage(ChatColor.AQUA + e.getPlayer().getName() + " was kicked out of the arena!");
+        Arena leftArena = controller.leave(player);
+        if (leftArena != null) {
+            Bukkit.broadcastMessage(ChatColor.RED + player.getDisplayName() + ChatColor.DARK_AQUA + " has left " + ChatColor.AQUA + leftArena.getName());
         }
     }
 

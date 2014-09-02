@@ -309,11 +309,11 @@ public class ArenaCommandExecutor implements TabExecutor {
                 } else if (propertyName.equalsIgnoreCase("exit")) {
                     arena.setExit(location);
                     controller.save();
-                    sender.sendMessage(ChatColor.AQUA + "You have set the spawn location!");
+                    sender.sendMessage(ChatColor.AQUA + "You have set the exit location!");
                 } else if (propertyName.equalsIgnoreCase("center")) {
                     arena.setCenter(location);
                     controller.save();
-                    sender.sendMessage(ChatColor.AQUA + "You have set the spawn location!");
+                    sender.sendMessage(ChatColor.AQUA + "You have set the center location!");
                 } else if (propertyName.equalsIgnoreCase("lose")) {
                     arena.setLoseLocation(location);
                     controller.save();

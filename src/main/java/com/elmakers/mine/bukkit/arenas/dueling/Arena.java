@@ -491,6 +491,13 @@ public class Arena {
     }
 
     public void check() {
+        if (state == ArenaState.COUNTDOWN) {
+            if (!isReady()) {
+                messagePlayers(ChatColor.RED + " Countdown cancelled");
+                state = ArenaState.LOBBY;
+            }
+            return;
+        }
         final Player winner = getWinner();
         if (winner != null) {
             Server server = controller.getPlugin().getServer();

@@ -75,17 +75,6 @@ public class ArenaController {
         return plugin;
     }
 
-    public boolean playerLeft(Player player) {
-        Arena arena = getArena(player);
-        if (arena != null) {
-            player.teleport(arena.getLoseLocation());
-            arena.remove(player);
-            arena.check();
-            return true;
-        }
-        return false;
-    }
-
     public Arena getArena(String arenaName) {
         return arenas.get(arenaName);
     }
@@ -136,6 +125,7 @@ public class ArenaController {
             arena.remove(player);
             player.sendMessage("You have left " + arena.getName());
             player.teleport(arena.getExit());
+            arena.check();
         }
 
         return arena;
