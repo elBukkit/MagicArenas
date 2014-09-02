@@ -169,7 +169,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             }
             Player player = (Player) sender;
             Location location = player.getLocation();
-            ArenaType arenaType = ArenaType.FFA;
+            ArenaType arenaType = ArenaType.ONEVONE;
             if (args.length > 2) {
                 String arenaTypeName = args[2];
                 arenaType = ArenaType.parse(arenaTypeName);
@@ -179,7 +179,7 @@ public class ArenaCommandExecutor implements TabExecutor {
                 }
             }
             if (arena == null) {
-                arena = controller.addArena(arenaName, location, 2, 20, arenaType);
+                arena = controller.addArena(arenaName, location, 2, 2, arenaType);
                 controller.save();
                 player.sendMessage(ChatColor.AQUA + "Arena Created: " + arena.getName());
             } else {
