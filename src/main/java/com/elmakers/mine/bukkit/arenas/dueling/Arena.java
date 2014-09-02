@@ -579,7 +579,7 @@ public class Arena {
     }
 
     protected Collection<String> getNextRoundPlayers() {
-        List<String> allPlayers = new ArrayList<String>(players);
+        List<String> allPlayers = new ArrayList<String>();
         for (String queuedPlayer : queue) {
             if (allPlayers.size() >= maxPlayers) break;
             allPlayers.add(queuedPlayer);
