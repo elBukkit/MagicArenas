@@ -58,6 +58,9 @@ public class ArenaController {
     private void load(ConfigurationSection configuration) {
         Collection<String> arenaKeys = configuration.getKeys(false);
 
+        for (Arena arena : arenas.values()) {
+            arena.remove();
+        }
         arenas.clear();
         for (String arenaKey : arenaKeys) {
             Arena arena = new Arena(arenaKey, this);
@@ -118,7 +121,7 @@ public class ArenaController {
     public void remove(String arenaName) {
         Arena arena = arenas.get(arenaName);
         if (arena != null) {
-            arena.cancel();
+            arena.remove();
             arenas.remove(arenaName);
         }
     }

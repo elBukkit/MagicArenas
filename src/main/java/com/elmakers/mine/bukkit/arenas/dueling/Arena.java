@@ -314,7 +314,7 @@ public class Arena {
 
     public boolean stop() {
         if (state == ArenaState.LOBBY) return false;
-        messagePlayers("This match has been cancelled!");
+        messageInGamePlayers("This match has been cancelled!");
         finish();
         return true;
     }
@@ -332,6 +332,7 @@ public class Arena {
         for (String playerName : players) {
             Player player = server.getPlayer(playerName);
             if (player != null) {
+                player.teleport(getExit());
                 player.removeMetadata("arena", controller.getPlugin());
             }
         }
@@ -343,6 +344,7 @@ public class Arena {
         for (String playerName : queue) {
             Player player = server.getPlayer(playerName);
             if (player != null) {
+                player.teleport(getExit());
                 player.removeMetadata("arena", controller.getPlugin());
             }
         }
@@ -488,7 +490,7 @@ public class Arena {
                     winner.setHealth(20.0);
                     winner.setFoodLevel(20);
                     winner.setFireTicks(0);
-                    stop();
+                    finish();
                 }
             }, 5 * 20);
         } else {
@@ -496,8 +498,8 @@ public class Arena {
         }
     }
 
-    public void cancel() {
-        messagePlayers("This match has been cancelled");
+    public void remove() {
+        messagePlayers("This arena has been removed");
         stop();
         clearQueue();
     }
