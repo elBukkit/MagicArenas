@@ -375,7 +375,7 @@ public class Arena {
     }
 
     public void setExit(Location location) {
-        exit = location == null ? null : exit.clone();
+        exit = location == null ? null : location.clone();
     }
 
     public void setCenter(Location location) {
