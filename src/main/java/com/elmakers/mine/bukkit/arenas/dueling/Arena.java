@@ -177,7 +177,7 @@ public class Arena {
         state = ArenaState.ACTIVE;
         Server server = controller.getPlugin().getServer();
         int num = 0;
-        players.clear();
+        clearPlayers();
         while (queue.size() > 0 && players.size() < maxPlayers) {
             players.add(queue.remove());
         }
@@ -321,10 +321,32 @@ public class Arena {
 
     protected void finish() {
         state = ArenaState.LOBBY;
-        players.clear();
+        clearPlayers();
 
         // Check for a new start
         checkStart();
+    }
+
+    protected void clearPlayers() {
+        Server server = controller.getPlugin().getServer();
+        for (String playerName : players) {
+            Player player = server.getPlayer(playerName);
+            if (player != null) {
+                player.removeMetadata("arena", controller.getPlugin());
+            }
+        }
+        players.clear();
+    }
+
+    protected void clearQueue() {
+        Server server = controller.getPlugin().getServer();
+        for (String playerName : queue) {
+            Player player = server.getPlayer(playerName);
+            if (player != null) {
+                player.removeMetadata("arena", controller.getPlugin());
+            }
+        }
+        queue.clear();
     }
 
     public boolean isStarted() {
@@ -476,16 +498,8 @@ public class Arena {
 
     public void cancel() {
         messagePlayers("This match has been cancelled");
-        Server server = controller.getPlugin().getServer();
-        Collection<String> allPlayers = getAllPlayers();
-        for (String playerId : allPlayers) {
-            Player player = server.getPlayer(playerId);
-            if (player != null) {
-                player.removeMetadata("arena", controller.getPlugin());
-            }
-        }
         stop();
-        queue.clear();
+        clearQueue();
     }
 
     public String getName() {

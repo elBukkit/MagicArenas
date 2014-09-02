@@ -147,7 +147,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             }
             Arena leftArena = controller.leave(player);
             if (leftArena != null) {
-                sender.sendMessage(ChatColor.AQUA + playerName + " has left " + leftArena.getName())
+                sender.sendMessage(ChatColor.AQUA + playerName + " has left " + leftArena.getName());
             } else {
                 sender.sendMessage(ChatColor.AQUA + playerName + ChatColor.RED + " is not in an arena");
             }
