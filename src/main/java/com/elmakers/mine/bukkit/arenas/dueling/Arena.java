@@ -43,6 +43,9 @@ public class Arena {
     private int maxPlayers;
     private int minPlayers;
 
+    private int portalDamage;
+    private String portalDeathMessage;
+
     private ArenaType arenaType;
     private final String key;
     private String name;
@@ -129,6 +132,9 @@ public class Arena {
         minPlayers = configuration.getInt("minplayers");
         maxPlayers = configuration.getInt("maxplayers");
 
+        portalDamage = configuration.getInt("portal_damage", 0);
+        portalDeathMessage = configuration.getString("portal_death_message");
+
         arenaType = ArenaType.parse(configuration.getString("type"));
         if (arenaType == null) {
             arenaType = ArenaType.FFA;
@@ -159,6 +165,9 @@ public class Arena {
         configuration.set("description", description);
         configuration.set("minplayers", minPlayers);
         configuration.set("maxplayers", maxPlayers);
+
+        configuration.set("portal_damage", portalDamage);
+        configuration.set("portal_death_message", portalDeathMessage);
 
         configuration.set("type", arenaType.name());
 
@@ -652,6 +661,12 @@ public class Arena {
         if (randomizeSpawn != null) {
             sender.sendMessage(ChatColor.AQUA + "Randomize: " + ChatColor.DARK_AQUA + randomizeSpawn);
         }
+        if (portalDamage > 0) {
+            sender.sendMessage(ChatColor.LIGHT_PURPLE + "Portal Damage: " + ChatColor.DARK_PURPLE + portalDamage);
+            if (portalDeathMessage != null && !portalDeathMessage.isEmpty()) {
+                sender.sendMessage(ChatColor.LIGHT_PURPLE + "Portal Death Message: " + ChatColor.DARK_PURPLE + portalDeathMessage);
+            }
+        }
     }
 
     protected String printLocation(Location location) {
@@ -682,5 +697,21 @@ public class Arena {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public void setPortalDamage(int damage) {
+        this.portalDamage = damage;
+    }
+
+    public int getPortalDamage() {
+        return portalDamage;
+    }
+
+    public String getPortalDeathMessage() {
+        return portalDeathMessage;
+    }
+
+    public void setPortalDeathMessage(String message) {
+        this.portalDeathMessage = message;
     }
 }

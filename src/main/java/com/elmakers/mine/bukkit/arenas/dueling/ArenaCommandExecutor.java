@@ -22,7 +22,8 @@ public class ArenaCommandExecutor implements TabExecutor {
 
     private final static String[] ARENA_PROPERTIES = {
             "max", "min", "win", "lose", "lobby", "spawn", "exit", "center",
-            "add", "remove", "randomize", "name", "description"
+            "add", "remove", "randomize", "name", "description", "portal_damage",
+            "portal_death_message"
     };
 
     private final static String[] ARENA_LISTS = {
@@ -403,12 +404,23 @@ public class ArenaCommandExecutor implements TabExecutor {
             return;
         }
 
+        if (propertyName.equalsIgnoreCase("portal_death_message"))
+        {
+            if (propertyValue == null || propertyValue.isEmpty()) {
+                sender.sendMessage(ChatColor.RED + "Cleared portal death message of " + arena.getName());
+            } else {
+                sender.sendMessage(ChatColor.AQUA + "Change portal death message of " + arena.getName() + " to " + propertyValue);
+            }
+            arena.setPortalDeathMessage(propertyValue);
+            return;
+        }
+
         if (propertyValue == null) {
             sender.sendMessage(ChatColor.RED + "Must specify a property value");
             return;
         }
 
-        if (propertyName.equalsIgnoreCase("min") || propertyName.equalsIgnoreCase("max")) {
+        if (propertyName.equalsIgnoreCase("min") || propertyName.equalsIgnoreCase("max") || propertyName.equalsIgnoreCase("portal_damage")) {
             Integer intValue;
             try {
                 intValue = Integer.parseInt(propertyValue);
@@ -433,10 +445,16 @@ public class ArenaCommandExecutor implements TabExecutor {
                 controller.save();
                 return;
             }
+
+            if (propertyName.equalsIgnoreCase("portal_damage")) {
+                arena.setPortalDamage(intValue);
+                sender.sendMessage(ChatColor.AQUA + "Set portal damage of " + arena.getName() + " to " + intValue);
+                controller.save();
+                return;
+            }
         }
 
         sender.sendMessage(ChatColor.RED + "Not a valid property: " + propertyName);
         sender.sendMessage(ChatColor.AQUA + "Options: " + StringUtils.join(ARENA_PROPERTIES, ", "));
-
     }
 }

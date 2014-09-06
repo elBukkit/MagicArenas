@@ -14,6 +14,7 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerKickEvent;
+import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -51,6 +52,13 @@ public class ArenaListener implements Listener {
             player.setMetadata("respawnLocation", new FixedMetadataValue(controller.getPlugin(), specroom));
             player.sendMessage(ChatColor.AQUA + "You have lost - Better luck next time!");
             arena.check();
+        }
+        if (player.hasMetadata("death_message")) {
+            Collection<MetadataValue> metadata = player.getMetadata("death_message");
+            for (MetadataValue value : metadata) {
+                e.setDeathMessage(ChatColor.translateAlternateColorCodes('&', value.asString()).replace("@p", player.getDisplayName()));
+            }
+            player.removeMetadata("death_message", controller.getPlugin());
         }
     }
 
@@ -121,6 +129,22 @@ public class ArenaListener implements Listener {
                 } else if (secondLine.contains("Leave")) {
                     controller.leave(e.getPlayer());
                 }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerPortal(PlayerPortalEvent event) {
+        Player player = event.getPlayer();
+        Arena arena = controller.getArena(player);
+        if (arena != null && arena.getPortalDamage() > 0) {
+            String portalDeathMessage = arena.getPortalDeathMessage();
+            if (portalDeathMessage != null && !portalDeathMessage.isEmpty()) {
+                player.setMetadata("death_message", new FixedMetadataValue(controller.getPlugin(), portalDeathMessage));
+            }
+            player.damage(arena.getPortalDamage());
+            if (portalDeathMessage != null && !portalDeathMessage.isEmpty()) {
+                player.removeMetadata("death_message", controller.getPlugin());
             }
         }
     }
