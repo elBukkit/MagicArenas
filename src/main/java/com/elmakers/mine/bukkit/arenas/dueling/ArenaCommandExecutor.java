@@ -254,144 +254,17 @@ public class ArenaCommandExecutor implements TabExecutor {
             }
 
             String propertyName = args[2];
-            if (propertyName.equalsIgnoreCase("randomize"))
-            {
-                String randomizeType = "spawn";
-                if (args.length >= 4) {
-                    randomizeType = args[3];
-                }
-                String vectorParameter = null;
-                if (args.length >= 5) {
-                    vectorParameter = args[4];
-                }
+            String[] configureArgs;
 
-                if (randomizeType.equalsIgnoreCase("spawn")) {
-                    if (vectorParameter == null || vectorParameter.isEmpty()) {
-                        sender.sendMessage(ChatColor.RED + "Cleared randomized spawn of " + arena.getName());
-                        arena.setRandomizeSpawn(null);
-                    } else {
-                        Vector vector = Arena.toVector(vectorParameter);
-                        sender.sendMessage(ChatColor.AQUA + "Set randomized spawn of " + arena.getName() + " to " + vector);
-                        arena.setRandomizeSpawn(vector);
-                    }
-                    return true;
+            if (args.length > 3) {
+                configureArgs = new String[args.length - 3];
+                for (int i = 3; i < args.length; i++) {
+                    configureArgs[i - 3] = args[i];
                 }
-
-                sender.sendMessage(ChatColor.RED + "Not a valid randomization option: " + randomizeType);
-                sender.sendMessage(ChatColor.AQUA + "Options: " + StringUtils.join(ARENA_RANDOMIZE, ", "));
-                return true;
+            } else {
+                configureArgs = new String[0];
             }
-
-            if
-            (
-               propertyName.equalsIgnoreCase("lobby") || propertyName.equalsIgnoreCase("spawn")
-            || propertyName.equalsIgnoreCase("win") || propertyName.equalsIgnoreCase("lose")
-            || propertyName.equalsIgnoreCase("center") || propertyName.equalsIgnoreCase("exit")
-            || propertyName.equalsIgnoreCase("add") || propertyName.equalsIgnoreCase("remove")
-            ) {
-                if (!(sender instanceof Player)) {
-                    sender.sendMessage(ChatColor.RED + "Must be used in-game");
-                    return true;
-                }
-                Player player = (Player) sender;
-                Location location = player.getLocation();
-
-                boolean addLocation = propertyName.equalsIgnoreCase("add");
-                boolean removeLocation = propertyName.equalsIgnoreCase("remove");
-                if (addLocation || removeLocation)
-                {
-                    String locList = "spawn";
-                    if (args.length >= 4) {
-                        locList = args[3];
-                    }
-
-                    if (locList.equalsIgnoreCase("spawn")) {
-                        if (addLocation) {
-                            arena.addSpawn(location);
-                            controller.save();
-                            sender.sendMessage(ChatColor.AQUA + "You have added a spawn location!");
-                        } else {
-                            Location removed = arena.removeSpawn(location);
-                            if (removed != null) {
-                                controller.save();
-                                sender.sendMessage(ChatColor.AQUA + "You have removed a spawn location at: " + removed.toVector());
-                            } else {
-                                sender.sendMessage(ChatColor.RED + "No nearby spawn locations");
-                            }
-                        }
-
-                        return true;
-                    }
-
-                    sender.sendMessage(ChatColor.RED + "Not a valid location list: " + locList);
-                    sender.sendMessage(ChatColor.AQUA + "Options: " + StringUtils.join(ARENA_LISTS, ", "));
-                    return true;
-                }
-
-                if (propertyName.equalsIgnoreCase("lobby")) {
-                    arena.setLobby(location);
-                    controller.save();
-                    sender.sendMessage(ChatColor.AQUA + "You have set the lobby!");
-                } else if (propertyName.equalsIgnoreCase("spawn")) {
-                    arena.setSpawn(location);
-                    controller.save();
-                    sender.sendMessage(ChatColor.AQUA + "You have set the spawn location!");
-                } else if (propertyName.equalsIgnoreCase("exit")) {
-                    arena.setExit(location);
-                    controller.save();
-                    sender.sendMessage(ChatColor.AQUA + "You have set the exit location!");
-                } else if (propertyName.equalsIgnoreCase("center")) {
-                    arena.setCenter(location);
-                    controller.save();
-                    sender.sendMessage(ChatColor.AQUA + "You have set the center location!");
-                } else if (propertyName.equalsIgnoreCase("lose")) {
-                    arena.setLoseLocation(location);
-                    controller.save();
-                    sender.sendMessage(ChatColor.AQUA + "You have set the spectating room!");
-                } else if (propertyName.equalsIgnoreCase("win")) {
-                    arena.setWinLocation(location);
-                    controller.save();
-                    sender.sendMessage(ChatColor.AQUA + "You have set the treasure room!");
-                }
-
-                return true;
-            }
-
-            if (args.length < 4) {
-                sender.sendMessage(ChatColor.RED + "Must specify a property value");
-                return true;
-            }
-
-            String propertyValue = args[3];
-            if (propertyName.equalsIgnoreCase("min") || propertyName.equalsIgnoreCase("max")) {
-                Integer intValue;
-                try {
-                    intValue = Integer.parseInt(propertyValue);
-                } catch (Exception ex) {
-                    intValue = null;
-                }
-
-                if (intValue == null) {
-                    sender.sendMessage(ChatColor.RED + "Not a valid integer: " + propertyValue);
-                    return true;
-                }
-                if (propertyName.equalsIgnoreCase("min")) {
-                    arena.setMinPlayers(intValue);
-                    sender.sendMessage(ChatColor.AQUA + "Set min players of " + arena.getName() + " to " + intValue);
-                    controller.save();
-                    return true;
-                }
-
-                if (propertyName.equalsIgnoreCase("max")) {
-                    arena.setMaxPlayers(intValue);
-                    sender.sendMessage(ChatColor.AQUA + "Set max players of " + arena.getName() + " to " + intValue);
-                    controller.save();
-                    return true;
-                }
-            }
-
-            sender.sendMessage(ChatColor.RED + "Not a valid property: " + propertyName);
-            sender.sendMessage(ChatColor.AQUA + "Options: " + StringUtils.join(ARENA_PROPERTIES, ", "));
+            onConfigureArena(sender, arena, propertyName, configureArgs);
 
             return true;
         }
@@ -399,5 +272,148 @@ public class ArenaCommandExecutor implements TabExecutor {
         sender.sendMessage(ChatColor.RED + "Not a valid option: " + subCommand);
         sender.sendMessage(ChatColor.AQUA + "Options: " + StringUtils.join(SUB_COMMANDS, ", "));
         return true;
+    }
+
+    protected void onConfigureArena(CommandSender sender, Arena arena, String propertyName, String[] args)
+    {
+        if (propertyName.equalsIgnoreCase("randomize"))
+        {
+            String randomizeType = "spawn";
+            if (args.length > 0) {
+                randomizeType = args[0];
+            }
+            String vectorParameter = null;
+            if (args.length > 1) {
+                vectorParameter = args[1];
+            }
+
+            if (randomizeType.equalsIgnoreCase("spawn")) {
+                if (vectorParameter == null || vectorParameter.isEmpty()) {
+                    sender.sendMessage(ChatColor.RED + "Cleared randomized spawn of " + arena.getName());
+                    arena.setRandomizeSpawn(null);
+                } else {
+                    Vector vector = Arena.toVector(vectorParameter);
+                    sender.sendMessage(ChatColor.AQUA + "Set randomized spawn of " + arena.getName() + " to " + vector);
+                    arena.setRandomizeSpawn(vector);
+                }
+                return;
+            }
+
+            sender.sendMessage(ChatColor.RED + "Not a valid randomization option: " + randomizeType);
+            sender.sendMessage(ChatColor.AQUA + "Options: " + StringUtils.join(ARENA_RANDOMIZE, ", "));
+            return;
+        }
+
+        if
+        (
+            propertyName.equalsIgnoreCase("lobby") || propertyName.equalsIgnoreCase("spawn")
+        ||  propertyName.equalsIgnoreCase("win") || propertyName.equalsIgnoreCase("lose")
+        ||  propertyName.equalsIgnoreCase("center") || propertyName.equalsIgnoreCase("exit")
+        ||  propertyName.equalsIgnoreCase("add") || propertyName.equalsIgnoreCase("remove")
+        ) {
+            if (!(sender instanceof Player)) {
+                sender.sendMessage(ChatColor.RED + "Must be used in-game");
+                return;
+            }
+            Player player = (Player) sender;
+            Location location = player.getLocation();
+
+            boolean addLocation = propertyName.equalsIgnoreCase("add");
+            boolean removeLocation = propertyName.equalsIgnoreCase("remove");
+            if (addLocation || removeLocation)
+            {
+                String locList = "spawn";
+                if (args.length > 0) {
+                    locList = args[0];
+                }
+
+                if (locList.equalsIgnoreCase("spawn")) {
+                    if (addLocation) {
+                        arena.addSpawn(location);
+                        controller.save();
+                        sender.sendMessage(ChatColor.AQUA + "You have added a spawn location!");
+                    } else {
+                        Location removed = arena.removeSpawn(location);
+                        if (removed != null) {
+                            controller.save();
+                            sender.sendMessage(ChatColor.AQUA + "You have removed a spawn location at: " + removed.toVector());
+                        } else {
+                            sender.sendMessage(ChatColor.RED + "No nearby spawn locations");
+                        }
+                    }
+
+                    return;
+                }
+
+                sender.sendMessage(ChatColor.RED + "Not a valid location list: " + locList);
+                sender.sendMessage(ChatColor.AQUA + "Options: " + StringUtils.join(ARENA_LISTS, ", "));
+                return;
+            }
+
+            if (propertyName.equalsIgnoreCase("lobby")) {
+                arena.setLobby(location);
+                controller.save();
+                sender.sendMessage(ChatColor.AQUA + "You have set the lobby!");
+            } else if (propertyName.equalsIgnoreCase("spawn")) {
+                arena.setSpawn(location);
+                controller.save();
+                sender.sendMessage(ChatColor.AQUA + "You have set the spawn location!");
+            } else if (propertyName.equalsIgnoreCase("exit")) {
+                arena.setExit(location);
+                controller.save();
+                sender.sendMessage(ChatColor.AQUA + "You have set the exit location!");
+            } else if (propertyName.equalsIgnoreCase("center")) {
+                arena.setCenter(location);
+                controller.save();
+                sender.sendMessage(ChatColor.AQUA + "You have set the center location!");
+            } else if (propertyName.equalsIgnoreCase("lose")) {
+                arena.setLoseLocation(location);
+                controller.save();
+                sender.sendMessage(ChatColor.AQUA + "You have set the spectating room!");
+            } else if (propertyName.equalsIgnoreCase("win")) {
+                arena.setWinLocation(location);
+                controller.save();
+                sender.sendMessage(ChatColor.AQUA + "You have set the treasure room!");
+            }
+
+            return;
+        }
+
+        if (args.length == 0) {
+            sender.sendMessage(ChatColor.RED + "Must specify a property value");
+            return;
+        }
+
+        String propertyValue = args[0];
+        if (propertyName.equalsIgnoreCase("min") || propertyName.equalsIgnoreCase("max")) {
+            Integer intValue;
+            try {
+                intValue = Integer.parseInt(propertyValue);
+            } catch (Exception ex) {
+                intValue = null;
+            }
+
+            if (intValue == null) {
+                sender.sendMessage(ChatColor.RED + "Not a valid integer: " + propertyValue);
+                return;
+            }
+            if (propertyName.equalsIgnoreCase("min")) {
+                arena.setMinPlayers(intValue);
+                sender.sendMessage(ChatColor.AQUA + "Set min players of " + arena.getName() + " to " + intValue);
+                controller.save();
+                return;
+            }
+
+            if (propertyName.equalsIgnoreCase("max")) {
+                arena.setMaxPlayers(intValue);
+                sender.sendMessage(ChatColor.AQUA + "Set max players of " + arena.getName() + " to " + intValue);
+                controller.save();
+                return;
+            }
+        }
+
+        sender.sendMessage(ChatColor.RED + "Not a valid property: " + propertyName);
+        sender.sendMessage(ChatColor.AQUA + "Options: " + StringUtils.join(ARENA_PROPERTIES, ", "));
+
     }
 }
