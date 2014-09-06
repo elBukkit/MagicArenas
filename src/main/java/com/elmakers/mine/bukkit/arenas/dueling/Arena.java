@@ -44,10 +44,12 @@ public class Arena {
     private int minPlayers;
 
     private ArenaType arenaType;
-    private final String name;
+    private final String key;
+    private String name;
+    private String description;
 
-    public Arena(final String name, final ArenaController controller) {
-        this.name = name;
+    public Arena(final String key, final ArenaController controller) {
+        this.key = key;
         this.controller = controller;
     }
 
@@ -122,6 +124,8 @@ public class Arena {
     }
 
     public void load(ConfigurationSection configuration) {
+        name = configuration.getString("name", null);
+        description = configuration.getString("description", null);
         minPlayers = configuration.getInt("minplayers");
         maxPlayers = configuration.getInt("maxplayers");
 
@@ -151,6 +155,8 @@ public class Arena {
     }
 
     public void save(ConfigurationSection configuration) {
+        configuration.set("name", name);
+        configuration.set("description", description);
         configuration.set("minplayers", minPlayers);
         configuration.set("maxplayers", maxPlayers);
 
@@ -487,7 +493,7 @@ public class Arena {
         }
     }
 
-    public ArenaType getType(){
+    public ArenaType getType() {
         return arenaType;
     }
 
@@ -539,8 +545,16 @@ public class Arena {
         clearQueue();
     }
 
+    public String getDescription() {
+        return description == null ? "" : description;
+    }
+
     public String getName() {
-        return name;
+        return name == null ? key : name;
+    }
+
+    public String getKey() {
+        return key;
     }
 
     public void join(Player player) {
@@ -555,12 +569,15 @@ public class Arena {
         }
 
         if (isFull()) {
-            player.sendMessage(ChatColor.GOLD + "You have joined the queue for the next round of " + ChatColor.AQUA + name);
+            player.sendMessage(ChatColor.GOLD + "You have joined the queue for the next round of " + ChatColor.AQUA + getName());
         } else {
-            player.sendMessage(ChatColor.YELLOW + "You have entered the current round of " + ChatColor.AQUA + name);
+            player.sendMessage(ChatColor.YELLOW + "You have entered the current round of " + ChatColor.AQUA + getName());
+        }
+        if (description != null) {
+            player.sendMessage(ChatColor.LIGHT_PURPLE + getDescription());
         }
         add(player);
-        Bukkit.broadcastMessage(ChatColor.AQUA + player.getDisplayName() + ChatColor.DARK_AQUA + " has joined the queue for " + ChatColor.AQUA + name);
+        Bukkit.broadcastMessage(ChatColor.AQUA + player.getDisplayName() + ChatColor.DARK_AQUA + " has joined the queue for " + ChatColor.AQUA + getName());
         checkStart();
     }
 
@@ -594,7 +611,14 @@ public class Arena {
     }
 
     public void describe(CommandSender sender) {
-        sender.sendMessage(ChatColor.DARK_AQUA + getName() + ": ");
+        if (name == null) {
+            sender.sendMessage(ChatColor.DARK_AQUA + getName());
+        } else {
+            sender.sendMessage(ChatColor.DARK_AQUA + getName() + ChatColor.GRAY + " (" + getKey() + ")");
+        }
+        if (description != null) {
+            sender.sendMessage(ChatColor.LIGHT_PURPLE + getDescription());
+        }
         sender.sendMessage(ChatColor.AQUA + "State: " + ChatColor.DARK_AQUA + state);
         int inGamePlayers = getInGamePlayers();
         sender.sendMessage(ChatColor.AQUA + "Active Players: " + ChatColor.DARK_AQUA + inGamePlayers);
@@ -650,5 +674,13 @@ public class Arena {
 
     public int getInGamePlayers() {
         return players.size();
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

@@ -21,7 +21,8 @@ public class ArenaCommandExecutor implements TabExecutor {
     };
 
     private final static String[] ARENA_PROPERTIES = {
-            "max", "min", "win", "lose", "lobby", "spawn", "exit", "center", "add", "remove", "randomize"
+            "max", "min", "win", "lose", "lobby", "spawn", "exit", "center",
+            "add", "remove", "randomize", "name", "description"
     };
 
     private final static String[] ARENA_LISTS = {
@@ -48,7 +49,7 @@ public class ArenaCommandExecutor implements TabExecutor {
         } else if (args.length == 2) {
             Collection<Arena> arenas = controller.getArenas();
             for (Arena arena : arenas) {
-                allOptions.add(arena.getName());
+                allOptions.add(arena.getKey());
             }
         } else if (args.length == 3 && args[0].equalsIgnoreCase("configure")) {
             allOptions.addAll(Arrays.asList(ARENA_PROPERTIES));
@@ -379,12 +380,34 @@ public class ArenaCommandExecutor implements TabExecutor {
             return;
         }
 
-        if (args.length == 0) {
+        String propertyValue = null;
+        if (args.length > 0) {
+            propertyValue = StringUtils.join(args, " ");
+        }
+        if (propertyName.equalsIgnoreCase("name")) {
+            if (propertyValue == null || propertyValue.isEmpty()) {
+                sender.sendMessage(ChatColor.RED + "Cleared name of " + arena.getName());
+            } else {
+                sender.sendMessage(ChatColor.AQUA + "Change name of " + arena.getName() + " to " + propertyValue);
+            }
+            arena.setName(propertyValue);
+            return;
+        }
+        if (propertyName.equalsIgnoreCase("description")) {
+            if (propertyValue == null || propertyValue.isEmpty()) {
+                sender.sendMessage(ChatColor.RED + "Cleared description of " + arena.getName());
+            } else {
+                sender.sendMessage(ChatColor.AQUA + "Change description of " + arena.getName() + " to " + propertyValue);
+            }
+            arena.setDescription(propertyValue);
+            return;
+        }
+
+        if (propertyValue == null) {
             sender.sendMessage(ChatColor.RED + "Must specify a property value");
             return;
         }
 
-        String propertyValue = args[0];
         if (propertyName.equalsIgnoreCase("min") || propertyName.equalsIgnoreCase("max")) {
             Integer intValue;
             try {
