@@ -49,12 +49,7 @@ public class ArenaListener implements Listener {
         Player player = e.getEntity();
         Arena arena = controller.getArena(player);
         if (arena != null) {
-            arena.increment(player, "lost");
-            arena.remove(player);
-            Location specroom = arena.getLoseLocation();
-            player.setMetadata("respawnLocation", new FixedMetadataValue(controller.getPlugin(), specroom));
-            player.sendMessage(ChatColor.AQUA + "You have lost - Better luck next time!");
-            arena.check();
+            arena.died(player);
         }
         if (player.hasMetadata("death_message")) {
             Collection<MetadataValue> metadata = player.getMetadata("death_message");

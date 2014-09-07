@@ -29,6 +29,8 @@ public class Arena {
     private ArenaState state = ArenaState.LOBBY;
     private Queue<String> queue = new LinkedList<String>();
     private Set<String> players = new HashSet<String>();
+    private int deathCount = 0;
+
     private List<Location> spawns = new ArrayList<Location>();
     private final ArenaController controller;
 
@@ -42,6 +44,7 @@ public class Arena {
 
     private int maxPlayers;
     private int minPlayers;
+    private int requiredKills = 1;
 
     private int portalDamage;
     private int portalEnterDamage;
@@ -105,7 +108,7 @@ public class Arena {
             try {
                 float pitch = 0;
                 float yaw = 0;
-                String[] pieces = StringUtils.split((String)o, ',');
+                String[] pieces = StringUtils.split((String) o, ',');
                 double x = Double.parseDouble(pieces[0]);
                 double y = Double.parseDouble(pieces[1]);
                 double z = Double.parseDouble(pieces[2]);
@@ -132,6 +135,7 @@ public class Arena {
         description = configuration.getString("description", null);
         minPlayers = configuration.getInt("minplayers");
         maxPlayers = configuration.getInt("maxplayers");
+        requiredKills = configuration.getInt("required_kills", 1);
 
         portalDamage = configuration.getInt("portal_damage", 0);
         portalEnterDamage = configuration.getInt("portal_enter_damage", 0);
@@ -167,6 +171,7 @@ public class Arena {
         configuration.set("description", description);
         configuration.set("minplayers", minPlayers);
         configuration.set("maxplayers", maxPlayers);
+        configuration.set("required_kills", requiredKills);
 
         configuration.set("portal_damage", portalDamage);
         configuration.set("portal_enter_damage", portalEnterDamage);
@@ -192,6 +197,7 @@ public class Arena {
     }
 
     public void start() {
+        deathCount = 0;
         state = ArenaState.ACTIVE;
         Server server = controller.getPlugin().getServer();
         int num = 0;
@@ -239,7 +245,11 @@ public class Arena {
                     if (!otherPlayerName.equals(messagePlayer)) {
                         Player otherPlayer = Bukkit.getPlayer(otherPlayerName);
                         if (otherPlayer != null) {
-                            player.sendMessage(ChatColor.YELLOW + " with " + ChatColor.DARK_AQUA + otherPlayer.getDisplayName());
+                            int winCount = get(otherPlayer, "won");
+                            int lostCount = get(otherPlayer, "lost");
+
+                            player.sendMessage(ChatColor.YELLOW + " with " + ChatColor.DARK_AQUA + otherPlayer.getDisplayName() + ChatColor.WHITE + " ("
+                                + ChatColor.GREEN + winCount + " W " + ChatColor.WHITE + " / " + ChatColor.RED + lostCount + " L" + ChatColor.WHITE + ")");
                         }
                     }
                 }
@@ -280,16 +290,6 @@ public class Arena {
 
     public Location getExit() {
         return exit == null ? center : exit;
-    }
-
-    public boolean checkActive() {
-        if (state != ArenaState.ACTIVE) return false;
-        if (players.size() == 0) {
-            state = ArenaState.LOBBY;
-            return false;
-        }
-
-        return true;
     }
 
     public boolean isReady() {
@@ -416,6 +416,12 @@ public class Arena {
         data.set(arenaKey, currentValue + 1);
     }
 
+    protected int get(Player player, String statName) {
+        String arenaKey = "arena." + key + "." + statName;
+        ConfigurationSection data = controller.getMagic().getMage(player).getData();
+        return data.getInt(arenaKey, 0);
+    }
+
     public void setLoseLocation(Location location) {
         lose = location == null ? null : location.clone();
     }
@@ -529,11 +535,10 @@ public class Arena {
             }
             return;
         }
+        Server server = controller.getPlugin().getServer();
         final Player winner = getWinner();
         if (winner != null) {
-            increment(winner, "won");
-            Server server = controller.getPlugin().getServer();
-            winner.sendMessage(ChatColor.AQUA + "You have won! Congratulations!");
+            final boolean won = deathCount >= requiredKills;
             double health = winner.getHealth() / 2;
             int hearts = (int)Math.floor(health);
             String heartDescription = Integer.toString(hearts);
@@ -541,12 +546,27 @@ public class Arena {
             if (health >= 0.5) {
                 heartDescription = heartDescription + " 1/2";
             }
-            server.broadcastMessage(ChatColor.GOLD + winner.getDisplayName() + " is the champion of " + ChatColor.YELLOW + name + ChatColor.GOLD + " with "+ ChatColor.RED + heartDescription + " hearts!");
+            if (won) {
+                increment(winner, "won");
+                winner.sendMessage(ChatColor.AQUA + "You have won! Congratulations!");
+                int winCount = get(winner, "won");
+                int lostCount = get(winner, "lost");
+                server.broadcastMessage(ChatColor.GOLD + winner.getDisplayName() + " is the champion of " + ChatColor.YELLOW + getName()
+                       + ChatColor.GOLD + " with " + ChatColor.DARK_RED + heartDescription + ChatColor.GOLD
+                       + " hearts, and a total of " + ChatColor.GREEN + Integer.toString(winCount) + ChatColor.GOLD + "wins and "
+                       + ChatColor.RED + Integer.toString(lostCount) + ChatColor.GOLD + " losses.");
+            } else {
+                server.broadcastMessage(ChatColor.RED + "The " + ChatColor.YELLOW + getName() + ChatColor.RED + " match ended in a default");
+            }
             Bukkit.getScheduler().runTaskLater(controller.getPlugin(), new Runnable() {
                 @Override
                 public void run() {
-                    winner.sendMessage(ChatColor.YELLOW + "Enjoy the treasure!");
-                    winner.teleport(getWinLocation());
+                    if (won) {
+                        winner.sendMessage(ChatColor.YELLOW + "Enjoy the treasure!");
+                        winner.teleport(getWinLocation());
+                    } else {
+                        winner.teleport(getExit());
+                    }
                     winner.setHealth(20.0);
                     winner.setFoodLevel(20);
                     winner.setFireTicks(0);
@@ -554,8 +574,9 @@ public class Arena {
                     finish();
                 }
             }, 5 * 20);
-        } else {
-            checkActive();
+        } else if (state == ArenaState.ACTIVE && players.size() == 0) {
+            state = ArenaState.LOBBY;
+            server.broadcastMessage(ChatColor.RED + "The " + ChatColor.YELLOW + getName() + ChatColor.RED + " match ended in a default");
         }
     }
 
@@ -598,7 +619,17 @@ public class Arena {
         }
         increment(player, "joined");
         add(player);
-        Bukkit.broadcastMessage(ChatColor.AQUA + player.getDisplayName() + ChatColor.DARK_AQUA + " has joined the queue for " + ChatColor.AQUA + getName());
+
+        int winCount = get(player, "won");
+        int lostCount = get(player, "lost");
+
+        if (winCount == 0 && lostCount == 0) {
+            Bukkit.broadcastMessage(ChatColor.AQUA + player.getDisplayName() + ChatColor.DARK_AQUA + " has joined " + ChatColor.AQUA + getName() + ChatColor.DARK_AQUA + " for the first time");
+        } else {
+            Bukkit.broadcastMessage(ChatColor.AQUA + player.getDisplayName() + ChatColor.DARK_AQUA + " has joined " + ChatColor.AQUA + getName());
+            Bukkit.broadcastMessage(ChatColor.DARK_AQUA + " with " + ChatColor.GREEN + Integer.toString(winCount) + ChatColor.DARK_AQUA + " wins and "
+            + ChatColor.RED + Integer.toString(lostCount) + ChatColor.DARK_AQUA + " losses.");
+        }
         checkStart();
     }
 
@@ -655,6 +686,7 @@ public class Arena {
         int maxPlayers = getMaxPlayers();
         sender.sendMessage(ChatColor.AQUA + "Min / Max: " + ChatColor.DARK_AQUA + minPlayers +
                 ChatColor.WHITE + " / " + ChatColor.DARK_AQUA + maxPlayers);
+        sender.sendMessage(ChatColor.AQUA + "Required Kills: " + ChatColor.DARK_AQUA + requiredKills);
 
         int spawnSize = spawns.size();
         if (spawnSize == 1) {
@@ -734,5 +766,15 @@ public class Arena {
 
     public void setPortalDeathMessage(String message) {
         this.portalDeathMessage = message;
+    }
+
+    public void died(Player player) {
+        deathCount++;
+        increment(player, "lost");
+        remove(player);
+        Location specroom = getLoseLocation();
+        player.setMetadata("respawnLocation", new FixedMetadataValue(controller.getPlugin(), specroom));
+        player.sendMessage(ChatColor.AQUA + "You have lost - Better luck next time!");
+        check();
     }
 }
