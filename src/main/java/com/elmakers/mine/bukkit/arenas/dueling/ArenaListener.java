@@ -49,6 +49,7 @@ public class ArenaListener implements Listener {
         Player player = e.getEntity();
         Arena arena = controller.getArena(player);
         if (arena != null) {
+            arena.increment(player, "lost");
             arena.remove(player);
             Location specroom = arena.getLoseLocation();
             player.setMetadata("respawnLocation", new FixedMetadataValue(controller.getPlugin(), specroom));
@@ -69,6 +70,7 @@ public class ArenaListener implements Listener {
         Player player = e.getPlayer();
         Arena leftArena = controller.leave(player);
         if (leftArena != null) {
+            leftArena.increment(player, "quit");
             Bukkit.broadcastMessage(ChatColor.RED + player.getDisplayName() + ChatColor.DARK_AQUA + " has left " + ChatColor.AQUA + leftArena.getName());
         }
     }

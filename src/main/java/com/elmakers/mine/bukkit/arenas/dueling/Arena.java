@@ -409,6 +409,13 @@ public class Arena {
         player.setMetadata("arena", new FixedMetadataValue(controller.getPlugin(), this));
     }
 
+    protected void increment(Player player, String statName) {
+        String arenaKey = "arena." + key + "." + statName;
+        ConfigurationSection data = controller.getMagic().getMage(player).getData();
+        int currentValue = data.getInt(arenaKey, 0);
+        data.set(arenaKey, currentValue + 1);
+    }
+
     public void setLoseLocation(Location location) {
         lose = location == null ? null : location.clone();
     }
@@ -524,6 +531,7 @@ public class Arena {
         }
         final Player winner = getWinner();
         if (winner != null) {
+            increment(winner, "won");
             Server server = controller.getPlugin().getServer();
             winner.sendMessage(ChatColor.AQUA + "You have won! Congratulations!");
             double health = winner.getHealth() / 2;
@@ -588,6 +596,7 @@ public class Arena {
         if (description != null) {
             player.sendMessage(ChatColor.LIGHT_PURPLE + getDescription());
         }
+        increment(player, "joined");
         add(player);
         Bukkit.broadcastMessage(ChatColor.AQUA + player.getDisplayName() + ChatColor.DARK_AQUA + " has joined the queue for " + ChatColor.AQUA + getName());
         checkStart();
