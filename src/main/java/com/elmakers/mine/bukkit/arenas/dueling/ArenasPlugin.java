@@ -1,14 +1,27 @@
 package com.elmakers.mine.bukkit.arenas.dueling;
 
+import com.elmakers.mine.bukkit.api.magic.MagicAPI;
 import org.bukkit.Bukkit;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class ArenasPlugin extends JavaPlugin {
     private ArenaController controller;
+    private MagicAPI magicAPI = null;
 
     @Override
     public void onEnable() {
-        controller = new ArenaController(this);
+        Plugin magicPlugin = Bukkit.getPluginManager().getPlugin("Magic");
+        if (magicPlugin == null || !(magicPlugin instanceof MagicAPI)) {
+            getLogger().warning("Magic plugin not found, MagicArenas will not function.");
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        } else {
+            getLogger().info("Integrating with Magic");
+            this.magicAPI = (MagicAPI)magicPlugin;
+        }
+
+        controller = new ArenaController(this, magicAPI.getController());
         ArenaCommandExecutor arenaCommands = new ArenaCommandExecutor(controller);
         getCommand("arena").setExecutor(arenaCommands);
         getCommand("arena").setTabCompleter(arenaCommands);

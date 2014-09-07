@@ -1,5 +1,6 @@
 package com.elmakers.mine.bukkit.arenas.dueling;
 
+import com.elmakers.mine.bukkit.api.magic.MageController;
 import org.bukkit.Location;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
@@ -16,8 +17,10 @@ import java.util.Map;
 public class ArenaController {
     private final Map<String, Arena> arenas = new HashMap<String, Arena>();
     private final Plugin plugin;
+    private final MageController magic;
 
-    public ArenaController(Plugin plugin) {
+    public ArenaController(Plugin plugin, MageController magic) {
+        this.magic = magic;
         this.plugin = plugin;
     }
 
@@ -133,5 +136,9 @@ public class ArenaController {
 
     public boolean isInArena(Player player) {
         return player.hasMetadata("arena");
+    }
+
+    public MageController getMagic() {
+        return magic;
     }
 }

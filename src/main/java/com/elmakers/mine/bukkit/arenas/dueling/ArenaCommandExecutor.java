@@ -58,6 +58,8 @@ public class ArenaCommandExecutor implements TabExecutor {
             allOptions.addAll(Arrays.asList(ARENA_LISTS));
         } else if (args.length == 4 && args[0].equalsIgnoreCase("configure") && args[2].equalsIgnoreCase("randomize")) {
             allOptions.addAll(Arrays.asList(ARENA_RANDOMIZE));
+        } else if (args.length == 3 && (args[0].equalsIgnoreCase("join") || args[0].equalsIgnoreCase("leave"))) {
+            allOptions.addAll(controller.getMagic().getPlayerNames());
         }
 
         completeCommand = completeCommand.toLowerCase();
