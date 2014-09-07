@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.elmakers.mine.bukkit.plugins</groupId>
 	<artifactId>MagicArenas</artifactId>
-	<version>1.0</version>
+	<version>1.8-SNAPSHOT</version>
 	<name>elMakers - Bukkit Plugins : Magic Arenas</name>
 	<dependencyManagement>
 		<dependencies>
@@ -38,12 +38,22 @@
 			<version>1.6.4-R2.0</version>
 			<scope>provided</scope>
 		</dependency>
-        </dependencies>
+        <dependency>
+            <groupId>com.elmakers.mine.bukkit</groupId>
+            <artifactId>MagicLib</artifactId>
+            <version>1.8-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 	<repositories>
        <repository>
             <id>bukkit-repo</id>
             <url>http://repo.bukkit.org/content/groups/public/</url>
       </repository>
+        <repository>
+            <id>elMakers</id>
+            <url>http://maven.elmakers.com/repository/</url>
+        </repository>
     </repositories>
 	<build>
 		<resources>

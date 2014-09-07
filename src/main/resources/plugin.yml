@@ -2,6 +2,7 @@ name: MagicArenas
 version: ${project.version}
 authors: [NathanWolf, KmanCrazy]
 main: com.elmakers.mine.bukkit.arenas.dueling.ArenasPlugin
+depend: [Magic]
 commands:
    arena:
      description: Admin commands for managing arenas
