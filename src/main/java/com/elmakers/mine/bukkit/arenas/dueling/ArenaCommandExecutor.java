@@ -23,7 +23,7 @@ public class ArenaCommandExecutor implements TabExecutor {
     private final static String[] ARENA_PROPERTIES = {
             "max", "min", "win", "lose", "lobby", "spawn", "exit", "center",
             "add", "remove", "randomize", "name", "description", "portal_damage",
-            "portal_death_message"
+            "portal_enter_damage", "portal_death_message"
     };
 
     private final static String[] ARENA_LISTS = {
@@ -118,7 +118,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             Collection<Arena> arenas = controller.getArenas();
             sender.sendMessage(ChatColor.BLUE + "Arenas: " + ChatColor.DARK_AQUA + arenas.size());
             for (Arena arena : arenas) {
-                String arenaMessage = ChatColor.AQUA + arena.getName() + ": ";
+                String arenaMessage = ChatColor.AQUA + arena.getName() + ChatColor.GRAY + " (" + arena.getKey() + ")";
                 if (arena.isStarted()) {
                     arenaMessage = arenaMessage + ChatColor.GREEN + "ACTIVE";
                 }
@@ -420,7 +420,8 @@ public class ArenaCommandExecutor implements TabExecutor {
             return;
         }
 
-        if (propertyName.equalsIgnoreCase("min") || propertyName.equalsIgnoreCase("max") || propertyName.equalsIgnoreCase("portal_damage")) {
+        if (propertyName.equalsIgnoreCase("min") || propertyName.equalsIgnoreCase("max") ||
+            propertyName.equalsIgnoreCase("portal_damage") || propertyName.equalsIgnoreCase("portal_enter_damage")) {
             Integer intValue;
             try {
                 intValue = Integer.parseInt(propertyValue);
@@ -449,6 +450,13 @@ public class ArenaCommandExecutor implements TabExecutor {
             if (propertyName.equalsIgnoreCase("portal_damage")) {
                 arena.setPortalDamage(intValue);
                 sender.sendMessage(ChatColor.AQUA + "Set portal damage of " + arena.getName() + " to " + intValue);
+                controller.save();
+                return;
+            }
+
+            if (propertyName.equalsIgnoreCase("portal_enter_damage")) {
+                arena.setPortalEnterDamage(intValue);
+                sender.sendMessage(ChatColor.AQUA + "Set portal entry damage of " + arena.getName() + " to " + intValue);
                 controller.save();
                 return;
             }

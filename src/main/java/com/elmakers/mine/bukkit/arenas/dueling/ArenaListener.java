@@ -6,11 +6,13 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.event.entity.EntityPortalEnterEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerKickEvent;
@@ -133,9 +135,34 @@ public class ArenaListener implements Listener {
         }
     }
 
-    @EventHandler
-    public void onPlayerPortal(PlayerPortalEvent event) {
-        Player player = event.getPlayer();
+    protected boolean onEnterPortal(Entity entity) {
+        // Mob arenas eventually!
+        if (!(entity instanceof Player)) {
+            return false;
+        }
+        Player player = ((Player)entity).getPlayer();
+        Arena arena = controller.getArena(player);
+        if (arena != null && arena.getPortalEnterDamage() > 0) {
+            String portalDeathMessage = arena.getPortalDeathMessage();
+            if (portalDeathMessage != null && !portalDeathMessage.isEmpty()) {
+                player.setMetadata("death_message", new FixedMetadataValue(controller.getPlugin(), portalDeathMessage));
+            }
+            player.damage(arena.getPortalEnterDamage());
+            if (portalDeathMessage != null && !portalDeathMessage.isEmpty()) {
+                player.removeMetadata("death_message", controller.getPlugin());
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    protected boolean onPortal(Entity entity) {
+        // Mob arenas eventually!
+        if (!(entity instanceof Player)) {
+            return false;
+        }
+        Player player = ((Player)entity).getPlayer();
         Arena arena = controller.getArena(player);
         if (arena != null && arena.getPortalDamage() > 0) {
             String portalDeathMessage = arena.getPortalDeathMessage();
@@ -146,6 +173,22 @@ public class ArenaListener implements Listener {
             if (portalDeathMessage != null && !portalDeathMessage.isEmpty()) {
                 player.removeMetadata("death_message", controller.getPlugin());
             }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    @EventHandler
+    public void onEntityPortal(EntityPortalEnterEvent event) {
+        onEnterPortal(event.getEntity());
+    }
+
+    @EventHandler
+    public void onPlayerPortal(PlayerPortalEvent event) {
+        if (onPortal(event.getPlayer())) {
+            event.setCancelled(true);
         }
     }
 }

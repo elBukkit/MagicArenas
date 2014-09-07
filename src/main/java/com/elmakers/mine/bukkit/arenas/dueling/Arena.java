@@ -44,6 +44,7 @@ public class Arena {
     private int minPlayers;
 
     private int portalDamage;
+    private int portalEnterDamage;
     private String portalDeathMessage;
 
     private ArenaType arenaType;
@@ -133,6 +134,7 @@ public class Arena {
         maxPlayers = configuration.getInt("maxplayers");
 
         portalDamage = configuration.getInt("portal_damage", 0);
+        portalEnterDamage = configuration.getInt("portal_enter_damage", 0);
         portalDeathMessage = configuration.getString("portal_death_message");
 
         arenaType = ArenaType.parse(configuration.getString("type"));
@@ -167,6 +169,7 @@ public class Arena {
         configuration.set("maxplayers", maxPlayers);
 
         configuration.set("portal_damage", portalDamage);
+        configuration.set("portal_enter_damage", portalEnterDamage);
         configuration.set("portal_death_message", portalDeathMessage);
 
         configuration.set("type", arenaType.name());
@@ -661,7 +664,8 @@ public class Arena {
         if (randomizeSpawn != null) {
             sender.sendMessage(ChatColor.AQUA + "Randomize: " + ChatColor.DARK_AQUA + randomizeSpawn);
         }
-        if (portalDamage > 0) {
+        if (portalDamage > 0 || portalEnterDamage > 0) {
+            sender.sendMessage(ChatColor.LIGHT_PURPLE + "Portal Entry Damage: " + ChatColor.DARK_PURPLE + portalEnterDamage);
             sender.sendMessage(ChatColor.LIGHT_PURPLE + "Portal Damage: " + ChatColor.DARK_PURPLE + portalDamage);
             if (portalDeathMessage != null && !portalDeathMessage.isEmpty()) {
                 sender.sendMessage(ChatColor.LIGHT_PURPLE + "Portal Death Message: " + ChatColor.DARK_PURPLE + portalDeathMessage);
@@ -697,6 +701,14 @@ public class Arena {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public void setPortalEnterDamage(int damage) {
+        this.portalEnterDamage = damage;
+    }
+
+    public int getPortalEnterDamage() {
+        return portalEnterDamage;
     }
 
     public void setPortalDamage(int damage) {
