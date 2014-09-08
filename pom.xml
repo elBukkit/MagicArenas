@@ -10,14 +10,12 @@
 		</dependencies>
 	</dependencyManagement>
 
-	<licenses>
-		<license>
-			<name>GNU General Public License 2.0</name>
-			<url>LICENSE</url>
-			<distribution>repo</distribution>
-			<comments>Free as in Everything</comments>
-		</license>
-	</licenses>
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>LICENSE</url>
+        </license>
+    </licenses>
   
   	<scm>
     	<connection>scm:git:git://github.com/elBukkit/MagicArenas.git</connection>
