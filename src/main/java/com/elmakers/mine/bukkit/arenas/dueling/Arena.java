@@ -249,7 +249,7 @@ public class Arena {
                             int lostCount = get(otherPlayer, "lost");
 
                             player.sendMessage(ChatColor.YELLOW + " with " + ChatColor.DARK_AQUA + otherPlayer.getDisplayName() + ChatColor.WHITE + " ("
-                                + ChatColor.GREEN + winCount + " W " + ChatColor.WHITE + " / " + ChatColor.RED + lostCount + " L" + ChatColor.WHITE + ")");
+                                + ChatColor.GREEN + winCount + "W " + ChatColor.WHITE + " / " + ChatColor.RED + lostCount + "L" + ChatColor.WHITE + ")");
                         }
                     }
                 }
@@ -553,7 +553,7 @@ public class Arena {
                 int lostCount = get(winner, "lost");
                 server.broadcastMessage(ChatColor.GOLD + winner.getDisplayName() + " is the champion of " + ChatColor.YELLOW + getName()
                        + ChatColor.GOLD + " with " + ChatColor.DARK_RED + heartDescription + ChatColor.GOLD
-                       + " hearts, and a total of " + ChatColor.GREEN + Integer.toString(winCount) + ChatColor.GOLD + "wins and "
+                       + " hearts, and a total of " + ChatColor.GREEN + Integer.toString(winCount) + ChatColor.GOLD + " wins and "
                        + ChatColor.RED + Integer.toString(lostCount) + ChatColor.GOLD + " losses.");
             } else {
                 server.broadcastMessage(ChatColor.RED + "The " + ChatColor.YELLOW + getName() + ChatColor.RED + " match ended in a default");
