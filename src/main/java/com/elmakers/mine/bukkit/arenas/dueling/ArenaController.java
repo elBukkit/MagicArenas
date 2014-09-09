@@ -83,12 +83,17 @@ public class ArenaController {
     }
 
     public Arena getArena(Player player) {
+        ArenaPlayer arenaPlayer = getArenaPlayer(player);
+        return arenaPlayer == null ? null : arenaPlayer.getArena();
+    }
+
+    public ArenaPlayer getArenaPlayer(Player player) {
         if (player.hasMetadata("arena")) {
             for (MetadataValue value : player.getMetadata("arena")) {
                 if (value.getOwningPlugin().equals(getPlugin())) {
                     Object arena = value.value();
-                    if (arena instanceof Arena) {
-                        return (Arena)value.value();
+                    if (arena instanceof ArenaPlayer) {
+                        return (ArenaPlayer)value.value();
                     }
                 }
             }
@@ -122,16 +127,17 @@ public class ArenaController {
         return arenas.values();
     }
 
-    public Arena leave(Player player) {
-        Arena arena = getArena(player);
-        if (arena != null) {
+    public ArenaPlayer leave(Player player) {
+        ArenaPlayer arenaPlayer = getArenaPlayer(player);
+        if (arenaPlayer != null) {
+            Arena arena = arenaPlayer.getArena();
             arena.remove(player);
             player.sendMessage("You have left " + arena.getName());
             player.teleport(arena.getExit());
             arena.check();
         }
 
-        return arena;
+        return arenaPlayer;
     }
 
     public boolean isInArena(Player player) {

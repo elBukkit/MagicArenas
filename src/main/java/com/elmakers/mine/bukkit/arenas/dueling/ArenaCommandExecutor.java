@@ -17,13 +17,14 @@ import java.util.List;
 
 public class ArenaCommandExecutor implements TabExecutor {
     private final static String[] SUB_COMMANDS = {
-        "start", "stop", "add", "remove", "configure", "describe", "join", "leave", "load"
+        "start", "stop", "add", "remove", "configure", "describe", "join", "leave", "load", "stats"
     };
 
     private final static String[] ARENA_PROPERTIES = {
             "max", "min", "win", "lose", "lobby", "spawn", "exit", "center",
             "add", "remove", "randomize", "name", "description", "portal_damage",
-            "portal_enter_damage", "portal_death_message"
+            "portal_enter_damage", "portal_death_message", "leaderboard_games_required",
+            "leaderboard_size"
     };
 
     private final static String[] ARENA_LISTS = {
@@ -58,7 +59,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             allOptions.addAll(Arrays.asList(ARENA_LISTS));
         } else if (args.length == 4 && args[0].equalsIgnoreCase("configure") && args[2].equalsIgnoreCase("randomize")) {
             allOptions.addAll(Arrays.asList(ARENA_RANDOMIZE));
-        } else if (args.length == 3 && (args[0].equalsIgnoreCase("join") || args[0].equalsIgnoreCase("leave"))) {
+        } else if (args.length == 3 && (args[0].equalsIgnoreCase("join") || args[0].equalsIgnoreCase("leave") || args[0].equalsIgnoreCase("stats"))) {
             allOptions.addAll(controller.getMagic().getPlayerNames());
         }
 
@@ -154,9 +155,9 @@ public class ArenaCommandExecutor implements TabExecutor {
                 }
                 return true;
             }
-            Arena leftArena = controller.leave(player);
-            if (leftArena != null) {
-                sender.sendMessage(ChatColor.AQUA + playerName + " has left " + leftArena.getName());
+            ArenaPlayer leftPlayer = controller.leave(player);
+            if (leftPlayer != null) {
+                sender.sendMessage(ChatColor.AQUA + playerName + " has left " + leftPlayer.getArena().getName());
             } else {
                 sender.sendMessage(ChatColor.AQUA + playerName + ChatColor.RED + " is not in an arena");
             }
@@ -224,6 +225,22 @@ public class ArenaCommandExecutor implements TabExecutor {
             } else {
                 sender.sendMessage(ChatColor.AQUA + "Arena not active");
             }
+            return true;
+        }
+
+        if (subCommand.equalsIgnoreCase("stats")) {
+            if (args.length > 2) {
+                String playerName = args[2];
+                Player player = Bukkit.getPlayer(playerName);
+                if (player == null) {
+                    sender.sendMessage(ChatColor.RED + "Unknown player: " + playerName);
+                    return true;
+                }
+                arena.describeStats(sender, player);
+            } else {
+                arena.describeLeaderboard(sender);
+            }
+
             return true;
         }
 
@@ -423,7 +440,8 @@ public class ArenaCommandExecutor implements TabExecutor {
         }
 
         if (propertyName.equalsIgnoreCase("min") || propertyName.equalsIgnoreCase("max") ||
-            propertyName.equalsIgnoreCase("portal_damage") || propertyName.equalsIgnoreCase("portal_enter_damage")) {
+            propertyName.equalsIgnoreCase("portal_damage") || propertyName.equalsIgnoreCase("portal_enter_damage") ||
+            propertyName.equalsIgnoreCase("leaderboard_games_required") || propertyName.equalsIgnoreCase("leaderboard_size")) {
             Integer intValue;
             try {
                 intValue = Integer.parseInt(propertyValue);
@@ -435,6 +453,21 @@ public class ArenaCommandExecutor implements TabExecutor {
                 sender.sendMessage(ChatColor.RED + "Not a valid integer: " + propertyValue);
                 return;
             }
+
+            if (propertyName.equalsIgnoreCase("leaderboard_games_required")) {
+                arena.setLeaderboardGamesRequired(intValue);
+                sender.sendMessage(ChatColor.AQUA + "Set # games required for leaderboard on " + arena.getName() + " to " + intValue);
+                controller.save();
+                return;
+            }
+
+            if (propertyName.equalsIgnoreCase("leaderboard_size")) {
+                arena.setLeaderboardSize(intValue);
+                sender.sendMessage(ChatColor.AQUA + "Set leaderboard size of " + arena.getName() + " to " + intValue);
+                controller.save();
+                return;
+            }
+
             if (propertyName.equalsIgnoreCase("min")) {
                 arena.setMinPlayers(intValue);
                 sender.sendMessage(ChatColor.AQUA + "Set min players of " + arena.getName() + " to " + intValue);

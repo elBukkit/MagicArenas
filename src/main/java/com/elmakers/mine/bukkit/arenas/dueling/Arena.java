@@ -16,12 +16,11 @@ import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Random;
-import java.util.Set;
+import java.util.TreeSet;
 
 public class Arena {
     private static Random random = new Random();
@@ -48,6 +47,8 @@ public class Arena {
 
     private int leaderboardSize = 5;
     private int leaderboardGamesRequired = 5;
+
+    private TreeSet<ArenaPlayer> leaderboard = new TreeSet<ArenaPlayer>();
 
     private int portalDamage;
     private int portalEnterDamage;
@@ -144,9 +145,22 @@ public class Arena {
         portalEnterDamage = configuration.getInt("portal_enter_damage", 0);
         portalDeathMessage = configuration.getString("portal_death_message");
 
+        leaderboardSize = configuration.getInt("leaderboard_size", 5);
+        leaderboardGamesRequired = configuration.getInt("leaderboard_games_required", 5);
+
         arenaType = ArenaType.parse(configuration.getString("type"));
         if (arenaType == null) {
             arenaType = ArenaType.FFA;
+        }
+        leaderboard.clear();
+        if (configuration.contains("leaderboard")) {
+            ConfigurationSection leaders = configuration.getConfigurationSection("leaderboard");
+            Collection<String> leaderboardKeys = leaders.getKeys(false);
+            for (String key : leaderboardKeys) {
+                ConfigurationSection leaderConfig = leaders.getConfigurationSection(key);
+                ArenaPlayer loadedPlayer = new ArenaPlayer(this, leaderConfig);
+                leaderboard.add(loadedPlayer);
+            }
         }
 
         lose = toLocation(configuration.getString("lose"));
@@ -176,6 +190,9 @@ public class Arena {
         configuration.set("maxplayers", maxPlayers);
         configuration.set("required_kills", requiredKills);
 
+        configuration.set("leaderboard_size", leaderboardSize);
+        configuration.set("leaderboard_games_required", leaderboardGamesRequired);
+
         configuration.set("portal_damage", portalDamage);
         configuration.set("portal_enter_damage", portalEnterDamage);
         configuration.set("portal_death_message", portalDeathMessage);
@@ -196,6 +213,15 @@ public class Arena {
 
         if (randomizeSpawn != null) {
             configuration.set("randomize.spawn", fromVector(randomizeSpawn));
+        }
+
+        if (leaderboard.size() > 0) {
+            ConfigurationSection leaders = configuration.createSection("leaderboard");
+            for (ArenaPlayer player : leaderboard) {
+                String key = player.getUUID().toString();
+                ConfigurationSection playerData = leaders.createSection(key);
+                player.save(playerData);
+            }
         }
     }
 
@@ -442,21 +468,8 @@ public class Arena {
         ArenaPlayer arenaPlayer = new ArenaPlayer(this, player);
         queue.add(arenaPlayer);
         player.teleport(getLobby());
-        player.setMetadata("arena", new FixedMetadataValue(controller.getPlugin(), this));
+        player.setMetadata("arena", new FixedMetadataValue(controller.getPlugin(), arenaPlayer));
         return arenaPlayer;
-    }
-
-    protected void increment(Player player, String statName) {
-        String arenaKey = "arena." + key + "." + statName;
-        ConfigurationSection data = controller.getMagic().getMage(player).getData();
-        int currentValue = data.getInt(arenaKey, 0);
-        data.set(arenaKey, currentValue + 1);
-    }
-
-    protected int get(Player player, String statName) {
-        String arenaKey = "arena." + key + "." + statName;
-        ConfigurationSection data = controller.getMagic().getMage(player).getData();
-        return data.getInt(arenaKey, 0);
     }
 
     public void setLoseLocation(Location location) {
@@ -822,7 +835,88 @@ public class Arena {
         check();
     }
 
+    public ArenaController getController() {
+        return controller;
+    }
+
     public void updateLeaderboard(ArenaPlayer changedPlayer) {
-        // TODO!
+        int wins = changedPlayer.getWins();
+        int losses = changedPlayer.getLosses();
+
+        if (wins + losses < leaderboardGamesRequired) {
+            return;
+        }
+
+        leaderboard.remove(changedPlayer);
+        leaderboard.add(changedPlayer);
+        setLeaderboardSize(leaderboardSize);
+    }
+
+    public void setLeaderboardSize(int size) {
+        while (leaderboard.size() > size) {
+            leaderboard.remove(leaderboard.last());
+        }
+        leaderboardSize = size;
+    }
+
+    public void setLeaderboardGamesRequired(int required) {
+        Collection<ArenaPlayer> currentLeaderboard = new ArrayList<ArenaPlayer>(leaderboard);
+        leaderboard.clear();
+        for (ArenaPlayer player : currentLeaderboard) {
+            updateLeaderboard(player);
+        }
+    }
+
+    public Collection<ArenaPlayer> getLeaderboard() {
+        return new ArrayList<ArenaPlayer>(leaderboard);
+    }
+
+    public void describeStats(CommandSender sender, Player player) {
+        ArenaPlayer arenaPlayer = new ArenaPlayer(this, player);
+
+        int wins = arenaPlayer.getWins();
+        int losses = arenaPlayer.getLosses();
+        int draws = arenaPlayer.getDraws();
+        int quits = arenaPlayer.getQuits();
+        float ratio = arenaPlayer.getWinRatio();
+
+        if (leaderboard.contains(arenaPlayer)) {
+            int ranking = 1;
+            for (ArenaPlayer testPlayer : leaderboard) {
+                if (testPlayer.equals(arenaPlayer)) {
+                    break;
+                }
+                ranking++;
+            }
+            sender.sendMessage(ChatColor.DARK_PURPLE + player.getDisplayName() + ChatColor.DARK_PURPLE +
+                    " is ranked " + ChatColor.AQUA + "#" + Integer.toString(ranking) + ChatColor.DARK_PURPLE + " for " + ChatColor.GOLD + getName());
+        } else {
+            sender.sendMessage(ChatColor.DARK_PURPLE + player.getDisplayName() + ChatColor.DARK_RED +
+                    " is not on the leaderboard for " + ChatColor.GOLD + getName());
+        }
+
+        sender.sendMessage(ChatColor.GREEN + "Wins: " + ChatColor.WHITE + Integer.toString(wins));
+        sender.sendMessage(ChatColor.RED + "Losses: " + ChatColor.WHITE + Integer.toString(losses));
+        sender.sendMessage(ChatColor.GOLD + "Win Ratio: " + ChatColor.WHITE + Integer.toString((int)(ratio * 100)) + "%");
+        sender.sendMessage(ChatColor.YELLOW + "Draws: " + ChatColor.WHITE + Integer.toString(draws));
+        sender.sendMessage(ChatColor.GRAY + "Defaults: " + ChatColor.WHITE + Integer.toString(quits));
+    }
+
+    public void describeLeaderboard(CommandSender sender) {
+        sender.sendMessage(ChatColor.GOLD + getName() + ChatColor.YELLOW +" Leaderboard: ");
+        sender.sendMessage(ChatColor.AQUA + Integer.toString(leaderboard.size()) + ChatColor.DARK_AQUA + " players with at least " +
+                ChatColor.AQUA + Integer.toString(leaderboardGamesRequired) + ChatColor.DARK_AQUA + " games:");
+        int position = 1;
+        for (ArenaPlayer arenaPlayer : leaderboard) {
+            int wins = arenaPlayer.getWins();
+            int losses = arenaPlayer.getLosses();
+            float ratio = arenaPlayer.getWinRatio();
+            sender.sendMessage(ChatColor.LIGHT_PURPLE + Integer.toString(position) + ": " + ChatColor.WHITE
+                    + ChatColor.DARK_PURPLE + arenaPlayer.getDisplayName()
+                    + ChatColor.WHITE + ": " + ChatColor.GREEN + Integer.toString(wins) + "W"
+                    + ChatColor.WHITE + " / " + ChatColor.RED + Integer.toString(losses) + "L"
+                    + ChatColor.WHITE + " = " + ChatColor.GOLD + Integer.toString((int)(ratio * 100)) + "%");
+            position++;
+        }
     }
 }

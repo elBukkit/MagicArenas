@@ -63,10 +63,10 @@ public class ArenaListener implements Listener {
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent e) {
         Player player = e.getPlayer();
-        Arena leftArena = controller.leave(player);
-        if (leftArena != null) {
-            leftArena.increment(player, "quit");
-            Bukkit.broadcastMessage(ChatColor.RED + player.getDisplayName() + ChatColor.DARK_AQUA + " has left " + ChatColor.AQUA + leftArena.getName());
+        ArenaPlayer leftPlayer = controller.leave(player);
+        if (leftPlayer != null) {
+            leftPlayer.quit();
+            Bukkit.broadcastMessage(ChatColor.RED + player.getDisplayName() + ChatColor.DARK_AQUA + " has left " + ChatColor.AQUA + leftPlayer.getArena().getName());
         }
     }
 
@@ -97,9 +97,12 @@ public class ArenaListener implements Listener {
             } else if (secondLine.equalsIgnoreCase("Leave")) {
                 e.setLine(0, SIGN_KEY);
                 e.setLine(1, ChatColor.AQUA + "Leave");
+            } else if (secondLine.equalsIgnoreCase("Leaderboard")) {
+                e.setLine(0, SIGN_KEY);
+                e.setLine(1, ChatColor.DARK_PURPLE + "Leaderboard");
             } else {
                 e.getBlock().breakNaturally();
-                e.getPlayer().sendMessage(ChatColor.RED + "You must specify Join or Leave");
+                e.getPlayer().sendMessage(ChatColor.RED + "You must specify Join, Leave or Leaderboard");
             }
         }
     }
@@ -127,6 +130,15 @@ public class ArenaListener implements Listener {
                     }
                 } else if (secondLine.contains("Leave")) {
                     controller.leave(e.getPlayer());
+                } else if (secondLine.contains("Leaderboard")) {
+                    String arenaName = sign.getLine(2);
+                    Arena arena = controller.getArena(arenaName);
+                    if (arena != null) {
+                        arena.describeLeaderboard(player);
+                        arena.describeStats(player, player);
+                    } else {
+                        player.sendMessage(ChatColor.RED + "Sorry, that arena isn't available.");
+                    }
                 }
             }
         }
