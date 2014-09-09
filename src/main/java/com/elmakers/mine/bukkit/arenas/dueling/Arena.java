@@ -249,7 +249,7 @@ public class Arena {
                             int lostCount = get(otherPlayer, "lost");
 
                             player.sendMessage(ChatColor.YELLOW + " with " + ChatColor.DARK_AQUA + otherPlayer.getDisplayName() + ChatColor.WHITE + " ("
-                                + ChatColor.GREEN + winCount + "W " + ChatColor.WHITE + " / " + ChatColor.RED + lostCount + "L" + ChatColor.WHITE + ")");
+                                + ChatColor.GREEN + winCount + "W" + ChatColor.WHITE + " / " + ChatColor.RED + lostCount + "L" + ChatColor.WHITE + ")");
                         }
                     }
                 }
