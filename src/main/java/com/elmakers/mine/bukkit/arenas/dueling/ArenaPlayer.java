@@ -166,6 +166,15 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
         data.set(arenaKey, currentValue + 1);
     }
 
+    private void set(String statName, int value) {
+        if (mage == null) {
+            return;
+        }
+        String arenaKey = "arena." + arena.getKey() + "." + statName;
+        ConfigurationSection data = mage.getData();
+        data.set(arenaKey, value);
+    }
+
     protected int get(String statName) {
         if (mage == null) {
             return 0;
@@ -233,5 +242,18 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
                 player.removePotionEffect(pt.getType());
             }
         }
+    }
+
+    public void reset() {
+        wins = 0;
+        set("won", wins);
+        losses = 0;
+        set("losses", losses);
+        quits = 0;
+        set("quit", quits);
+        joins = 0;
+        set("joined", joins);
+        draws = 0;
+        set("draw", draws);
     }
 }

@@ -1,5 +1,6 @@
 package com.elmakers.mine.bukkit.arenas.dueling;
 
+import com.elmakers.mine.bukkit.utility.ConfigurationUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -17,7 +18,8 @@ import java.util.List;
 
 public class ArenaCommandExecutor implements TabExecutor {
     private final static String[] SUB_COMMANDS = {
-        "start", "stop", "add", "remove", "configure", "describe", "join", "leave", "load", "stats"
+        "start", "stop", "add", "remove", "configure", "describe", "join", "leave", "load",
+        "save", "stats", "reset"
     };
 
     private final static String[] ARENA_PROPERTIES = {
@@ -113,7 +115,13 @@ public class ArenaCommandExecutor implements TabExecutor {
 
         if (subCommand.equalsIgnoreCase("load")) {
             controller.load();
-            sender.sendMessage("Configuration reloaded");
+            sender.sendMessage("Configuration and data reloaded");
+            return true;
+        }
+
+        if (subCommand.equalsIgnoreCase("save")) {
+            controller.save();
+            sender.sendMessage("Data saved");
             return true;
         }
 
@@ -161,6 +169,30 @@ public class ArenaCommandExecutor implements TabExecutor {
             } else {
                 sender.sendMessage(ChatColor.AQUA + playerName + ChatColor.RED + " is not in an arena");
             }
+
+            return true;
+        }
+
+        if (subCommand.equalsIgnoreCase("reset")) {
+            Player player = null;
+            String playerName = null;
+            if (args.length > 1) {
+                playerName = args[1];
+                player = Bukkit.getPlayer(playerName);
+            } else if (sender instanceof Player) {
+                player = (Player) sender;
+            }
+
+            if (player == null) {
+                if (playerName != null) {
+                    sender.sendMessage(ChatColor.RED + "Unknown player: " + playerName);
+                } else {
+                    sender.sendMessage(ChatColor.RED + "You must specify a player name");
+                }
+                return true;
+            }
+            controller.reset(player);
+            sender.sendMessage(ChatColor.AQUA + playerName + ChatColor.GRAY + " has been " + ChatColor.RED + " reset");
 
             return true;
         }
@@ -313,7 +345,7 @@ public class ArenaCommandExecutor implements TabExecutor {
                     sender.sendMessage(ChatColor.RED + "Cleared randomized spawn of " + arena.getName());
                     arena.setRandomizeSpawn(null);
                 } else {
-                    Vector vector = Arena.toVector(vectorParameter);
+                    Vector vector = ConfigurationUtils.toVector(vectorParameter);
                     sender.sendMessage(ChatColor.AQUA + "Set randomized spawn of " + arena.getName() + " to " + vector);
                     arena.setRandomizeSpawn(vector);
                 }

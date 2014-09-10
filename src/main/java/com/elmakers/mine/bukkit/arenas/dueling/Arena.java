@@ -833,6 +833,10 @@ public class Arena {
         return controller;
     }
 
+    public void removeFromLeaderboard(ArenaPlayer removePlayer) {
+        leaderboard.remove(removePlayer);
+    }
+
     public void updateLeaderboard(ArenaPlayer changedPlayer) {
         int wins = changedPlayer.getWins();
         int losses = changedPlayer.getLosses();
