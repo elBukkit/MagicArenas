@@ -834,7 +834,14 @@ public class Arena {
                     MaterialData data = blockState.getData();
                     if (data instanceof Skull) {
                         Skull skull = (Skull)data;
-                        skull.setFacingDirection(leaderboardFacing);
+                        // Skull E/W directions are backwards?
+                        BlockFace skullFace = leaderboardFacing;
+                        if (skullFace == BlockFace.EAST) {
+                            skullFace = BlockFace.WEST;
+                        } else if (skullFace == BlockFace.WEST) {
+                            skullFace = BlockFace.EAST;
+                        }
+                        skull.setFacingDirection(skullFace);
                     }
                     if (blockState instanceof org.bukkit.block.Skull) {
                         org.bukkit.block.Skull skullBlock = (org.bukkit.block.Skull)blockState;
