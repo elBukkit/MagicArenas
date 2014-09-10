@@ -638,9 +638,6 @@ public class Arena {
                     finish();
                 }
             }, 5 * 20);
-        } else if (state == ArenaState.ACTIVE && players.size() == 0) {
-            state = ArenaState.LOBBY;
-            server.broadcastMessage(ChatColor.RED + "The " + ChatColor.YELLOW + getName() + ChatColor.RED + " match ended in a default");
         }
     }
 

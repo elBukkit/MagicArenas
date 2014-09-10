@@ -3,6 +3,8 @@
 ## 1.8
 
  - Depends on Magic 1.8
+ - Added tracking of wins/losses
+ - Added leaderboard tracking
 
 ## 1.0
 
