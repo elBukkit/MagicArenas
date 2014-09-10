@@ -1,6 +1,7 @@
 package com.elmakers.mine.bukkit.arenas.dueling;
 
 import com.elmakers.mine.bukkit.api.magic.Mage;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -87,6 +88,11 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
     public void won() {
         Player player = getPlayer();
         if (player != null) {
+            int xp = arena.getWinXP();
+            if (xp > 0) {
+                mage.sendMessage(ChatColor.AQUA + "You have been awarded " + ChatColor.DARK_AQUA + Integer.toString(xp) + ChatColor.AQUA + " experience!");
+                mage.giveExperience(xp);
+            }
             increment("won");
             wins = get("won");
         }
@@ -95,6 +101,11 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
     public void lost() {
         Player player = getPlayer();
         if (player != null) {
+            int xp = arena.getLoseXP();
+            if (xp > 0) {
+                mage.sendMessage(ChatColor.AQUA + "You have been awarded " + ChatColor.DARK_AQUA + Integer.toString(xp) + ChatColor.AQUA + " experience!");
+                mage.giveExperience(xp);
+            }
             increment("lost");
             losses = get("lost");
         }
@@ -119,6 +130,11 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
     public void draw() {
         Player player = getPlayer();
         if (player != null) {
+            int xp = arena.getDrawXP();
+            if (xp > 0) {
+                mage.sendMessage(ChatColor.AQUA + "You have been awarded " + ChatColor.DARK_AQUA + Integer.toString(xp) + ChatColor.AQUA + " experience!");
+                mage.giveExperience(xp);
+            }
             increment("draw");
             draws = get("draw");
         }

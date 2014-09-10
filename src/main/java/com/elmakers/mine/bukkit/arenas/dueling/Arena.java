@@ -59,6 +59,9 @@ public class Arena {
     private int maxPlayers;
     private int minPlayers;
     private int requiredKills = 1;
+    private int winXP = 0;
+    private int loseXP = 0;
+    private int drawXP = 0;
 
     private int leaderboardSize = 5;
     private int leaderboardGamesRequired = 5;
@@ -127,6 +130,10 @@ public class Arena {
         center = ConfigurationUtils.toLocation(configuration.getString("center"));
         exit = ConfigurationUtils.toLocation(configuration.getString("exit"));
 
+        winXP = configuration.getInt("lose_xp", 0);
+        loseXP = configuration.getInt("win_xp", 0);
+        drawXP = configuration.getInt("draw_xp", 0);
+
         for (String s : configuration.getStringList("spawns")){
             spawns.add(ConfigurationUtils.toLocation(s));
         }
@@ -152,6 +159,10 @@ public class Arena {
         configuration.set("minplayers", minPlayers);
         configuration.set("maxplayers", maxPlayers);
         configuration.set("required_kills", requiredKills);
+
+        configuration.set("lose_xp", loseXP);
+        configuration.set("draw_xp", drawXP);
+        configuration.set("win_xp", winXP);
 
         configuration.set("leaderboard_size", leaderboardSize);
         configuration.set("leaderboard_games_required", leaderboardGamesRequired);
@@ -1111,5 +1122,29 @@ public class Arena {
         // Note that we don't rebuild the leaderboard here, just let that happen later.
         // You can force a rebuild with a break and re-place of the block
         arenaPlayer.reset();
+    }
+
+    public void setWinXP(int xp) {
+        winXP = Math.max(xp, 0);
+    }
+
+    public void setLoseXP(int xp) {
+        loseXP = Math.max(xp, 0);
+    }
+
+    public void setDrawXP(int xp) {
+        drawXP = Math.max(xp, 0);
+    }
+
+    public int getWinXP() {
+        return winXP;
+    }
+
+    public int getLoseXP() {
+        return loseXP;
+    }
+
+    public int getDrawXP() {
+        return drawXP;
     }
 }
