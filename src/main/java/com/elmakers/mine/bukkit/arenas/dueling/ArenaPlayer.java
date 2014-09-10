@@ -246,14 +246,14 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
 
     public void reset() {
         wins = 0;
-        set("won", wins);
         losses = 0;
-        set("losses", losses);
         quits = 0;
-        set("quit", quits);
         joins = 0;
-        set("joined", joins);
         draws = 0;
-        set("draw", draws);
+        if (mage != null) {
+            String arenaKey = "arena." + arena.getKey();
+            ConfigurationSection data = mage.getData();
+            data.set(arenaKey, null);
+        }
     }
 }

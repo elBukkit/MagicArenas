@@ -1101,4 +1101,13 @@ public class Arena {
     public int getLeaderboardSize() {
         return leaderboardSize;
     }
+
+    public void reset(Player player) {
+        remove(player);
+        ArenaPlayer arenaPlayer = new ArenaPlayer(this, player);
+        removeFromLeaderboard(arenaPlayer);
+        // Note that we don't rebuild the leaderboard here, just let that happen later.
+        // You can force a rebuild with a break and re-place of the block
+        arenaPlayer.reset();
+    }
 }

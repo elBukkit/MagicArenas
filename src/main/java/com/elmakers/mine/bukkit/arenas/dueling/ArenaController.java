@@ -142,12 +142,7 @@ public class ArenaController {
 
     public void reset(Player player) {
         for (Arena arena : arenas.values()) {
-            arena.remove(player);
-            ArenaPlayer arenaPlayer = new ArenaPlayer(arena, player);
-            arena.removeFromLeaderboard(arenaPlayer);
-            // Note that we don't rebuild the leaderboard here, just let that happen later.
-            // You can force a rebuild with a break and re-place of the block
-            arenaPlayer.reset();
+            arena.reset(player);
         }
     }
 

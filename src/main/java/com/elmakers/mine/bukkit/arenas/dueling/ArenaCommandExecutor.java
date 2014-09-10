@@ -55,13 +55,16 @@ public class ArenaCommandExecutor implements TabExecutor {
             for (Arena arena : arenas) {
                 allOptions.add(arena.getKey());
             }
+            if (args[0].equalsIgnoreCase("reset")) {
+                allOptions.add("ALL");
+            }
         } else if (args.length == 3 && args[0].equalsIgnoreCase("configure")) {
             allOptions.addAll(Arrays.asList(ARENA_PROPERTIES));
         } else if (args.length == 4 && args[0].equalsIgnoreCase("configure") && (args[2].equalsIgnoreCase("add") || args[2].equalsIgnoreCase("remove"))) {
             allOptions.addAll(Arrays.asList(ARENA_LISTS));
         } else if (args.length == 4 && args[0].equalsIgnoreCase("configure") && args[2].equalsIgnoreCase("randomize")) {
             allOptions.addAll(Arrays.asList(ARENA_RANDOMIZE));
-        } else if (args.length == 3 && (args[0].equalsIgnoreCase("join") || args[0].equalsIgnoreCase("leave") || args[0].equalsIgnoreCase("stats"))) {
+        } else if (args.length == 3 && (args[0].equalsIgnoreCase("join") || args[0].equalsIgnoreCase("leave") || args[0].equalsIgnoreCase("stats") || args[0].equalsIgnoreCase("reset"))) {
             allOptions.addAll(controller.getMagic().getPlayerNames());
         }
 
@@ -173,37 +176,14 @@ public class ArenaCommandExecutor implements TabExecutor {
             return true;
         }
 
-        if (subCommand.equalsIgnoreCase("reset")) {
-            Player player = null;
-            String playerName = null;
-            if (args.length > 1) {
-                playerName = args[1];
-                player = Bukkit.getPlayer(playerName);
-            } else if (sender instanceof Player) {
-                player = (Player) sender;
-            }
-
-            if (player == null) {
-                if (playerName != null) {
-                    sender.sendMessage(ChatColor.RED + "Unknown player: " + playerName);
-                } else {
-                    sender.sendMessage(ChatColor.RED + "You must specify a player name");
-                }
-                return true;
-            }
-            controller.reset(player);
-            sender.sendMessage(ChatColor.AQUA + playerName + ChatColor.GRAY + " has been " + ChatColor.RED + " reset");
-
-            return true;
-        }
-
         if (args.length < 2) {
             sender.sendMessage(ChatColor.RED + "You must provide an arena name");
             return true;
         }
 
         String arenaName = args[1];
-        Arena arena = controller.getArena(arenaName);
+        boolean isAllArenas = arenaName.equalsIgnoreCase("ALL");
+        Arena arena = isAllArenas ? null : controller.getArena(arenaName);
         if (subCommand.equalsIgnoreCase("add")) {
             if (!(sender instanceof Player)) {
                 sender.sendMessage(ChatColor.RED + "Must be used in-game");
@@ -230,8 +210,42 @@ public class ArenaCommandExecutor implements TabExecutor {
             return true;
         }
 
-        if (arena == null) {
+        if (arena == null && !isAllArenas) {
             sender.sendMessage(ChatColor.RED + "Unknown arena: " + arenaName);
+            return true;
+        }
+
+        if (subCommand.equalsIgnoreCase("reset")) {
+            Player player = null;
+            String playerName = null;
+            if (args.length > 2) {
+                playerName = args[2];
+                player = Bukkit.getPlayer(playerName);
+            } else if (sender instanceof Player) {
+                player = (Player) sender;
+            }
+
+            if (player == null) {
+                if (playerName != null) {
+                    sender.sendMessage(ChatColor.RED + "Unknown player: " + playerName);
+                } else {
+                    sender.sendMessage(ChatColor.RED + "You must specify a player name");
+                }
+                return true;
+            }
+            if (isAllArenas) {
+                controller.reset(player);
+                sender.sendMessage(ChatColor.AQUA + playerName + ChatColor.GRAY + " has been " + ChatColor.RED + " reset from ALL arenas");
+            } else {
+                arena.reset(player);
+                sender.sendMessage(ChatColor.AQUA + playerName + ChatColor.GRAY + " has been " + ChatColor.RED + " reset from " + ChatColor.GOLD + arena.getName());
+            }
+
+            return true;
+        }
+
+        if (isAllArenas) {
+            sender.sendMessage(ChatColor.RED + "ALL not applicable here.");
             return true;
         }
 
