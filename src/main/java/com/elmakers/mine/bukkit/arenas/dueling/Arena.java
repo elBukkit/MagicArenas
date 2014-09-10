@@ -837,14 +837,14 @@ public class Arena {
         int wins = changedPlayer.getWins();
         int losses = changedPlayer.getLosses();
 
+        leaderboard.remove(changedPlayer);
         if (wins + losses < leaderboardGamesRequired) {
             return;
         }
 
-        leaderboard.remove(changedPlayer);
         leaderboard.add(changedPlayer);
-        setLeaderboardSize(leaderboardSize);
         Collections.sort(leaderboard, new ArenaPlayerComparator());
+        setLeaderboardSize(leaderboardSize);
     }
 
     public void updateLeaderboard() {
