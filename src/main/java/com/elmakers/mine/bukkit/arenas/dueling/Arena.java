@@ -4,11 +4,18 @@ import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.Server;
 import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.material.MaterialData;
+import org.bukkit.material.Sign;
+import org.bukkit.material.Skull;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitScheduler;
@@ -58,6 +65,8 @@ public class Arena {
     private int leaderboardGamesRequired = 5;
 
     private List<ArenaPlayer> leaderboard = new ArrayList<ArenaPlayer>();
+    private Location leaderboardLocation;
+    private BlockFace leaderboardFacing;
 
     private int portalDamage;
     private int portalEnterDamage;
@@ -858,13 +867,154 @@ public class Arena {
         leaderboard.add(changedPlayer);
         setLeaderboardSize(leaderboardSize);
         Collections.sort(leaderboard, new ArenaPlayerComparator());
+        updateLeaderboard();;
+    }
+
+    public void updateLeaderboard() {
+        Block leaderboardBlock = getLeaderboardBlock();
+        if (leaderboardBlock != null && leaderboardFacing != null) {
+            BlockFace rightDirection = goLeft(leaderboardFacing);
+            leaderboardBlock = leaderboardBlock.getRelative(BlockFace.UP);
+            for (int i = leaderboard.size() - 1; i >=0; i--) {
+                ArenaPlayer player = leaderboard.get(i);
+                if (canReplace(leaderboardBlock)) {
+                    leaderboardBlock.setType(Material.SKULL);
+                    BlockState blockState = leaderboardBlock.getState();
+                    MaterialData data = blockState.getData();
+                    if (data instanceof Skull) {
+                        Skull skull = (Skull)data;
+                        skull.setFacingDirection(leaderboardFacing);
+                    }
+                    if (blockState instanceof org.bukkit.block.Skull) {
+                        org.bukkit.block.Skull skullBlock = (org.bukkit.block.Skull)blockState;
+                        skullBlock.setOwner(player.getName());
+                    }
+                    blockState.update();
+                }
+                Block neighborBlock = leaderboardBlock.getRelative(rightDirection);
+                if (canReplace(neighborBlock)) {
+                    neighborBlock.setType(Material.WALL_SIGN);
+                    BlockState blockState = neighborBlock.getState();
+                    MaterialData data = blockState.getData();
+                    if (data instanceof Sign) {
+                        Sign sign = (Sign)data;
+                        sign.setFacingDirection(leaderboardFacing);
+                    }
+                    if (blockState instanceof org.bukkit.block.Sign) {
+                        org.bukkit.block.Sign signBlock = (org.bukkit.block.Sign)blockState;
+                        String playerName = ChatColor.DARK_PURPLE + player.getDisplayName();
+                        signBlock.setLine(0, playerName);
+                        signBlock.setLine(1, ChatColor.LIGHT_PURPLE + "#" + Integer.toString(i + 1) + " " + ChatColor.WHITE + " : " + ChatColor.BLACK + Integer.toString((int)(player.getWinRatio() * 100)) + "%");
+                        signBlock.setLine(2, ChatColor.GREEN + "Wins   : " + ChatColor.DARK_GREEN + player.getWins());
+                        signBlock.setLine(3, ChatColor.RED + "Losses : " + ChatColor.DARK_RED +player.getLosses());
+                    }
+                    blockState.update();
+                }
+                leaderboardBlock = leaderboardBlock.getRelative(BlockFace.UP);
+            }
+        }
+    }
+
+    protected void clearLeaderboardBlock(Block block) {
+        Material blockType = block.getType();
+        if (blockType == Material.SKULL || blockType == Material.WALL_SIGN) {
+            block.setType(Material.AIR);
+        }
+    }
+
+    protected boolean canReplace(Block block) {
+        Material blockType = block.getType();
+        return blockType == Material.AIR || blockType == Material.WALL_SIGN || blockType == Material.SKULL;
+    }
+
+    protected Block getLeaderboardBlock() {
+        Block block = null;
+        if (leaderboardLocation != null) {
+            Block testBlock = leaderboardLocation.getBlock();
+            if (testBlock.getType() == Material.WALL_SIGN) {
+                block = testBlock;
+            } else {
+                leaderboardLocation = null;
+                leaderboardFacing = null;
+            }
+        }
+        return block;
+    }
+
+    /**
+     * A helper function to go change a given direction to the direction "to the right".
+     *
+     * There's probably some better matrix-y, math-y way to do this.
+     * It'd be nice if this was in BlockFace.
+     *
+     * @param direction The current direction
+     * @return The direction to the left
+     */
+    public static BlockFace goLeft(BlockFace direction)
+    {
+        switch (direction)
+        {
+            case EAST:
+                return BlockFace.NORTH;
+            case NORTH:
+                return BlockFace.WEST;
+            case WEST:
+                return BlockFace.SOUTH;
+            case SOUTH:
+                return BlockFace.EAST;
+            default:
+                return direction;
+        }
+    }
+
+    /**
+     * A helper function to go change a given direction to the direction "to the right".
+     *
+     * There's probably some better matrix-y, math-y way to do this.
+     * It'd be nice if this was in BlockFace.
+     *
+     * @param direction The current direction
+     * @return The direction to the right
+     */
+    public static BlockFace goRight(BlockFace direction)
+    {
+        switch (direction)
+        {
+            case EAST:
+                return BlockFace.SOUTH;
+            case SOUTH:
+                return BlockFace.WEST;
+            case WEST:
+                return BlockFace.NORTH;
+            case NORTH:
+                return BlockFace.EAST;
+            default:
+                return direction;
+        }
+    }
+
+    public void removeLeaderboard() {
+        Block leaderboardBlock = getLeaderboardBlock();
+        if (leaderboardBlock != null && leaderboardFacing != null) {
+            BlockFace rightDirection = goLeft(leaderboardFacing);
+            for (int y = 0; y <= leaderboardSize; y++) {
+                Block neighborBlock = leaderboardBlock.getRelative(rightDirection);
+                clearLeaderboardBlock(neighborBlock);
+                if (y != 0) {
+                    clearLeaderboardBlock(leaderboardBlock);
+                }
+                leaderboardBlock = leaderboardBlock.getRelative(BlockFace.UP);
+            }
+        }
     }
 
     public void setLeaderboardSize(int size) {
+        removeLeaderboard();
         while (leaderboard.size() > size) {
             leaderboard.remove(leaderboard.size() - 1);
         }
         leaderboardSize = size;
+        updateLeaderboard();
     }
 
     public void setLeaderboardGamesRequired(int required) {
@@ -925,5 +1075,41 @@ public class Arena {
                     + ChatColor.WHITE + " = " + ChatColor.GOLD + Integer.toString((int)(ratio * 100)) + "%");
             position++;
         }
+    }
+
+    public boolean placeLeaderboard(Block leaderboardBlock) {
+        if (leaderboardBlock.getType() != Material.WALL_SIGN) {
+            return false;
+        }
+        MaterialData signData = leaderboardBlock.getState().getData();
+        if (!(signData instanceof Sign)) {
+            controller.getPlugin().getLogger().warning("Block at " + leaderboardBlock.getLocation() + " has no sign data! " + signData.getClass());
+            return false;
+        }
+        Sign sign = (Sign)signData;
+        BlockFace signDirection = sign.getFacing();
+        BlockFace rightDirection = goLeft(signDirection);
+        Block checkBlock = leaderboardBlock;
+        for (int y = 0; y <= leaderboardSize; y++) {
+            Block neighborBlock = checkBlock.getRelative(rightDirection);
+            if (!canReplace(neighborBlock)) {
+                return false;
+            }
+            if (y != 0 && !canReplace(checkBlock)) {
+                return false;
+            }
+            checkBlock = checkBlock.getRelative(BlockFace.UP);
+        }
+
+        removeLeaderboard();
+        leaderboardLocation = leaderboardBlock.getLocation();
+        leaderboardFacing = signDirection;
+        updateLeaderboard();
+
+        return true;
+    }
+
+    public int getLeaderboardSize() {
+        return leaderboardSize;
     }
 }

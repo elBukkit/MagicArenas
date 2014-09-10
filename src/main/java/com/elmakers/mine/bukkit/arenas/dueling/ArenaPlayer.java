@@ -197,4 +197,8 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
     public UUID getUUID() {
         return uuid;
     }
+
+    public String getName() {
+        return name;
+    }
 }

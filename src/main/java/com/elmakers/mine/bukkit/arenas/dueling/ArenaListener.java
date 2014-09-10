@@ -98,8 +98,24 @@ public class ArenaListener implements Listener {
                 e.setLine(0, SIGN_KEY);
                 e.setLine(1, ChatColor.AQUA + "Leave");
             } else if (secondLine.equalsIgnoreCase("Leaderboard")) {
-                e.setLine(0, SIGN_KEY);
-                e.setLine(1, ChatColor.DARK_PURPLE + "Leaderboard");
+                String arenaName = e.getLine(2);
+                if (!arenaName.isEmpty()) {
+                    Arena arena = controller.getArena(arenaName);
+                    if (arena != null) {
+                        e.setLine(0, SIGN_KEY);
+                        e.setLine(1, ChatColor.DARK_PURPLE + "Leaderboard");
+                        if (!arena.placeLeaderboard(e.getBlock())) {
+                            e.getBlock().breakNaturally();
+                            e.getPlayer().sendMessage(ChatColor.RED + "Leaderboard must be a wall sign with " + ChatColor.YELLOW + arena.getLeaderboardSize() + ChatColor.RED + " empty blocks above it above it to the right");
+                        }
+                    } else {
+                        e.getBlock().breakNaturally();
+                        e.getPlayer().sendMessage(ChatColor.RED + "Unknown arena: " + arenaName);
+                    }
+                } else{
+                    e.getBlock().breakNaturally();
+                    e.getPlayer().sendMessage(ChatColor.RED + "You must specify an arena!");
+                }
             } else {
                 e.getBlock().breakNaturally();
                 e.getPlayer().sendMessage(ChatColor.RED + "You must specify Join, Leave or Leaderboard");
