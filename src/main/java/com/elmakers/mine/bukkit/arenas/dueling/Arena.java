@@ -1,5 +1,6 @@
 package com.elmakers.mine.bukkit.arenas.dueling;
 
+import com.elmakers.mine.bukkit.utility.ConfigurationUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -92,66 +93,6 @@ public class Arena {
         arenaType = type;
     }
 
-    public static String fromVector(Vector vector) {
-        if (vector == null) return "";
-        return vector.getX() + "," + vector.getY() + "," + vector.getZ();
-    }
-
-    public static Vector toVector(Object o) {
-        if (o instanceof Vector) {
-            return (Vector)o;
-        }
-        if (o instanceof String) {
-            try {
-                String[] pieces = StringUtils.split((String)o, ',');
-                double x = Double.parseDouble(pieces[0]);
-                double y = Double.parseDouble(pieces[1]);
-                double z = Double.parseDouble(pieces[2]);
-                return new Vector(x, y, z);
-            } catch(Exception ex) {
-                return null;
-            }
-        }
-        return null;
-    }
-
-    public String fromLocation(Location location) {
-        if (location == null) return "";
-        if (location.getWorld() == null) return "";
-        return location.getX() + "," + location.getY() + "," + location.getZ() + "," + location.getWorld().getName()
-                + "," + location.getYaw() + "," + location.getPitch();
-    }
-
-    public Location toLocation(Object o) {
-        if (o instanceof Location) {
-            return (Location)o;
-        }
-        if (o instanceof String) {
-            try {
-                float pitch = 0;
-                float yaw = 0;
-                String[] pieces = StringUtils.split((String) o, ',');
-                double x = Double.parseDouble(pieces[0]);
-                double y = Double.parseDouble(pieces[1]);
-                double z = Double.parseDouble(pieces[2]);
-                World world = null;
-                if (pieces.length > 3) {
-                    world = Bukkit.getWorld(pieces[3]);
-                } else {
-                    world = Bukkit.getWorlds().get(0);
-                }
-                if (pieces.length > 5) {
-                    yaw = Float.parseFloat(pieces[4]);
-                    pitch = Float.parseFloat(pieces[5]);
-                }
-                return new Location(world, x, y, z, yaw, pitch);
-            } catch(Exception ex) {
-                return null;
-            }
-        }
-        return null;
-    }
-
     public void load(ConfigurationSection configuration) {
         name = configuration.getString("name", null);
         description = configuration.getString("description", null);
@@ -182,18 +123,23 @@ public class Arena {
             Collections.sort(leaderboard, new ArenaPlayerComparator());
         }
 
-        lose = toLocation(configuration.getString("lose"));
-        win = toLocation(configuration.getString("win"));
-        lobby = toLocation(configuration.getString("lobby"));
-        center = toLocation(configuration.getString("center"));
-        exit = toLocation(configuration.getString("exit"));
+        lose = ConfigurationUtils.toLocation(configuration.getString("lose"));
+        win = ConfigurationUtils.toLocation(configuration.getString("win"));
+        lobby = ConfigurationUtils.toLocation(configuration.getString("lobby"));
+        center = ConfigurationUtils.toLocation(configuration.getString("center"));
+        exit = ConfigurationUtils.toLocation(configuration.getString("exit"));
 
         for (String s : configuration.getStringList("spawns")){
-            spawns.add(toLocation(s));
+            spawns.add(ConfigurationUtils.toLocation(s));
         }
 
         if (configuration.contains("randomize.spawn")) {
-            randomizeSpawn = toVector(configuration.getString("randomize.spawn"));
+            randomizeSpawn = ConfigurationUtils.toVector(configuration.getString("randomize.spawn"));
+        }
+
+        if (configuration.contains("leaderboard_sign_location") && configuration.contains("leaderboard_sign_facing")) {
+            leaderboardLocation = ConfigurationUtils.toLocation(configuration.getString("leaderboard_sign_location"));
+            leaderboardFacing = ConfigurationUtils.toBlockFace(configuration.getString("leaderboard_sign_facing"));
         }
 
         // Legacy backup check
@@ -218,20 +164,20 @@ public class Arena {
 
         configuration.set("type", arenaType.name());
 
-        configuration.set("lobby", fromLocation(lobby));
-        configuration.set("win", fromLocation(win));
-        configuration.set("lose", fromLocation(lose));
-        configuration.set("center", fromLocation(center));
-        configuration.set("exit", fromLocation(exit));
+        configuration.set("lobby", ConfigurationUtils.fromLocation(lobby));
+        configuration.set("win", ConfigurationUtils.fromLocation(win));
+        configuration.set("lose", ConfigurationUtils.fromLocation(lose));
+        configuration.set("center", ConfigurationUtils.fromLocation(center));
+        configuration.set("exit", ConfigurationUtils.fromLocation(exit));
 
         List<String> spawnList = new ArrayList<String>();
         for (Location spawn : spawns) {
-            spawnList.add(fromLocation(spawn));
+            spawnList.add(ConfigurationUtils.fromLocation(spawn));
         }
         configuration.set("spawns", spawnList);
 
         if (randomizeSpawn != null) {
-            configuration.set("randomize.spawn", fromVector(randomizeSpawn));
+            configuration.set("randomize.spawn", ConfigurationUtils.fromVector(randomizeSpawn));
         }
 
         if (leaderboard.size() > 0) {
@@ -241,6 +187,11 @@ public class Arena {
                 ConfigurationSection playerData = leaders.createSection(key);
                 player.save(playerData);
             }
+        }
+
+        if (leaderboardLocation != null && leaderboardFacing != null) {
+            configuration.set("leaderboard_sign_location", ConfigurationUtils.fromLocation(leaderboardLocation));
+            configuration.set("leaderboard_sign_facing", ConfigurationUtils.fromBlockFace(leaderboardFacing));
         }
     }
 
