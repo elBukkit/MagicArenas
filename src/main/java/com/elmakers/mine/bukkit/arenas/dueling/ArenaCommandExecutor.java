@@ -252,6 +252,7 @@ public class ArenaCommandExecutor implements TabExecutor {
         if (subCommand.equalsIgnoreCase("remove")) {
             controller.remove(arenaName);
             controller.save();
+            sender.sendMessage(ChatColor.RED + "Arena Removed: " + ChatColor.DARK_RED + arena.getName());
             return true;
         }
 
