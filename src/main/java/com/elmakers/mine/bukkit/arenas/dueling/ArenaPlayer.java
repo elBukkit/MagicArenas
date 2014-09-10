@@ -180,7 +180,7 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
 
     @Override
     public int compareTo(ArenaPlayer other) {
-        return ((Float)getWinRatio()).compareTo(other.getWinRatio());
+        return uuid.compareTo(other.getUUID());
     }
 
     @Override

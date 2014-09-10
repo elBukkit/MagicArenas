@@ -16,13 +16,22 @@ import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Random;
-import java.util.TreeSet;
 
 public class Arena {
+    static class ArenaPlayerComparator implements Comparator<ArenaPlayer>
+    {
+        public int compare(ArenaPlayer player1, ArenaPlayer player2)
+        {
+            return ((Float)player2.getWinRatio()).compareTo(player1.getWinRatio());
+        }
+    }
+
     private static Random random = new Random();
 
     private ArenaState state = ArenaState.LOBBY;
@@ -48,7 +57,7 @@ public class Arena {
     private int leaderboardSize = 5;
     private int leaderboardGamesRequired = 5;
 
-    private TreeSet<ArenaPlayer> leaderboard = new TreeSet<ArenaPlayer>();
+    private List<ArenaPlayer> leaderboard = new ArrayList<ArenaPlayer>();
 
     private int portalDamage;
     private int portalEnterDamage;
@@ -161,6 +170,7 @@ public class Arena {
                 ArenaPlayer loadedPlayer = new ArenaPlayer(this, leaderConfig);
                 leaderboard.add(loadedPlayer);
             }
+            Collections.sort(leaderboard, new ArenaPlayerComparator());
         }
 
         lose = toLocation(configuration.getString("lose"));
@@ -850,25 +860,23 @@ public class Arena {
         leaderboard.remove(changedPlayer);
         leaderboard.add(changedPlayer);
         setLeaderboardSize(leaderboardSize);
+        Collections.sort(leaderboard, new ArenaPlayerComparator());
     }
 
     public void setLeaderboardSize(int size) {
         while (leaderboard.size() > size) {
-            leaderboard.remove(leaderboard.last());
+            leaderboard.remove(leaderboard.size() - 1);
         }
         leaderboardSize = size;
     }
 
     public void setLeaderboardGamesRequired(int required) {
+        leaderboardGamesRequired = required;
         Collection<ArenaPlayer> currentLeaderboard = new ArrayList<ArenaPlayer>(leaderboard);
         leaderboard.clear();
         for (ArenaPlayer player : currentLeaderboard) {
             updateLeaderboard(player);
         }
-    }
-
-    public Collection<ArenaPlayer> getLeaderboard() {
-        return new ArrayList<ArenaPlayer>(leaderboard);
     }
 
     public void describeStats(CommandSender sender, Player player) {
@@ -880,16 +888,18 @@ public class Arena {
         int quits = arenaPlayer.getQuits();
         float ratio = arenaPlayer.getWinRatio();
 
-        if (leaderboard.contains(arenaPlayer)) {
-            int ranking = 1;
-            for (ArenaPlayer testPlayer : leaderboard) {
-                if (testPlayer.equals(arenaPlayer)) {
-                    break;
-                }
-                ranking++;
+        Integer rank = null;
+        int ranking = 1;
+        for (ArenaPlayer testPlayer : leaderboard) {
+            if (testPlayer.equals(arenaPlayer)) {
+                rank = ranking;
+                break;
             }
+            ranking++;
+        }
+        if (rank != null) {
             sender.sendMessage(ChatColor.DARK_PURPLE + player.getDisplayName() + ChatColor.DARK_PURPLE +
-                    " is ranked " + ChatColor.AQUA + "#" + Integer.toString(ranking) + ChatColor.DARK_PURPLE + " for " + ChatColor.GOLD + getName());
+                    " is ranked " + ChatColor.AQUA + "#" + Integer.toString(rank) + ChatColor.DARK_PURPLE + " for " + ChatColor.GOLD + getName());
         } else {
             sender.sendMessage(ChatColor.DARK_PURPLE + player.getDisplayName() + ChatColor.DARK_RED +
                     " is not on the leaderboard for " + ChatColor.GOLD + getName());
