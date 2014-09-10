@@ -597,6 +597,8 @@ public class Arena {
                                 + " hearts, and a total of " + ChatColor.GREEN + Integer.toString(winCount) + ChatColor.GOLD + " wins and "
                                 + ChatColor.RED + Integer.toString(lostCount) + ChatColor.GOLD + " losses.");
                         winner.teleport(getWinLocation());
+                        clearMetadata(winner);
+                        players.clear();
                     } else {
                         if (winner != null) {
                             winner.draw();
