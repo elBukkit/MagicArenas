@@ -1,8 +1,10 @@
 package com.elmakers.mine.bukkit.arenas.dueling;
 
 import com.elmakers.mine.bukkit.api.magic.Mage;
+import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
 
 import java.util.UUID;
 
@@ -186,7 +188,7 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
     @Override
     public boolean equals(Object other) {
         if (!(other instanceof ArenaPlayer)) return false;
-        return uuid.equals(((ArenaPlayer)other).uuid);
+        return uuid.equals(((ArenaPlayer) other).uuid);
     }
 
     @Override
@@ -200,5 +202,36 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
 
     public String getName() {
         return name;
+    }
+
+    public void teleport(Location location) {
+        Player player = getPlayer();
+        if (player != null) {
+            player.teleport(location);
+        }
+    }
+
+    public void sendMessage(String message) {
+        Player player = getPlayer();
+        if (player != null) {
+            player.sendMessage(message);
+        }
+    }
+
+    public double getHealth() {
+        Player player = getPlayer();
+        return player == null ? 0.0 : player.getHealth();
+    }
+
+    public void heal() {
+        Player player = getPlayer();
+        if (player != null) {
+            player.setHealth(player.getMaxHealth());
+            player.setFoodLevel(20);
+            player.setFireTicks(0);
+            for (PotionEffect pt : player.getActivePotionEffects()) {
+                player.removePotionEffect(pt.getType());
+            }
+        }
     }
 }

@@ -1,13 +1,11 @@
 package com.elmakers.mine.bukkit.arenas.dueling;
 
 import com.elmakers.mine.bukkit.utility.ConfigurationUtils;
-import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Server;
-import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
@@ -45,7 +43,7 @@ public class Arena {
     private ArenaState state = ArenaState.LOBBY;
     private Queue<ArenaPlayer> queue = new LinkedList<ArenaPlayer>();
     private Collection<ArenaPlayer> players = new ArrayList<ArenaPlayer>();
-    private int deathCount = 0;
+    private Collection<ArenaPlayer> deadPlayers = new ArrayList<ArenaPlayer>();
 
     private List<Location> spawns = new ArrayList<Location>();
     private final ArenaController controller;
@@ -196,9 +194,7 @@ public class Arena {
     }
 
     public void start() {
-        deathCount = 0;
         state = ArenaState.ACTIVE;
-        Server server = controller.getPlugin().getServer();
         int num = 0;
         clearPlayers();
         while (queue.size() > 0 && players.size() < maxPlayers) {
@@ -221,12 +217,7 @@ public class Arena {
                 continue;
             }
 
-            player.setHealth(20.0);
-            player.setFoodLevel(20);
-            player.setFireTicks(0);
-            for (PotionEffect pt : player.getActivePotionEffects()) {
-                player.removePotionEffect(pt.getType());
-            }
+            arenaPlayer.heal();
             player.sendMessage(ChatColor.GOLD + "BEGIN!");
 
             Location spawn = spawns.get(num);
@@ -296,10 +287,17 @@ public class Arena {
         return removed;
     }
 
-    public Player getWinner() {
+    protected void clearMetadata(ArenaPlayer arenaPlayer) {
+        Player player = arenaPlayer.getPlayer();
+        if (player != null) {
+            player.removeMetadata("arena", controller.getPlugin());
+        }
+    }
+
+    public ArenaPlayer getWinner() {
         if (state == ArenaState.ACTIVE && players.size() == 1) {
             ArenaPlayer winner = players.iterator().next();
-            return winner.getPlayer();
+            return winner;
         }
 
         return null;
@@ -413,6 +411,14 @@ public class Arena {
             }
         }
         players.clear();
+        for (ArenaPlayer arenaPlayer : deadPlayers) {
+            Player player = arenaPlayer.getPlayer();
+            if (player != null) {
+                player.teleport(getExit());
+                player.removeMetadata("arena", controller.getPlugin());
+            }
+        }
+        deadPlayers.clear();
     }
 
     protected void clearQueue() {
@@ -556,45 +562,55 @@ public class Arena {
             return;
         }
         final Server server = controller.getPlugin().getServer();
-        final Player winner = getWinner();
-        if (winner != null) {
-            final boolean won = deathCount >= requiredKills;
+        if (players.size() == 1) {
             Bukkit.getScheduler().runTaskLater(controller.getPlugin(), new Runnable() {
                 @Override
                 public void run() {
-                    ArenaPlayer arenaPlayer = remove(winner);
-                    if (won && arenaPlayer != null) {
-                        boolean draw = arenaPlayer.isDead() || !arenaPlayer.isValid();
-                        if (draw) {
-                            arenaPlayer.draw();
-                            winner.teleport(getLoseLocation());
-                            server.broadcastMessage(ChatColor.GRAY + "The " + ChatColor.YELLOW + getName() + ChatColor.GRAY + " match ended in a draw");
-                        } else {
-                            arenaPlayer.won();
-                            updateLeaderboard(arenaPlayer);
-                            winner.sendMessage(ChatColor.AQUA + "You have won! Congratulations!");
-                            int winCount = arenaPlayer.getWins();
-                            int lostCount = arenaPlayer.getLosses();
-                            double health = winner.getHealth() / 2;
-                            int hearts = (int)Math.floor(health);
-                            String heartDescription = Integer.toString(hearts);
-                            health = health - hearts;
-                            if (health >= 0.5) {
-                                heartDescription = heartDescription + " 1/2";
-                            }
-                            server.broadcastMessage(ChatColor.GOLD + winner.getDisplayName() + " is the champion of " + ChatColor.YELLOW + getName()
-                                    + ChatColor.GOLD + " with " + ChatColor.DARK_RED + heartDescription + ChatColor.GOLD
-                                    + " hearts, and a total of " + ChatColor.GREEN + Integer.toString(winCount) + ChatColor.GOLD + " wins and "
-                                    + ChatColor.RED + Integer.toString(lostCount) + ChatColor.GOLD + " losses.");
-                            winner.teleport(getWinLocation());
+                    final ArenaPlayer winner = getWinner();
+                    final boolean defaulted = deadPlayers.size() < requiredKills;
+                    final boolean won = winner != null && winner.isValid() && !winner.isDead();
+                    if (defaulted) {
+                        if (winner != null) {
+                            winner.teleport(getExit());
                         }
-                    } else {
-                        winner.teleport(getExit());
                         server.broadcastMessage(ChatColor.RED + "The " + ChatColor.YELLOW + getName() + ChatColor.RED + " match ended in a default");
+                    } else if (won) {
+                        winner.won();
+                        updateLeaderboard(winner);
+                        for (ArenaPlayer loser : deadPlayers) {
+                            loser.lost();
+                            updateLeaderboard(loser);
+                        }
+                        updateLeaderboard();
+                        winner.sendMessage(ChatColor.AQUA + "You have won! Congratulations!");
+                        int winCount = winner.getWins();
+                        int lostCount = winner.getLosses();
+                        double health = winner.getHealth() / 2;
+                        int hearts = (int)Math.floor(health);
+                        String heartDescription = Integer.toString(hearts);
+                        health = health - hearts;
+                        if (health >= 0.5) {
+                            heartDescription = heartDescription + " 1/2";
+                        }
+                        server.broadcastMessage(ChatColor.GOLD + winner.getDisplayName() + " is the champion of " + ChatColor.YELLOW + getName());
+                        server.broadcastMessage(ChatColor.GOLD + " with " + ChatColor.DARK_RED + heartDescription + ChatColor.GOLD
+                                + " hearts, and a total of " + ChatColor.GREEN + Integer.toString(winCount) + ChatColor.GOLD + " wins and "
+                                + ChatColor.RED + Integer.toString(lostCount) + ChatColor.GOLD + " losses.");
+                        winner.teleport(getWinLocation());
+                    } else {
+                        if (winner != null) {
+                            winner.draw();
+                            winner.teleport(getLoseLocation());
+                        }
+                        for (ArenaPlayer loser : deadPlayers) {
+                            loser.draw();
+                        }
+                        server.broadcastMessage(ChatColor.GRAY + "The " + ChatColor.YELLOW + getName() + ChatColor.GRAY + " match ended in a draw");
                     }
-                    winner.setHealth(20.0);
-                    winner.setFoodLevel(20);
-                    winner.setFireTicks(0);
+                    if (winner != null)
+                    {
+                        winner.heal();
+                    }
                     finish();
                 }
             }, 5 * 20);
@@ -671,6 +687,7 @@ public class Arena {
     protected Collection<ArenaPlayer> getAllPlayers() {
         List<ArenaPlayer> allPlayers = new ArrayList<ArenaPlayer>(players);
         allPlayers.addAll(queue);
+        allPlayers.addAll(deadPlayers);
         return allPlayers;
     }
 
@@ -697,6 +714,11 @@ public class Arena {
         sender.sendMessage(ChatColor.AQUA + "Active Players: " + ChatColor.DARK_AQUA + inGamePlayers);
         for (ArenaPlayer player : players) {
             sender.sendMessage(ChatColor.GOLD + " " + player.getDisplayName());
+        }
+        int deathCount = deadPlayers.size();
+        sender.sendMessage(ChatColor.AQUA + "Dead Players: " + ChatColor.DARK_AQUA + deathCount);
+        for (ArenaPlayer player : deadPlayers) {
+            sender.sendMessage(ChatColor.RED + " " + player.getDisplayName());
         }
         int queuedPlayers = getQueuedPlayers();
         sender.sendMessage(ChatColor.AQUA + "Queued Players: " + ChatColor.DARK_AQUA + queuedPlayers);
@@ -790,11 +812,16 @@ public class Arena {
     }
 
     public void died(Player player) {
-        deathCount++;
-        ArenaPlayer arenaPlayer = remove(player);
+        ArenaPlayer arenaPlayer = null;
+        for (ArenaPlayer testPlayer : players) {
+            if (testPlayer.equals(player)) {
+                players.remove(testPlayer);
+                arenaPlayer = testPlayer;
+                break;
+            }
+        }
         if (arenaPlayer != null) {
-            arenaPlayer.lost();
-            updateLeaderboard(arenaPlayer);
+            deadPlayers.add(arenaPlayer);
         }
         Location specroom = getLoseLocation();
         player.setMetadata("respawnLocation", new FixedMetadataValue(controller.getPlugin(), specroom));
@@ -818,7 +845,6 @@ public class Arena {
         leaderboard.add(changedPlayer);
         setLeaderboardSize(leaderboardSize);
         Collections.sort(leaderboard, new ArenaPlayerComparator());
-        updateLeaderboard();;
     }
 
     public void updateLeaderboard() {
@@ -982,6 +1008,7 @@ public class Arena {
         for (ArenaPlayer player : currentLeaderboard) {
             updateLeaderboard(player);
         }
+        updateLeaderboard();
     }
 
     public void describeStats(CommandSender sender, Player player) {
