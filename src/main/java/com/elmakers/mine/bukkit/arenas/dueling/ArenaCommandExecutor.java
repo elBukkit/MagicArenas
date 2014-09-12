@@ -540,7 +540,7 @@ public class ArenaCommandExecutor implements TabExecutor {
 
             if (propertyName.equalsIgnoreCase("xp_lose")) {
                 arena.setLoseXP(intValue);
-                sender.sendMessage(ChatColor.AQUA + "Set lose XP of " + arena.getName() + " to " + intValue);
+                sender.sendMessage(ChatColor.AQUA + "Set losing XP of " + arena.getName() + " to " + intValue);
                 controller.save();
                 return;
             }

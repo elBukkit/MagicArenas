@@ -421,12 +421,6 @@ public class Arena {
             }
         }
         players.clear();
-        for (ArenaPlayer arenaPlayer : deadPlayers) {
-            Player player = arenaPlayer.getPlayer();
-            if (player != null) {
-                player.removeMetadata("arena", controller.getPlugin());
-            }
-        }
         deadPlayers.clear();
     }
 
@@ -696,7 +690,8 @@ public class Arena {
     protected Collection<ArenaPlayer> getAllPlayers() {
         List<ArenaPlayer> allPlayers = new ArrayList<ArenaPlayer>(players);
         allPlayers.addAll(queue);
-        allPlayers.addAll(deadPlayers);
+        // Note that we don't message the dead players- they may have
+        // moved on to another arena, and this is confusing!
         return allPlayers;
     }
 
@@ -842,6 +837,7 @@ public class Arena {
         if (arenaPlayer != null) {
             deadPlayers.add(arenaPlayer);
         }
+        player.removeMetadata("arena", controller.getPlugin());
         Location specroom = getLoseLocation();
         player.setMetadata("respawnLocation", new FixedMetadataValue(controller.getPlugin(), specroom));
         player.sendMessage(ChatColor.AQUA + "You have lost - Better luck next time!");
