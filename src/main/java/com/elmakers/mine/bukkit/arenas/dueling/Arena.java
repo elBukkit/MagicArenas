@@ -740,6 +740,16 @@ public class Arena {
                 ChatColor.WHITE + " / " + ChatColor.DARK_AQUA + maxPlayers);
         sender.sendMessage(ChatColor.AQUA + "Required Kills: " + ChatColor.DARK_AQUA + requiredKills);
 
+        if (winXP > 0) {
+            sender.sendMessage(ChatColor.AQUA + "Winning Reward: " + ChatColor.DARK_AQUA + winXP + ChatColor.AQUA + " xp");
+        }
+        if (loseXP > 0) {
+            sender.sendMessage(ChatColor.AQUA + "Losing Reward: " + ChatColor.DARK_AQUA + loseXP + ChatColor.AQUA + " xp");
+        }
+        if (drawXP > 0) {
+            sender.sendMessage(ChatColor.AQUA + "Draw Reward: " + ChatColor.DARK_AQUA + drawXP + ChatColor.AQUA + " xp");
+        }
+
         int spawnSize = spawns.size();
         if (spawnSize == 1) {
             sender.sendMessage(ChatColor.AQUA + "Spawn: " + ChatColor.DARK_AQUA + printLocation(spawns.get(0)));
