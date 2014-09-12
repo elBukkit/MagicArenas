@@ -417,7 +417,6 @@ public class Arena {
         for (ArenaPlayer arenaPlayer : players) {
             Player player = arenaPlayer.getPlayer();
             if (player != null) {
-                player.teleport(getExit());
                 player.removeMetadata("arena", controller.getPlugin());
             }
         }
@@ -425,7 +424,6 @@ public class Arena {
         for (ArenaPlayer arenaPlayer : deadPlayers) {
             Player player = arenaPlayer.getPlayer();
             if (player != null) {
-                player.teleport(getExit());
                 player.removeMetadata("arena", controller.getPlugin());
             }
         }
@@ -608,8 +606,6 @@ public class Arena {
                                 + " hearts, and a total of " + ChatColor.GREEN + Integer.toString(winCount) + ChatColor.GOLD + " wins and "
                                 + ChatColor.RED + Integer.toString(lostCount) + ChatColor.GOLD + " losses.");
                         winner.teleport(getWinLocation());
-                        clearMetadata(winner);
-                        players.clear();
                     } else {
                         if (winner != null) {
                             winner.draw();
