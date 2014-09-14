@@ -327,9 +327,7 @@ public class ArenaCommandExecutor implements TabExecutor {
 
             if (args.length > 3) {
                 configureArgs = new String[args.length - 3];
-                for (int i = 3; i < args.length; i++) {
-                    configureArgs[i - 3] = args[i];
-                }
+                System.arraycopy(args, 3, configureArgs, 0, args.length - 3);
             } else {
                 configureArgs = new String[0];
             }
