@@ -879,7 +879,8 @@ public class Arena {
         if (leaderboardBlock != null && leaderboardFacing != null) {
             BlockFace rightDirection = goLeft(leaderboardFacing);
             leaderboardBlock = leaderboardBlock.getRelative(BlockFace.UP);
-            for (int i = leaderboard.size() - 1; i >=0; i--) {
+            int size = Math.min(leaderboard.size(), leaderboardSize);
+            for (int i = size - 1; i >=0; i--) {
                 ArenaPlayer player = leaderboard.get(i);
                 if (canReplace(leaderboardBlock)) {
                     leaderboardBlock.setType(Material.SKULL);
