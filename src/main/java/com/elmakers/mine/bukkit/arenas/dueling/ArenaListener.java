@@ -19,6 +19,7 @@ import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 
@@ -214,6 +215,21 @@ public class ArenaListener implements Listener {
     public void onPlayerPortal(PlayerPortalEvent event) {
         if (onPortal(event.getPlayer())) {
             event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onPlayerTeleport(PlayerTeleportEvent event) {
+        Player player = event.getPlayer();
+        Arena arena = controller.getArena(player);
+        if (arena != null && arena.getMaxTeleportDistance() >= 0) {
+            Location center = arena.getCenter();
+            if (!center.getWorld().equals(event.getTo().getWorld())
+             || !event.getFrom().getWorld().equals(event.getTo().getWorld())
+             || event.getFrom().distanceSquared(event.getTo()) > arena.getMaxTeleportDistance() * arena.getMaxTeleportDistance()) {
+             event.setCancelled(true);
+                player.sendMessage(ChatColor.DARK_RED + "You can't teleport away from an arena");
+            }
         }
     }
 }

@@ -26,7 +26,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             "max", "min", "win", "lose", "lobby", "spawn", "exit", "center",
             "add", "remove", "randomize", "name", "description", "portal_damage",
             "portal_enter_damage", "portal_death_message", "leaderboard_games_required",
-            "leaderboard_size", "leaderboard_record_size",
+            "leaderboard_size", "leaderboard_record_size", "max_teleport_distance",
             "xp_win", "xp_lose", "xp_draw"
     };
 
@@ -488,7 +488,7 @@ public class ArenaCommandExecutor implements TabExecutor {
         if (propertyName.equalsIgnoreCase("min") || propertyName.equalsIgnoreCase("max") ||
             propertyName.equalsIgnoreCase("portal_damage") || propertyName.equalsIgnoreCase("portal_enter_damage") ||
             propertyName.equalsIgnoreCase("leaderboard_games_required") || propertyName.equalsIgnoreCase("leaderboard_size") ||
-            propertyName.equalsIgnoreCase("leaderboard_record_size") ||
+            propertyName.equalsIgnoreCase("leaderboard_record_size") || propertyName.equalsIgnoreCase("max_teleport_distance") ||
             propertyName.equalsIgnoreCase("xp_win") || propertyName.equalsIgnoreCase("xp_lose") || propertyName.equalsIgnoreCase("xp_draw")
         ) {
             Integer intValue;
@@ -500,6 +500,13 @@ public class ArenaCommandExecutor implements TabExecutor {
 
             if (intValue == null) {
                 sender.sendMessage(ChatColor.RED + "Not a valid integer: " + propertyValue);
+                return;
+            }
+
+            if (propertyName.equalsIgnoreCase("max_teleport_distance")) {
+                arena.setMaxTeleportDistance(intValue);
+                sender.sendMessage(ChatColor.AQUA + "Set max teleport distance of " + arena.getName() + " to " + intValue);
+                controller.save();
                 return;
             }
 

@@ -16,7 +16,6 @@ import org.bukkit.material.MaterialData;
 import org.bukkit.material.Sign;
 import org.bukkit.material.Skull;
 import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.util.Vector;
 
@@ -67,6 +66,8 @@ public class Arena {
     private int leaderboardRecordSize = 30;
     private int leaderboardGamesRequired = 5;
 
+    private int maxTeleportDistance = 32;
+
     private List<ArenaPlayer> leaderboard = new ArrayList<ArenaPlayer>();
     private Location leaderboardLocation;
     private BlockFace leaderboardFacing;
@@ -109,6 +110,8 @@ public class Arena {
         leaderboardSize = configuration.getInt("leaderboard_size", 5);
         leaderboardRecordSize = configuration.getInt("leaderboard_record_size", 30);
         leaderboardGamesRequired = configuration.getInt("leaderboard_games_required", 5);
+
+        maxTeleportDistance = configuration.getInt("max_teleport_distance", 16);
 
         arenaType = ArenaType.parse(configuration.getString("type"));
         if (arenaType == null) {
@@ -173,6 +176,8 @@ public class Arena {
         configuration.set("portal_damage", portalDamage);
         configuration.set("portal_enter_damage", portalEnterDamage);
         configuration.set("portal_death_message", portalDeathMessage);
+
+        configuration.set("max_teleport_distance", maxTeleportDistance);
 
         configuration.set("type", arenaType.name());
 
@@ -1166,5 +1171,13 @@ public class Arena {
 
     public int getDrawXP() {
         return drawXP;
+    }
+
+    public void setMaxTeleportDistance(int distance) {
+        maxTeleportDistance = distance;
+    }
+
+    public int getMaxTeleportDistance() {
+        return maxTeleportDistance;
     }
 }
