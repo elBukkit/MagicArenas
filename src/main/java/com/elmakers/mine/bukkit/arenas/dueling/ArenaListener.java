@@ -1,5 +1,6 @@
 package com.elmakers.mine.bukkit.arenas.dueling;
 
+import com.elmakers.mine.bukkit.api.event.SaveEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -238,5 +239,10 @@ public class ArenaListener implements Listener {
         if (event.getInventory().getName().contains("Leaderboard")) {
             event.getWhoClicked().closeInventory();
         }
+    }
+
+    @EventHandler
+    public void onMagicSave(SaveEvent event) {
+        controller.save(event.isAsynchronousSave());
     }
 }

@@ -8,6 +8,7 @@
  - Implement physical leaderboard
  - Implement chest inventory full leaderboard view
  - Add XP rewards for win/loss/draw
+ - Implement asynchronous autosave
 
 ## 1.0
 

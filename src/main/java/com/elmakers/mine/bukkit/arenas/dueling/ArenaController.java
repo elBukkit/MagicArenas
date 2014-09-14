@@ -1,6 +1,7 @@
 package com.elmakers.mine.bukkit.arenas.dueling;
 
 import com.elmakers.mine.bukkit.api.magic.MageController;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
@@ -18,6 +19,7 @@ public class ArenaController {
     private final Map<String, Arena> arenas = new HashMap<String, Arena>();
     private final Plugin plugin;
     private final MageController magic;
+    private final Object saveLock = new Object();
 
     public ArenaController(Plugin plugin, MageController magic) {
         this.magic = magic;
@@ -31,14 +33,44 @@ public class ArenaController {
     }
 
     public void save() {
-        File arenaSaveFile = getDataFile("arenas");
-        YamlConfiguration arenaSaves = new YamlConfiguration();
+        save(true);
+    }
+
+    public void save(boolean asynchronous) {
+        final File arenaSaveFile = getDataFile("arenas");
+        final YamlConfiguration arenaSaves = new YamlConfiguration();
         save(arenaSaves);
+
         try {
             arenaSaves.save(arenaSaveFile);
         } catch (Exception ex) {
             plugin.getLogger().warning("Error saving arena data to " + arenaSaveFile.getName());
             ex.printStackTrace();
+        }
+
+        if (asynchronous) {
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+                @Override
+                public void run() {
+                    synchronized (saveLock) {
+                        try {
+                            arenaSaves.save(arenaSaveFile);
+                            plugin.getLogger().info("Magic arena data saved");
+                        } catch (Exception ex) {
+                            plugin.getLogger().warning("Error saving arena data to " + arenaSaveFile.getName());
+                            ex.printStackTrace();
+                        }
+                    }
+                }
+            });
+        } else {
+            try {
+                arenaSaves.save(arenaSaveFile);
+                plugin.getLogger().info("Magic arena data saved synchronously");
+            } catch (Exception ex) {
+                plugin.getLogger().warning("Error saving arena data to " + arenaSaveFile.getName() + " synchronously");
+                ex.printStackTrace();
+            }
         }
     }
 
