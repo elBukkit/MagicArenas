@@ -12,6 +12,10 @@ import org.bukkit.block.BlockState;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.material.MaterialData;
 import org.bukkit.material.Sign;
 import org.bukkit.material.Skull;
@@ -1180,5 +1184,61 @@ public class Arena {
 
     public int getMaxTeleportDistance() {
         return maxTeleportDistance;
+    }
+
+    public void showLeaderboard(Player player) {
+        int inventorySize = leaderboard.size() + 1;
+        int multiple = (int)Math.ceil((float)inventorySize / 9) * 9;
+        Bukkit.getLogger().info("Inventory size: " + multiple);
+        boolean shownPlayer = false;
+        String arenaName = ChatColor.DARK_AQUA + "Leaderboard: " + ChatColor.GOLD + getName();
+        if (arenaName.length() > 32) {
+            arenaName = arenaName.substring(0, 31);
+        }
+        Inventory leaderboardInventory = Bukkit.createInventory(null, multiple, arenaName);
+        for (int i = 0; i < leaderboard.size(); i++) {
+            ArenaPlayer arenaPlayer = leaderboard.get(i);
+            ItemStack playerItem = createLeaderboardIcon(i + 1, arenaPlayer);
+            leaderboardInventory.setItem(i, playerItem);
+            Bukkit.getLogger().info("#" + i + ": " + playerItem);
+            if (player.getUniqueId().equals(arenaPlayer.getUUID())) {
+                shownPlayer = true;
+            }
+        }
+
+        if (!shownPlayer) {
+            ArenaPlayer arenaPlayer = new ArenaPlayer(this, player);
+            ItemStack currentPlayer = createLeaderboardIcon(null, arenaPlayer);
+            leaderboardInventory.setItem(leaderboard.size(), currentPlayer);
+        }
+
+        player.openInventory(leaderboardInventory);
+    }
+
+    protected ItemStack createLeaderboardIcon(Integer rank, ArenaPlayer player) {
+        ItemStack playerItem = new ItemStack(Material.SKULL_ITEM, 1, (short)0, (byte)3);
+        ItemMeta meta = playerItem.getItemMeta();
+        if (meta instanceof SkullMeta) {
+            SkullMeta skull = (SkullMeta)meta;
+            skull.setOwner(player.getName());
+        }
+        meta.setDisplayName(ChatColor.GOLD + player.getDisplayName());
+        List<String> lore = new ArrayList<String>();
+
+        if (rank != null) {
+            lore.add(ChatColor.DARK_PURPLE + "Ranked " + ChatColor.AQUA + "#" + Integer.toString(rank) + ChatColor.DARK_PURPLE + " for " + ChatColor.GOLD + getName());
+        } else {
+            lore.add(ChatColor.DARK_PURPLE + "Not ranked for " + ChatColor.GOLD + getName());
+        }
+
+        lore.add(ChatColor.GREEN + "Wins: " + ChatColor.WHITE + Integer.toString(player.getWins()));
+        lore.add(ChatColor.RED + "Losses: " + ChatColor.WHITE + Integer.toString(player.getLosses()));
+        lore.add(ChatColor.GOLD + "Win Ratio: " + ChatColor.WHITE + Integer.toString((int)(player.getWinRatio() * 100)) + "%");
+        lore.add(ChatColor.YELLOW + "Draws: " + ChatColor.WHITE + Integer.toString(player.getDraws()));
+        lore.add(ChatColor.GRAY + "Defaults: " + ChatColor.WHITE + Integer.toString(player.getQuits()));
+        meta.setLore(lore);
+        playerItem.setItemMeta(meta);
+
+        return playerItem;
     }
 }

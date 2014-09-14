@@ -6,6 +6,8 @@
  - Added tracking of wins/losses
  - Added leaderboard tracking
  - Implement physical leaderboard
+ - Implement chest inventory full leaderboard view
+ - Add XP rewards for win/loss/draw
 
 ## 1.0
 

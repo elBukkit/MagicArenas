@@ -14,6 +14,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.EntityPortalEnterEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
@@ -151,8 +152,7 @@ public class ArenaListener implements Listener {
                     String arenaName = sign.getLine(2);
                     Arena arena = controller.getArena(arenaName);
                     if (arena != null) {
-                        arena.describeLeaderboard(player);
-                        arena.describeStats(player, player);
+                        arena.showLeaderboard(player);
                     } else {
                         player.sendMessage(ChatColor.RED + "Sorry, that arena isn't available.");
                     }
@@ -230,6 +230,13 @@ public class ArenaListener implements Listener {
              event.setCancelled(true);
                 player.sendMessage(ChatColor.DARK_RED + "You can't teleport away from an arena");
             }
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (event.getInventory().getName().contains("Leaderboard")) {
+            event.getWhoClicked().closeInventory();
         }
     }
 }
