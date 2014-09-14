@@ -256,7 +256,7 @@ public class Arena {
 
             // Wrap index around to player
             num = (num + 1) % spawns.size();
-            player.teleport(spawn);
+            arenaPlayer.teleport(spawn);
         }
 
         messageNextRoundPlayerList(ChatColor.GOLD + "You are up for the next round!");
@@ -440,7 +440,7 @@ public class Arena {
         for (ArenaPlayer arenaPlayer : queue) {
             Player player = arenaPlayer.getPlayer();
             if (player != null) {
-                player.teleport(getExit());
+                arenaPlayer.teleport(getExit());
                 player.removeMetadata("arena", controller.getPlugin());
             }
         }
@@ -458,7 +458,7 @@ public class Arena {
     public ArenaPlayer add(Player player) {
         ArenaPlayer arenaPlayer = new ArenaPlayer(this, player);
         queue.add(arenaPlayer);
-        player.teleport(getLobby());
+        arenaPlayer.teleport(getLobby());
         player.setMetadata("arena", new FixedMetadataValue(controller.getPlugin(), arenaPlayer));
         return arenaPlayer;
     }

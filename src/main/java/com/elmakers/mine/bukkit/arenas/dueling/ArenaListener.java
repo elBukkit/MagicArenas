@@ -222,6 +222,10 @@ public class ArenaListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onPlayerTeleport(PlayerTeleportEvent event) {
         Player player = event.getPlayer();
+        if (player.hasMetadata("allow_teleport")) {
+            player.removeMetadata("allow_teleport", controller.getPlugin());
+            return;
+        }
         Arena arena = controller.getArena(player);
         if (arena != null && arena.getMaxTeleportDistance() >= 0) {
             Location center = arena.getCenter();

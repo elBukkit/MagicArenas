@@ -7,6 +7,7 @@ import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
 
@@ -165,7 +166,7 @@ public class ArenaController {
             Arena arena = arenaPlayer.getArena();
             arena.remove(player);
             player.sendMessage("You have left " + arena.getName());
-            player.teleport(arena.getExit());
+            arenaPlayer.teleport(arena.getExit());
             arena.check();
         }
 

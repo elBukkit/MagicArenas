@@ -5,6 +5,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 
 import java.util.UUID;
@@ -232,6 +233,7 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
     public void teleport(Location location) {
         Player player = getPlayer();
         if (player != null) {
+            player.setMetadata("allow_teleport", new FixedMetadataValue(arena.getController().getPlugin(), true));
             player.teleport(location);
         }
     }
