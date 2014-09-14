@@ -26,7 +26,8 @@ public class ArenaCommandExecutor implements TabExecutor {
             "max", "min", "win", "lose", "lobby", "spawn", "exit", "center",
             "add", "remove", "randomize", "name", "description", "portal_damage",
             "portal_enter_damage", "portal_death_message", "leaderboard_games_required",
-            "leaderboard_size", "xp_win", "xp_lose", "xp_draw"
+            "leaderboard_size", "leaderboard_record_size",
+            "xp_win", "xp_lose", "xp_draw"
     };
 
     private final static String[] ARENA_LISTS = {
@@ -489,8 +490,9 @@ public class ArenaCommandExecutor implements TabExecutor {
         if (propertyName.equalsIgnoreCase("min") || propertyName.equalsIgnoreCase("max") ||
             propertyName.equalsIgnoreCase("portal_damage") || propertyName.equalsIgnoreCase("portal_enter_damage") ||
             propertyName.equalsIgnoreCase("leaderboard_games_required") || propertyName.equalsIgnoreCase("leaderboard_size") ||
+            propertyName.equalsIgnoreCase("leaderboard_record_size") ||
             propertyName.equalsIgnoreCase("xp_win") || propertyName.equalsIgnoreCase("xp_lose") || propertyName.equalsIgnoreCase("xp_draw")
-                ) {
+        ) {
             Integer intValue;
             try {
                 intValue = Integer.parseInt(propertyValue);
@@ -513,6 +515,13 @@ public class ArenaCommandExecutor implements TabExecutor {
             if (propertyName.equalsIgnoreCase("leaderboard_size")) {
                 arena.setLeaderboardSize(intValue);
                 sender.sendMessage(ChatColor.AQUA + "Set leaderboard size of " + arena.getName() + " to " + intValue);
+                controller.save();
+                return;
+            }
+
+            if (propertyName.equalsIgnoreCase("leaderboard_record_size")) {
+                arena.setLeaderboardRecordSize(intValue);
+                sender.sendMessage(ChatColor.AQUA + "Set leaderboard record size of " + arena.getName() + " to " + intValue);
                 controller.save();
                 return;
             }

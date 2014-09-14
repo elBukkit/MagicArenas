@@ -64,6 +64,7 @@ public class Arena {
     private int drawXP = 0;
 
     private int leaderboardSize = 5;
+    private int leaderboardRecordSize = 30;
     private int leaderboardGamesRequired = 5;
 
     private List<ArenaPlayer> leaderboard = new ArrayList<ArenaPlayer>();
@@ -106,6 +107,7 @@ public class Arena {
         portalDeathMessage = configuration.getString("portal_death_message");
 
         leaderboardSize = configuration.getInt("leaderboard_size", 5);
+        leaderboardRecordSize = configuration.getInt("leaderboard_record_size", 30);
         leaderboardGamesRequired = configuration.getInt("leaderboard_games_required", 5);
 
         arenaType = ArenaType.parse(configuration.getString("type"));
@@ -165,6 +167,7 @@ public class Arena {
         configuration.set("win_xp", winXP);
 
         configuration.set("leaderboard_size", leaderboardSize);
+        configuration.set("leaderboard_record_size", leaderboardRecordSize);
         configuration.set("leaderboard_games_required", leaderboardGamesRequired);
 
         configuration.set("portal_damage", portalDamage);
@@ -1011,13 +1014,28 @@ public class Arena {
         }
     }
 
-    public void setLeaderboardSize(int size) {
+    protected void trimLeaderboard() {
         removeLeaderboard();
-        while (leaderboard.size() > size) {
+        while (leaderboard.size() > leaderboardRecordSize) {
             leaderboard.remove(leaderboard.size() - 1);
         }
-        leaderboardSize = size;
         updateLeaderboard();
+    }
+
+    public void setLeaderboardRecordSize(int size) {
+        leaderboardRecordSize = size;
+        if (leaderboardSize > leaderboardRecordSize) {
+            leaderboardSize = leaderboardRecordSize;
+        }
+        trimLeaderboard();
+    }
+
+    public void setLeaderboardSize(int size) {
+        leaderboardSize = size;
+        if (leaderboardSize > leaderboardRecordSize) {
+            leaderboardRecordSize = leaderboardSize;
+        }
+        trimLeaderboard();
     }
 
     public void setLeaderboardGamesRequired(int required) {
