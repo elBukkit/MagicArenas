@@ -147,8 +147,8 @@ public class Arena {
         center = ConfigurationUtils.toLocation(configuration.getString("center"));
         exit = ConfigurationUtils.toLocation(configuration.getString("exit"));
 
-        winXP = configuration.getInt("lose_xp", 0);
-        loseXP = configuration.getInt("win_xp", 0);
+        winXP = configuration.getInt("win_xp", 0);
+        loseXP = configuration.getInt("lose_xp", 0);
         drawXP = configuration.getInt("draw_xp", 0);
 
         for (String s : configuration.getStringList("spawns")){
