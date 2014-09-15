@@ -574,6 +574,10 @@ public class Arena {
             return;
         }
 
+        if (state == ArenaState.LOBBY) {
+            return;
+        }
+
         final Server server = controller.getPlugin().getServer();
         if (players.size() == 0 && state != ArenaState.WON) {
             server.broadcastMessage(ChatColor.RED + "The " + ChatColor.YELLOW + getName() + ChatColor.RED + " match ended in a default");
