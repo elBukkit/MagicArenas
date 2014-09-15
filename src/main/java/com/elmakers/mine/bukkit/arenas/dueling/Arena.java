@@ -305,7 +305,7 @@ public class Arena {
     }
 
     public ArenaPlayer getWinner() {
-        if (state == ArenaState.ACTIVE && players.size() == 1) {
+        if (players.size() == 1) {
             ArenaPlayer winner = players.iterator().next();
             return winner;
         }
