@@ -56,7 +56,6 @@ public class ArenaController {
                     synchronized (saveLock) {
                         try {
                             arenaSaves.save(arenaSaveFile);
-                            plugin.getLogger().info("Magic arena data saved");
                         } catch (Exception ex) {
                             plugin.getLogger().warning("Error saving arena data to " + arenaSaveFile.getName());
                             ex.printStackTrace();
@@ -67,7 +66,6 @@ public class ArenaController {
         } else {
             try {
                 arenaSaves.save(arenaSaveFile);
-                plugin.getLogger().info("Magic arena data saved synchronously");
             } catch (Exception ex) {
                 plugin.getLogger().warning("Error saving arena data to " + arenaSaveFile.getName() + " synchronously");
                 ex.printStackTrace();
