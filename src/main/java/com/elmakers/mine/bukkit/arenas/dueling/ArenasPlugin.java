@@ -39,7 +39,7 @@ public class ArenasPlugin extends JavaPlugin {
     }
 
     public void save() {
-        controller.save();
+        controller.save(false);
     }
 
     public void load() {
