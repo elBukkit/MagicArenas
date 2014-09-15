@@ -27,7 +27,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             "add", "remove", "randomize", "name", "description", "portal_damage",
             "portal_enter_damage", "portal_death_message", "leaderboard_games_required",
             "leaderboard_size", "leaderboard_record_size", "max_teleport_distance",
-            "xp_win", "xp_lose", "xp_draw"
+            "xp_win", "xp_lose", "xp_draw", "countdown", "countdown_max"
     };
 
     private final static String[] ARENA_LISTS = {
@@ -258,7 +258,7 @@ public class ArenaCommandExecutor implements TabExecutor {
         }
 
         if (subCommand.equalsIgnoreCase("start")) {
-            arena.startCountdown(10);
+            arena.startCountdown();
             return true;
         }
 
@@ -489,7 +489,8 @@ public class ArenaCommandExecutor implements TabExecutor {
             propertyName.equalsIgnoreCase("portal_damage") || propertyName.equalsIgnoreCase("portal_enter_damage") ||
             propertyName.equalsIgnoreCase("leaderboard_games_required") || propertyName.equalsIgnoreCase("leaderboard_size") ||
             propertyName.equalsIgnoreCase("leaderboard_record_size") || propertyName.equalsIgnoreCase("max_teleport_distance") ||
-            propertyName.equalsIgnoreCase("xp_win") || propertyName.equalsIgnoreCase("xp_lose") || propertyName.equalsIgnoreCase("xp_draw")
+            propertyName.equalsIgnoreCase("xp_win") || propertyName.equalsIgnoreCase("xp_lose") || propertyName.equalsIgnoreCase("xp_draw") ||
+            propertyName.equalsIgnoreCase("countdown") || propertyName.equalsIgnoreCase("countdown_max")
         ) {
             Integer intValue;
             try {
@@ -500,6 +501,20 @@ public class ArenaCommandExecutor implements TabExecutor {
 
             if (intValue == null) {
                 sender.sendMessage(ChatColor.RED + "Not a valid integer: " + propertyValue);
+                return;
+            }
+
+            if (propertyName.equalsIgnoreCase("countdown")) {
+                arena.setCountdown(intValue);
+                sender.sendMessage(ChatColor.AQUA + "Set countdown of " + arena.getName() + " to " + intValue + " seconds");
+                controller.save();
+                return;
+            }
+
+            if (propertyName.equalsIgnoreCase("countdown_max")) {
+                arena.setCountdownMax(intValue);
+                sender.sendMessage(ChatColor.AQUA + "Set max countdown of " + arena.getName() + " to " + intValue + " seconds");
+                controller.save();
                 return;
             }
 

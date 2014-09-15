@@ -68,6 +68,9 @@ public class Arena {
     private int loseXP = 0;
     private int drawXP = 0;
 
+    private int countdown = 10;
+    private int countdownMax = 10;
+
     private int leaderboardSize = 5;
     private int leaderboardRecordSize = 30;
     private int leaderboardGamesRequired = 5;
@@ -118,6 +121,9 @@ public class Arena {
         leaderboardGamesRequired = configuration.getInt("leaderboard_games_required", 5);
 
         maxTeleportDistance = configuration.getInt("max_teleport_distance", 64);
+
+        countdown = configuration.getInt("countdown", 10);
+        countdownMax = configuration.getInt("countdown_max", 30);
 
         arenaType = ArenaType.parse(configuration.getString("type"));
         if (arenaType == null) {
@@ -184,6 +190,9 @@ public class Arena {
         configuration.set("portal_death_message", portalDeathMessage);
 
         configuration.set("max_teleport_distance", maxTeleportDistance);
+
+        configuration.set("countdown", countdown);
+        configuration.set("countdown_max", countdownMax);
 
         configuration.set("type", arenaType.name());
 
@@ -357,6 +366,10 @@ public class Arena {
 
     public void messageNextRoundPlayers(String message) {
         messagePlayers(message, getNextRoundPlayers());
+    }
+
+    public void startCountdown() {
+        startCountdown(countdown);
     }
 
     public void startCountdown(int time) {
@@ -682,9 +695,9 @@ public class Arena {
 
         if (isReady()) {
             if (isFull()) {
-                startCountdown(10);
+                startCountdown(countdown);
             } else {
-                startCountdown(30);
+                startCountdown(countdownMax);
             }
         } else {
             lobbyMessage();
@@ -722,33 +735,35 @@ public class Arena {
         sender.sendMessage(ChatColor.AQUA + "Min / Max: " + ChatColor.DARK_AQUA + minPlayers +
                 ChatColor.WHITE + " / " + ChatColor.DARK_AQUA + maxPlayers);
         sender.sendMessage(ChatColor.AQUA + "Required Kills: " + ChatColor.DARK_AQUA + requiredKills);
+        sender.sendMessage(ChatColor.AQUA + "Countdown: " + ChatColor.DARK_AQUA + countdown +
+                ChatColor.WHITE + " / " + ChatColor.DARK_AQUA + countdownMax);
 
         if (winXP > 0) {
-            sender.sendMessage(ChatColor.AQUA + "Winning Reward: " + ChatColor.DARK_AQUA + winXP + ChatColor.AQUA + " xp");
+            sender.sendMessage(ChatColor.AQUA + "Winning Reward: " + ChatColor.LIGHT_PURPLE + winXP + ChatColor.AQUA + " xp");
         }
         if (loseXP > 0) {
-            sender.sendMessage(ChatColor.AQUA + "Losing Reward: " + ChatColor.DARK_AQUA + loseXP + ChatColor.AQUA + " xp");
+            sender.sendMessage(ChatColor.AQUA + "Losing Reward: " + ChatColor.LIGHT_PURPLE + loseXP + ChatColor.AQUA + " xp");
         }
         if (drawXP > 0) {
-            sender.sendMessage(ChatColor.AQUA + "Draw Reward: " + ChatColor.DARK_AQUA + drawXP + ChatColor.AQUA + " xp");
+            sender.sendMessage(ChatColor.AQUA + "Draw Reward: " + ChatColor.LIGHT_PURPLE + drawXP + ChatColor.AQUA + " xp");
         }
 
         int spawnSize = spawns.size();
         if (spawnSize == 1) {
-            sender.sendMessage(ChatColor.AQUA + "Spawn: " + ChatColor.DARK_AQUA + printLocation(spawns.get(0)));
+            sender.sendMessage(ChatColor.DARK_BLUE + "Spawn: " + ChatColor.BLUE + printLocation(spawns.get(0)));
         } else {
-            sender.sendMessage(ChatColor.AQUA + "Spawns: " + ChatColor.DARK_AQUA + spawnSize);
+            sender.sendMessage(ChatColor.DARK_BLUE + "Spawns: " + ChatColor.BLUE + spawnSize);
             for (Location spawn : spawns) {
-                sender.sendMessage(ChatColor.DARK_AQUA + " " + printLocation(spawn));
+                sender.sendMessage(ChatColor.BLUE + " " + printLocation(spawn));
             }
         }
-        sender.sendMessage(ChatColor.AQUA + "Lobby: " + ChatColor.DARK_AQUA + printLocation(lobby));
-        sender.sendMessage(ChatColor.AQUA + "Win: " + ChatColor.DARK_AQUA + printLocation(win));
-        sender.sendMessage(ChatColor.AQUA + "Lose: " + ChatColor.DARK_AQUA + printLocation(lose));
-        sender.sendMessage(ChatColor.AQUA + "Exit: " + ChatColor.DARK_AQUA + printLocation(exit));
-        sender.sendMessage(ChatColor.AQUA + "Center: " + ChatColor.DARK_AQUA + printLocation(center));
+        sender.sendMessage(ChatColor.DARK_BLUE + "Lobby: " + ChatColor.BLUE + printLocation(lobby));
+        sender.sendMessage(ChatColor.DARK_BLUE + "Win: " + ChatColor.BLUE + printLocation(win));
+        sender.sendMessage(ChatColor.DARK_BLUE + "Lose: " + ChatColor.BLUE + printLocation(lose));
+        sender.sendMessage(ChatColor.DARK_BLUE + "Exit: " + ChatColor.BLUE + printLocation(exit));
+        sender.sendMessage(ChatColor.DARK_BLUE + "Center: " + ChatColor.BLUE + printLocation(center));
         if (randomizeSpawn != null) {
-            sender.sendMessage(ChatColor.AQUA + "Randomize: " + ChatColor.DARK_AQUA + randomizeSpawn);
+            sender.sendMessage(ChatColor.BLUE + "Randomize: " + ChatColor.BLUE + randomizeSpawn);
         }
         if (portalDamage > 0 || portalEnterDamage > 0) {
             sender.sendMessage(ChatColor.LIGHT_PURPLE + "Portal Entry Damage: " + ChatColor.DARK_PURPLE + portalEnterDamage);
@@ -757,20 +772,21 @@ public class Arena {
                 sender.sendMessage(ChatColor.LIGHT_PURPLE + "Portal Death Message: " + ChatColor.DARK_PURPLE + portalDeathMessage);
             }
         }
-        sender.sendMessage(ChatColor.AQUA + "Leaderboard Size: " + ChatColor.DARK_AQUA + leaderboardSize + ChatColor.WHITE + "/" + ChatColor.DARK_AQUA + leaderboardRecordSize);
+        sender.sendMessage(ChatColor.YELLOW + "Leaderboard Size: " + ChatColor.GOLD + leaderboardSize + ChatColor.WHITE + "/" + ChatColor.GOLD + leaderboardRecordSize);
         sender.sendMessage(ChatColor.AQUA + "State: " + ChatColor.DARK_AQUA + state);
+
         int inGamePlayers = getInGamePlayers();
-        sender.sendMessage(ChatColor.AQUA + "Active Players: " + ChatColor.DARK_AQUA + inGamePlayers);
+        sender.sendMessage(ChatColor.DARK_GREEN + "Active Players: " + ChatColor.GREEN + inGamePlayers);
         for (ArenaPlayer player : players) {
             sender.sendMessage(ChatColor.GOLD + " " + player.getDisplayName());
         }
         int deathCount = deadPlayers.size();
-        sender.sendMessage(ChatColor.AQUA + "Dead Players: " + ChatColor.DARK_AQUA + deathCount);
+        sender.sendMessage(ChatColor.DARK_RED + "Dead Players: " + ChatColor.RED + deathCount);
         for (ArenaPlayer player : deadPlayers) {
             sender.sendMessage(ChatColor.RED + " " + player.getDisplayName());
         }
         int queuedPlayers = getQueuedPlayers();
-        sender.sendMessage(ChatColor.AQUA + "Queued Players: " + ChatColor.DARK_AQUA + queuedPlayers);
+        sender.sendMessage(ChatColor.YELLOW + "Queued Players: " + ChatColor.GOLD + queuedPlayers);
         for (ArenaPlayer player : queue) {
             sender.sendMessage(ChatColor.YELLOW + " " + player.getDisplayName());
         }
@@ -1237,5 +1253,13 @@ public class Arena {
         playerItem.setItemMeta(meta);
 
         return playerItem;
+    }
+
+    public void setCountdown(int countdown) {
+        this.countdown = countdown;
+    }
+
+    public void setCountdownMax(int countdownMax) {
+        this.countdownMax = countdownMax;
     }
 }
