@@ -165,6 +165,10 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
         return (player != null && player.getUniqueId().equals(uuid));
     }
 
+    public boolean equals(UUID id) {
+        return (id != null && id.equals(uuid));
+    }
+
     public int getValidMatches() {
         return wins + losses;
     }
@@ -213,6 +217,12 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
 
     @Override
     public boolean equals(Object other) {
+        if (other instanceof Player) {
+            return equals((Player)other);
+        }
+        if (other instanceof UUID) {
+            return equals((UUID)other);
+        }
         if (!(other instanceof ArenaPlayer)) return false;
         return uuid.equals(((ArenaPlayer) other).uuid);
     }
@@ -272,6 +282,13 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
             String arenaKey = "arena." + arena.getKey();
             ConfigurationSection data = mage.getData();
             data.set(arenaKey, null);
+        }
+    }
+
+    public void clearMetadata() {
+        Player player = getPlayer();
+        if (player != null) {
+            player.removeMetadata("arena", arena.getController().getPlugin());
         }
     }
 }

@@ -27,10 +27,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Random;
+import java.util.Set;
 
 public class Arena {
     static class ArenaPlayerComparator implements Comparator<ArenaPlayer>
@@ -45,8 +47,8 @@ public class Arena {
 
     private ArenaState state = ArenaState.LOBBY;
     private Queue<ArenaPlayer> queue = new LinkedList<ArenaPlayer>();
-    private Collection<ArenaPlayer> players = new ArrayList<ArenaPlayer>();
-    private Collection<ArenaPlayer> deadPlayers = new ArrayList<ArenaPlayer>();
+    private Set<ArenaPlayer> players = new HashSet<ArenaPlayer>();
+    private Set<ArenaPlayer> deadPlayers = new HashSet<ArenaPlayer>();
 
     private List<Location> spawns = new ArrayList<Location>();
     private final ArenaController controller;
@@ -286,35 +288,11 @@ public class Arena {
         }
     }
 
-    public ArenaPlayer remove(Player player) {
-        ArenaPlayer removed = null;
-        Collection<ArenaPlayer> currentPlayers = new ArrayList<ArenaPlayer>(players);
-        players.clear();
-        for (ArenaPlayer arenaPlayer : currentPlayers) {
-            if (arenaPlayer.equals(player)) {
-                removed = arenaPlayer;
-            } else {
-                players.add(arenaPlayer);
-            }
-        }
-        Collection<ArenaPlayer> currentQueue = new ArrayList<ArenaPlayer>(queue);
-        queue.clear();
-        for (ArenaPlayer arenaPlayer : currentQueue) {
-            if (arenaPlayer.equals(player)) {
-                removed = arenaPlayer;
-            } else {
-                queue.add(arenaPlayer);
-            }
-        }
-        player.removeMetadata("arena", controller.getPlugin());
-        return removed;
-    }
-
-    protected void clearMetadata(ArenaPlayer arenaPlayer) {
-        Player player = arenaPlayer.getPlayer();
-        if (player != null) {
-            player.removeMetadata("arena", controller.getPlugin());
-        }
+    public void remove(Player player) {
+        ArenaPlayer removePlayer = new ArenaPlayer(this, player);
+        players.remove(removePlayer);
+        queue.remove(removePlayer);
+        removePlayer.clearMetadata();
     }
 
     public ArenaPlayer getWinner() {
@@ -725,22 +703,6 @@ public class Arena {
         if (description != null) {
             sender.sendMessage(ChatColor.LIGHT_PURPLE + getDescription());
         }
-        sender.sendMessage(ChatColor.AQUA + "State: " + ChatColor.DARK_AQUA + state);
-        int inGamePlayers = getInGamePlayers();
-        sender.sendMessage(ChatColor.AQUA + "Active Players: " + ChatColor.DARK_AQUA + inGamePlayers);
-        for (ArenaPlayer player : players) {
-            sender.sendMessage(ChatColor.GOLD + " " + player.getDisplayName());
-        }
-        int deathCount = deadPlayers.size();
-        sender.sendMessage(ChatColor.AQUA + "Dead Players: " + ChatColor.DARK_AQUA + deathCount);
-        for (ArenaPlayer player : deadPlayers) {
-            sender.sendMessage(ChatColor.RED + " " + player.getDisplayName());
-        }
-        int queuedPlayers = getQueuedPlayers();
-        sender.sendMessage(ChatColor.AQUA + "Queued Players: " + ChatColor.DARK_AQUA + queuedPlayers);
-        for (ArenaPlayer player : queue) {
-            sender.sendMessage(ChatColor.YELLOW + " " + player.getDisplayName());
-        }
         int minPlayers = getMinPlayers();
         int maxPlayers = getMaxPlayers();
         sender.sendMessage(ChatColor.AQUA + "Min / Max: " + ChatColor.DARK_AQUA + minPlayers +
@@ -780,6 +742,23 @@ public class Arena {
             if (portalDeathMessage != null && !portalDeathMessage.isEmpty()) {
                 sender.sendMessage(ChatColor.LIGHT_PURPLE + "Portal Death Message: " + ChatColor.DARK_PURPLE + portalDeathMessage);
             }
+        }
+        sender.sendMessage(ChatColor.AQUA + "Leaderboard Size: " + ChatColor.DARK_AQUA + leaderboardSize + ChatColor.WHITE + "/" + ChatColor.DARK_AQUA + leaderboardRecordSize);
+        sender.sendMessage(ChatColor.AQUA + "State: " + ChatColor.DARK_AQUA + state);
+        int inGamePlayers = getInGamePlayers();
+        sender.sendMessage(ChatColor.AQUA + "Active Players: " + ChatColor.DARK_AQUA + inGamePlayers);
+        for (ArenaPlayer player : players) {
+            sender.sendMessage(ChatColor.GOLD + " " + player.getDisplayName());
+        }
+        int deathCount = deadPlayers.size();
+        sender.sendMessage(ChatColor.AQUA + "Dead Players: " + ChatColor.DARK_AQUA + deathCount);
+        for (ArenaPlayer player : deadPlayers) {
+            sender.sendMessage(ChatColor.RED + " " + player.getDisplayName());
+        }
+        int queuedPlayers = getQueuedPlayers();
+        sender.sendMessage(ChatColor.AQUA + "Queued Players: " + ChatColor.DARK_AQUA + queuedPlayers);
+        for (ArenaPlayer player : queue) {
+            sender.sendMessage(ChatColor.YELLOW + " " + player.getDisplayName());
         }
     }
 
@@ -838,16 +817,10 @@ public class Arena {
     }
 
     public void died(Player player) {
-        ArenaPlayer arenaPlayer = null;
-        for (ArenaPlayer testPlayer : players) {
-            if (testPlayer.equals(player)) {
-                players.remove(testPlayer);
-                arenaPlayer = testPlayer;
-                break;
-            }
-        }
-        if (arenaPlayer != null) {
+        ArenaPlayer arenaPlayer = new ArenaPlayer(this, player);
+        if (players.contains(arenaPlayer)) {
             deadPlayers.add(arenaPlayer);
+            players.remove(arenaPlayer);
         }
         player.removeMetadata("arena", controller.getPlugin());
         Location specroom = getLoseLocation();
@@ -1084,6 +1057,11 @@ public class Arena {
                     " is not on the leaderboard for " + ChatColor.GOLD + getName());
         }
 
+        Arena currentArena = controller.getArena(player);
+        if (currentArena != null) {
+            sender.sendMessage(ChatColor.DARK_PURPLE + player.getDisplayName() + ChatColor.LIGHT_PURPLE + " is currently in " + ChatColor.GOLD + currentArena.getName());
+        }
+
         sender.sendMessage(ChatColor.GREEN + "Wins: " + ChatColor.WHITE + Integer.toString(wins));
         sender.sendMessage(ChatColor.RED + "Losses: " + ChatColor.WHITE + Integer.toString(losses));
         sender.sendMessage(ChatColor.GOLD + "Win Ratio: " + ChatColor.WHITE + Integer.toString((int)(ratio * 100)) + "%");
@@ -1233,7 +1211,7 @@ public class Arena {
 
         lore.add(ChatColor.GREEN + "Wins: " + ChatColor.WHITE + Integer.toString(player.getWins()));
         lore.add(ChatColor.RED + "Losses: " + ChatColor.WHITE + Integer.toString(player.getLosses()));
-        lore.add(ChatColor.GOLD + "Win Ratio: " + ChatColor.WHITE + Integer.toString((int)(player.getWinRatio() * 100)) + "%");
+        lore.add(ChatColor.GOLD + "Win Ratio: " + ChatColor.WHITE + Integer.toString((int) (player.getWinRatio() * 100)) + "%");
         lore.add(ChatColor.YELLOW + "Draws: " + ChatColor.WHITE + Integer.toString(player.getDraws()));
         lore.add(ChatColor.GRAY + "Defaults: " + ChatColor.WHITE + Integer.toString(player.getQuits()));
         meta.setLore(lore);
