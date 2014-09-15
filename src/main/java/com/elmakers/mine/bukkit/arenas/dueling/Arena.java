@@ -732,7 +732,7 @@ public class Arena {
         }
         int minPlayers = getMinPlayers();
         int maxPlayers = getMaxPlayers();
-        sender.sendMessage(ChatColor.AQUA + "Min / Max: " + ChatColor.DARK_AQUA + minPlayers +
+        sender.sendMessage(ChatColor.AQUA + "Min / Max Players: " + ChatColor.DARK_AQUA + minPlayers +
                 ChatColor.WHITE + " / " + ChatColor.DARK_AQUA + maxPlayers);
         sender.sendMessage(ChatColor.AQUA + "Required Kills: " + ChatColor.DARK_AQUA + requiredKills);
         sender.sendMessage(ChatColor.AQUA + "Countdown: " + ChatColor.DARK_AQUA + countdown +

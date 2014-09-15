@@ -7,7 +7,6 @@ import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
 
@@ -29,7 +28,7 @@ public class ArenaController {
 
     public Arena addArena(String arenaName, Location location, int min, int max, ArenaType type) {
         Arena arena = new Arena(arenaName, this, location, min, max, type);
-        arenas.put(arenaName, arena);
+        arenas.put(arenaName.toLowerCase(), arena);
         return arena;
     }
 
@@ -83,9 +82,9 @@ public class ArenaController {
         for (String oldKey : oldKeys) {
             configuration.set(oldKey, null);
         }
-        for (Map.Entry<String, Arena> entry : arenas.entrySet()) {
-            ConfigurationSection arenaConfig = configuration.createSection(entry.getKey());
-            entry.getValue().save(arenaConfig);
+        for (Arena arena : arenas.values()) {
+            ConfigurationSection arenaConfig = configuration.createSection(arena.getKey());
+            arena.save(arenaConfig);
         }
     }
 
@@ -99,7 +98,7 @@ public class ArenaController {
         for (String arenaKey : arenaKeys) {
             Arena arena = new Arena(arenaKey, this);
             arena.load(configuration.getConfigurationSection(arenaKey));
-            arenas.put(arenaKey, arena);
+            arenas.put(arenaKey.toLowerCase(), arena);
         }
 
         plugin.getLogger().info("Loaded " + arenas.size() + " arenas");
@@ -110,7 +109,7 @@ public class ArenaController {
     }
 
     public Arena getArena(String arenaName) {
-        return arenas.get(arenaName);
+        return arenas.get(arenaName.toLowerCase());
     }
 
     public Arena getArena(Player player) {
@@ -147,10 +146,10 @@ public class ArenaController {
     }
 
     public void remove(String arenaName) {
-        Arena arena = arenas.get(arenaName);
+        Arena arena = arenas.get(arenaName.toLowerCase());
         if (arena != null) {
             arena.remove();
-            arenas.remove(arenaName);
+            arenas.remove(arenaName.toLowerCase());
         }
     }
 
