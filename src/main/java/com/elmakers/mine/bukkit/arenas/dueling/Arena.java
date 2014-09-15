@@ -72,7 +72,7 @@ public class Arena {
     private int leaderboardRecordSize = 30;
     private int leaderboardGamesRequired = 5;
 
-    private int maxTeleportDistance = 32;
+    private int maxTeleportDistance = 64;
 
     private List<ArenaPlayer> leaderboard = new ArrayList<ArenaPlayer>();
     private Location leaderboardLocation;
@@ -117,7 +117,7 @@ public class Arena {
         leaderboardRecordSize = configuration.getInt("leaderboard_record_size", 30);
         leaderboardGamesRequired = configuration.getInt("leaderboard_games_required", 5);
 
-        maxTeleportDistance = configuration.getInt("max_teleport_distance", 16);
+        maxTeleportDistance = configuration.getInt("max_teleport_distance", 64);
 
         arenaType = ArenaType.parse(configuration.getString("type"));
         if (arenaType == null) {
@@ -403,6 +403,12 @@ public class Arena {
         checkStart();
     }
 
+    protected void exitPlayers() {
+        for (ArenaPlayer arenaPlayer : players) {
+            arenaPlayer.teleport(getExit());
+        }
+    }
+
     protected void clearPlayers() {
         for (ArenaPlayer arenaPlayer : players) {
             Player player = arenaPlayer.getPlayer();
@@ -426,7 +432,7 @@ public class Arena {
     }
 
     public boolean isStarted() {
-        return state == ArenaState.ACTIVE;
+        return state == ArenaState.ACTIVE || state == ArenaState.WON;
     }
 
     public boolean isFull() {
@@ -554,8 +560,16 @@ public class Arena {
             }
             return;
         }
+
         final Server server = controller.getPlugin().getServer();
-        if (players.size() == 1) {
+        if (players.size() == 0 && state != ArenaState.WON) {
+            server.broadcastMessage(ChatColor.RED + "The " + ChatColor.YELLOW + getName() + ChatColor.RED + " match ended in a default");
+            exitPlayers();
+            finish();
+            return;
+        }
+        if (players.size() == 1 && state != ArenaState.WON) {
+            state = ArenaState.WON;
             Bukkit.getScheduler().runTaskLater(controller.getPlugin(), new Runnable() {
                 @Override
                 public void run() {
@@ -818,14 +832,21 @@ public class Arena {
 
     public void died(Player player) {
         ArenaPlayer arenaPlayer = new ArenaPlayer(this, player);
-        if (players.contains(arenaPlayer)) {
-            deadPlayers.add(arenaPlayer);
-            players.remove(arenaPlayer);
+        if (isStarted()) {
+            if (players.contains(arenaPlayer)) {
+                deadPlayers.add(arenaPlayer);
+                players.remove(arenaPlayer);
+                Location specroom = getLoseLocation();
+                player.setMetadata("respawnLocation", new FixedMetadataValue(controller.getPlugin(), specroom));
+                player.sendMessage(ChatColor.AQUA + "You have lost - Better luck next time!");
+            }
+        } else {
+            if (queue.contains(arenaPlayer)) {
+                player.sendMessage(ChatColor.RED + "You died before the match even started!");
+            }
+            queue.remove(arenaPlayer);
         }
         player.removeMetadata("arena", controller.getPlugin());
-        Location specroom = getLoseLocation();
-        player.setMetadata("respawnLocation", new FixedMetadataValue(controller.getPlugin(), specroom));
-        player.sendMessage(ChatColor.AQUA + "You have lost - Better luck next time!");
         check();
     }
 
@@ -1167,7 +1188,6 @@ public class Arena {
     public void showLeaderboard(Player player) {
         int inventorySize = leaderboard.size() + 1;
         int multiple = (int)Math.ceil((float)inventorySize / 9) * 9;
-        Bukkit.getLogger().info("Inventory size: " + multiple);
         boolean shownPlayer = false;
         String arenaName = ChatColor.DARK_AQUA + "Leaderboard: " + ChatColor.GOLD + getName();
         if (arenaName.length() > 32) {
@@ -1178,7 +1198,6 @@ public class Arena {
             ArenaPlayer arenaPlayer = leaderboard.get(i);
             ItemStack playerItem = createLeaderboardIcon(i + 1, arenaPlayer);
             leaderboardInventory.setItem(i, playerItem);
-            Bukkit.getLogger().info("#" + i + ": " + playerItem);
             if (player.getUniqueId().equals(arenaPlayer.getUUID())) {
                 shownPlayer = true;
             }
