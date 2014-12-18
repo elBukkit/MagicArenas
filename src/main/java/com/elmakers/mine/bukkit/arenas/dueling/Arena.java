@@ -580,7 +580,7 @@ public class Arena {
 
         final Server server = controller.getPlugin().getServer();
         if (players.size() == 0 && state != ArenaState.WON) {
-            server.broadcastMessage(ChatColor.RED + "The " + ChatColor.YELLOW + getName() + ChatColor.RED + " match ended in a default");
+            messagePlayers(ChatColor.RED + "The " + ChatColor.YELLOW + getName() + ChatColor.RED + " match ended in a default");
             exitPlayers();
             finish();
             return;
@@ -597,7 +597,7 @@ public class Arena {
                         if (winner != null) {
                             winner.teleport(getExit());
                         }
-                        server.broadcastMessage(ChatColor.RED + "The " + ChatColor.YELLOW + getName() + ChatColor.RED + " match ended in a default");
+                        messagePlayers(ChatColor.RED + "The " + ChatColor.YELLOW + getName() + ChatColor.RED + " match ended in a default");
                     } else if (won) {
                         winner.won();
                         updateLeaderboard(winner);
@@ -616,8 +616,8 @@ public class Arena {
                         if (health >= 0.5) {
                             heartDescription = heartDescription + " 1/2";
                         }
-                        server.broadcastMessage(ChatColor.GOLD + winner.getDisplayName() + " is the champion of " + ChatColor.YELLOW + getName());
-                        server.broadcastMessage(ChatColor.GOLD + " with " + ChatColor.DARK_RED + heartDescription + ChatColor.GOLD
+                        messagePlayers(ChatColor.GOLD + winner.getDisplayName() + " is the champion of " + ChatColor.YELLOW + getName());
+                        messagePlayers(ChatColor.GOLD + " with " + ChatColor.DARK_RED + heartDescription + ChatColor.GOLD
                                 + " hearts, and a total of " + ChatColor.GREEN + Integer.toString(winCount) + ChatColor.GOLD + " wins and "
                                 + ChatColor.RED + Integer.toString(lostCount) + ChatColor.GOLD + " losses.");
                         winner.teleport(getWinLocation());
@@ -629,7 +629,7 @@ public class Arena {
                         for (ArenaPlayer loser : deadPlayers) {
                             loser.draw();
                         }
-                        server.broadcastMessage(ChatColor.GRAY + "The " + ChatColor.YELLOW + getName() + ChatColor.GRAY + " match ended in a draw");
+                        messagePlayers(ChatColor.GRAY + "The " + ChatColor.YELLOW + getName() + ChatColor.GRAY + " match ended in a draw");
                     }
                     if (winner != null)
                     {
@@ -685,10 +685,10 @@ public class Arena {
         int lostCount = arenaPlayer.getLosses();
 
         if (winCount == 0 && lostCount == 0) {
-            Bukkit.broadcastMessage(ChatColor.AQUA + player.getDisplayName() + ChatColor.DARK_AQUA + " has joined " + ChatColor.AQUA + getName() + ChatColor.DARK_AQUA + " for the first time");
+            messagePlayers(ChatColor.AQUA + player.getDisplayName() + ChatColor.DARK_AQUA + " has joined " + ChatColor.AQUA + getName() + ChatColor.DARK_AQUA + " for the first time");
         } else {
-            Bukkit.broadcastMessage(ChatColor.AQUA + player.getDisplayName() + ChatColor.DARK_AQUA + " has joined " + ChatColor.AQUA + getName());
-            Bukkit.broadcastMessage(ChatColor.DARK_AQUA + " with " + ChatColor.GREEN + Integer.toString(winCount) + ChatColor.DARK_AQUA + " wins and "
+            messagePlayers(ChatColor.AQUA + player.getDisplayName() + ChatColor.DARK_AQUA + " has joined " + ChatColor.AQUA + getName());
+            messagePlayers(ChatColor.DARK_AQUA + " with " + ChatColor.GREEN + Integer.toString(winCount) + ChatColor.DARK_AQUA + " wins and "
             + ChatColor.RED + Integer.toString(lostCount) + ChatColor.DARK_AQUA + " losses.");
         }
         checkStart();

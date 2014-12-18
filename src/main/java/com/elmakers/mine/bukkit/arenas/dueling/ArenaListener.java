@@ -67,8 +67,8 @@ public class ArenaListener implements Listener {
         Player player = e.getPlayer();
         ArenaPlayer leftPlayer = controller.leave(player);
         if (leftPlayer != null) {
+            leftPlayer.getArena().messagePlayers(ChatColor.RED + player.getDisplayName() + ChatColor.DARK_AQUA + " has left " + ChatColor.AQUA + leftPlayer.getArena().getName());
             leftPlayer.quit();
-            Bukkit.broadcastMessage(ChatColor.RED + player.getDisplayName() + ChatColor.DARK_AQUA + " has left " + ChatColor.AQUA + leftPlayer.getArena().getName());
         }
     }
 
