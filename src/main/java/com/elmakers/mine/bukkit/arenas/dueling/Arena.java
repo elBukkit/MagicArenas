@@ -711,8 +711,7 @@ public class Arena {
     protected Collection<ArenaPlayer> getAllPlayers() {
         List<ArenaPlayer> allPlayers = new ArrayList<ArenaPlayer>(players);
         allPlayers.addAll(queue);
-        // Note that we don't message the dead players- they may have
-        // moved on to another arena, and this is confusing!
+        allPlayers.addAll(deadPlayers);
         return allPlayers;
     }
 
