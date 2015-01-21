@@ -916,7 +916,7 @@ public class Arena {
                     }
                     if (blockState instanceof org.bukkit.block.Skull) {
                         org.bukkit.block.Skull skullBlock = (org.bukkit.block.Skull)blockState;
-                        skullBlock.setOwner(player.getName());
+                        // skullBlock.setOwner(player.getName());
                     }
                     blockState.update();
                 }
@@ -1236,7 +1236,7 @@ public class Arena {
         ItemMeta meta = playerItem.getItemMeta();
         if (meta instanceof SkullMeta) {
             SkullMeta skull = (SkullMeta)meta;
-            skull.setOwner(player.getName());
+            // skull.setOwner(player.getName());
         }
         meta.setDisplayName(ChatColor.GOLD + player.getDisplayName());
         List<String> lore = new ArrayList<String>();
