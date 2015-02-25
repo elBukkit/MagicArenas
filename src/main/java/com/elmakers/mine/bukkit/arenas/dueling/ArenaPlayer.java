@@ -1,6 +1,7 @@
 package com.elmakers.mine.bukkit.arenas.dueling;
 
 import com.elmakers.mine.bukkit.api.magic.Mage;
+import com.elmakers.mine.bukkit.api.magic.MagicAPI;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
@@ -269,6 +270,7 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
             for (PotionEffect pt : player.getActivePotionEffects()) {
                 player.removePotionEffect(pt.getType());
             }
+            mage.deactivateAllSpells(true, true);
         }
     }
 
