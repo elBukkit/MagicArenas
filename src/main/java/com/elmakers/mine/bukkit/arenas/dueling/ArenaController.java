@@ -89,6 +89,8 @@ public class ArenaController {
     }
 
     private void load(ConfigurationSection configuration) {
+        if (configuration == null) return;
+
         Collection<String> arenaKeys = configuration.getKeys(false);
 
         for (Arena arena : arenas.values()) {

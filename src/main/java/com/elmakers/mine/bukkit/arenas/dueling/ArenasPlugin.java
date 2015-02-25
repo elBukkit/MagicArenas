@@ -21,6 +21,8 @@ public class ArenasPlugin extends JavaPlugin {
             this.magicAPI = (MagicAPI)magicPlugin;
         }
 
+        saveDefaultConfig();
+
         controller = new ArenaController(this, magicAPI.getController());
         ArenaCommandExecutor arenaCommands = new ArenaCommandExecutor(controller);
         getCommand("arena").setExecutor(arenaCommands);
