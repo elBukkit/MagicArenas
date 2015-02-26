@@ -262,8 +262,8 @@ public class ArenaListener implements Listener {
             if (!center.getWorld().equals(event.getTo().getWorld())
              || !event.getFrom().getWorld().equals(event.getTo().getWorld())
              || event.getFrom().distanceSquared(event.getTo()) > arena.getMaxTeleportDistance() * arena.getMaxTeleportDistance()) {
-                event.setCancelled(true);
-                player.sendMessage(ChatColor.DARK_RED + "You can't teleport away from an arena");
+                controller.leave(player);
+                player.sendMessage(ChatColor.DARK_RED + "You have given up and left the arena");
             }
         }
     }
