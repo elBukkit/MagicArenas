@@ -27,7 +27,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             "add", "remove", "randomize", "name", "description", "portal_damage",
             "portal_enter_damage", "portal_death_message", "leaderboard_games_required",
             "leaderboard_size", "leaderboard_record_size", "max_teleport_distance",
-            "xp_win", "xp_lose", "xp_draw", "countdown", "countdown_max"
+            "xp_win", "xp_lose", "xp_draw", "countdown", "countdown_max", "op_check"
     };
 
     private final static String[] ARENA_LISTS = {

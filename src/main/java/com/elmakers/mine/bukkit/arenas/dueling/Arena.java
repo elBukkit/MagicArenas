@@ -77,6 +77,8 @@ public class Arena {
 
     private int maxTeleportDistance = 64;
 
+    private boolean opCheck = true;
+
     private List<ArenaPlayer> leaderboard = new ArrayList<ArenaPlayer>();
     private Location leaderboardLocation;
     private BlockFace leaderboardFacing;
@@ -124,6 +126,8 @@ public class Arena {
 
         countdown = configuration.getInt("countdown", 10);
         countdownMax = configuration.getInt("countdown_max", 30);
+
+        opCheck = configuration.getBoolean("op_check", true);
 
         arenaType = ArenaType.parse(configuration.getString("type"));
         if (arenaType == null) {
@@ -193,6 +197,7 @@ public class Arena {
 
         configuration.set("countdown", countdown);
         configuration.set("countdown_max", countdownMax);
+        configuration.set("op_check", opCheck);
 
         configuration.set("type", arenaType.name());
 
@@ -1264,5 +1269,13 @@ public class Arena {
 
     public void setCountdownMax(int countdownMax) {
         this.countdownMax = countdownMax;
+    }
+
+    public boolean hasOpCheck() {
+        return opCheck;
+    }
+
+    public void setOpCheck(boolean check) {
+        opCheck = check;
     }
 }

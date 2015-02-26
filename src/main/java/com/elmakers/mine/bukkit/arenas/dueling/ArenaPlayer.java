@@ -293,4 +293,8 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
             player.removeMetadata("arena", arena.getController().getPlugin());
         }
     }
+
+    public Mage getMage() {
+        return mage;
+    }
 }

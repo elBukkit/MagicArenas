@@ -1,6 +1,9 @@
 package com.elmakers.mine.bukkit.arenas.dueling;
 
+import com.elmakers.mine.bukkit.api.event.PreCastEvent;
 import com.elmakers.mine.bukkit.api.event.SaveEvent;
+import com.elmakers.mine.bukkit.api.magic.Mage;
+import com.elmakers.mine.bukkit.api.wand.Wand;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -10,6 +13,7 @@ import org.bukkit.block.Sign;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
@@ -32,6 +36,33 @@ public class ArenaListener implements Listener {
 
     public ArenaListener(ArenaController controller) {
         this.controller = controller;
+    }
+
+    @EventHandler
+    public void onSpellPreCast(PreCastEvent event) {
+        Mage mage = event.getMage();
+        Player player = mage.getPlayer();
+        if (player == null) {
+            return;
+        }
+        ArenaPlayer arenaPlayer = controller.getArenaPlayer(player);
+        if (arenaPlayer == null) {
+            return;
+        }
+        Arena arena = arenaPlayer.getArena();
+        if (arena != null && arena.hasOpCheck()) {
+            Wand wand = arenaPlayer.getMage().getActiveWand();
+            boolean op = wand.isSuperPowered() || wand.isSuperProtected()
+                    || wand.getPower() > 0 || wand.getHealthRegeneration() > 0
+                    || wand.getCooldownReduction() > 0 || wand.getCostReduction() > 0;
+            if (op)
+            {
+                event.setCancelled(true);
+                mage.sendMessage("You're too OP!!");
+                controller.leave(player);
+            }
+        }
+
     }
 
     @EventHandler
