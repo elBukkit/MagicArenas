@@ -485,6 +485,19 @@ public class ArenaCommandExecutor implements TabExecutor {
             return;
         }
 
+
+        if (propertyName.equalsIgnoreCase("op_check"))
+        {
+            boolean checkOn = propertyValue.equalsIgnoreCase("true");
+            if (checkOn) {
+                sender.sendMessage(ChatColor.RED + "Enabled OP check for " + arena.getName());
+            } else {
+                sender.sendMessage(ChatColor.AQUA + "Disabled OP check for " + arena.getName());
+            }
+            arena.setOpCheck(checkOn);
+            return;
+        }
+
         if (propertyName.equalsIgnoreCase("min") || propertyName.equalsIgnoreCase("max") ||
             propertyName.equalsIgnoreCase("portal_damage") || propertyName.equalsIgnoreCase("portal_enter_damage") ||
             propertyName.equalsIgnoreCase("leaderboard_games_required") || propertyName.equalsIgnoreCase("leaderboard_size") ||
