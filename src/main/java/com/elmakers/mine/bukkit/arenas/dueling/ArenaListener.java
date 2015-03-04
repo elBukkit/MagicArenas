@@ -52,9 +52,10 @@ public class ArenaListener implements Listener {
         Arena arena = arenaPlayer.getArena();
         if (arena != null && arena.hasOpCheck()) {
             Wand wand = arenaPlayer.getMage().getActiveWand();
-            boolean op = wand.isSuperPowered() || wand.isSuperProtected()
+            boolean op = wand != null && (
+                       wand.isSuperPowered() || wand.isSuperProtected()
                     || wand.getPower() > 0 || wand.getHealthRegeneration() > 0
-                    || wand.getCooldownReduction() > 0 || wand.getCostReduction() > 0;
+                    || wand.getCooldownReduction() > 0 || wand.getCostReduction() > 0);
             if (op)
             {
                 event.setCancelled(true);
