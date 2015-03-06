@@ -1,11 +1,14 @@
 package com.elmakers.mine.bukkit.arenas.dueling;
 
+import com.elmakers.mine.bukkit.utility.CompatibilityUtils;
 import com.elmakers.mine.bukkit.utility.ConfigurationUtils;
+import com.elmakers.mine.bukkit.utility.InventoryUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Server;
+import org.bukkit.SkullType;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
@@ -15,7 +18,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.material.MaterialData;
 import org.bukkit.material.Sign;
 import org.bukkit.material.Skull;
@@ -921,7 +923,8 @@ public class Arena {
                     }
                     if (blockState instanceof org.bukkit.block.Skull) {
                         org.bukkit.block.Skull skullBlock = (org.bukkit.block.Skull)blockState;
-                        // skullBlock.setOwner(player.getName());
+                        skullBlock.setSkullType(SkullType.PLAYER);
+                        CompatibilityUtils.setSkullOwner(skullBlock, player.getName(), player.getUUID());
                     }
                     blockState.update();
                 }
@@ -1237,12 +1240,8 @@ public class Arena {
     }
 
     protected ItemStack createLeaderboardIcon(Integer rank, ArenaPlayer player) {
-        ItemStack playerItem = new ItemStack(Material.SKULL_ITEM, 1, (short)0, (byte)3);
+        ItemStack playerItem = InventoryUtils.getPlayerSkull(player.getName(), player.getUUID());
         ItemMeta meta = playerItem.getItemMeta();
-        if (meta instanceof SkullMeta) {
-            SkullMeta skull = (SkullMeta)meta;
-            // skull.setOwner(player.getName());
-        }
         meta.setDisplayName(ChatColor.GOLD + player.getDisplayName());
         List<String> lore = new ArrayList<String>();
 
