@@ -367,8 +367,9 @@ public class Arena {
 
     public void announce(String message) {
         int rangeSquared = announcerRange * announcerRange;
-        for (ArenaPlayer player : players) {
-            Location playerLocation = player.getPlayer().getLocation();
+        Collection<Player> players = center.getWorld().getPlayers();
+        for (Player player : players) {
+            Location playerLocation = player.getLocation();
             if (playerLocation.distanceSquared(center) < rangeSquared) {
                 player.sendMessage(message);
             }
@@ -708,7 +709,7 @@ public class Arena {
         } else {
             announce(ChatColor.AQUA + player.getDisplayName() + ChatColor.DARK_AQUA + " has joined " + ChatColor.AQUA + getName());
             announce(ChatColor.DARK_AQUA + " with " + ChatColor.GREEN + Integer.toString(winCount) + ChatColor.DARK_AQUA + " wins and "
-            + ChatColor.RED + Integer.toString(lostCount) + ChatColor.DARK_AQUA + " losses.");
+                    + ChatColor.RED + Integer.toString(lostCount) + ChatColor.DARK_AQUA + " losses.");
         }
         checkStart();
     }

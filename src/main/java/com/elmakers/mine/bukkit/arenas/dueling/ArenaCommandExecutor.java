@@ -504,7 +504,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             propertyName.equalsIgnoreCase("leaderboard_games_required") || propertyName.equalsIgnoreCase("leaderboard_size") ||
             propertyName.equalsIgnoreCase("leaderboard_record_size") || propertyName.equalsIgnoreCase("max_teleport_distance") ||
             propertyName.equalsIgnoreCase("xp_win") || propertyName.equalsIgnoreCase("xp_lose") || propertyName.equalsIgnoreCase("xp_draw") ||
-            propertyName.equalsIgnoreCase("countdown") || propertyName.equalsIgnoreCase("countdown_max")
+            propertyName.equalsIgnoreCase("countdown") || propertyName.equalsIgnoreCase("countdown_max") || propertyName.equalsIgnoreCase("announcer_range")
         ) {
             Integer intValue;
             try {
