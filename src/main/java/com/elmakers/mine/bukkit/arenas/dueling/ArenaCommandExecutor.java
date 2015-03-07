@@ -27,7 +27,8 @@ public class ArenaCommandExecutor implements TabExecutor {
             "add", "remove", "randomize", "name", "description", "portal_damage",
             "portal_enter_damage", "portal_death_message", "leaderboard_games_required",
             "leaderboard_size", "leaderboard_record_size", "max_teleport_distance",
-            "xp_win", "xp_lose", "xp_draw", "countdown", "countdown_max", "op_check"
+            "xp_win", "xp_lose", "xp_draw", "countdown", "countdown_max", "op_check",
+            "announcer_range"
     };
 
     private final static String[] ARENA_LISTS = {
@@ -534,6 +535,13 @@ public class ArenaCommandExecutor implements TabExecutor {
             if (propertyName.equalsIgnoreCase("max_teleport_distance")) {
                 arena.setMaxTeleportDistance(intValue);
                 sender.sendMessage(ChatColor.AQUA + "Set max teleport distance of " + arena.getName() + " to " + intValue);
+                controller.save();
+                return;
+            }
+
+            if (propertyName.equalsIgnoreCase("announcer_range")) {
+                arena.setAnnouncerRange(intValue);
+                sender.sendMessage(ChatColor.AQUA + "Set announcer range of " + arena.getName() + " to " + intValue);
                 controller.save();
                 return;
             }

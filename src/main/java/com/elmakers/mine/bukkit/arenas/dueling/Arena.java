@@ -78,6 +78,7 @@ public class Arena {
     private int leaderboardGamesRequired = 5;
 
     private int maxTeleportDistance = 64;
+    private int announcerRange = 64;
 
     private boolean opCheck = true;
 
@@ -125,6 +126,7 @@ public class Arena {
         leaderboardGamesRequired = configuration.getInt("leaderboard_games_required", 5);
 
         maxTeleportDistance = configuration.getInt("max_teleport_distance", 64);
+        announcerRange = configuration.getInt("announcer_range", 64);
 
         countdown = configuration.getInt("countdown", 10);
         countdownMax = configuration.getInt("countdown_max", 30);
@@ -196,6 +198,7 @@ public class Arena {
         configuration.set("portal_death_message", portalDeathMessage);
 
         configuration.set("max_teleport_distance", maxTeleportDistance);
+        configuration.set("announcer_range", announcerRange);
 
         configuration.set("countdown", countdown);
         configuration.set("countdown_max", countdownMax);
@@ -354,10 +357,19 @@ public class Arena {
     }
 
     protected void messagePlayers(String message, Collection<ArenaPlayer> players) {
-        Server server = controller.getPlugin().getServer();
         for (ArenaPlayer arenaPlayer : players) {
             Player player = arenaPlayer.getPlayer();
             if (player != null) {
+                player.sendMessage(message);
+            }
+        }
+    }
+
+    public void announce(String message) {
+        int rangeSquared = announcerRange * announcerRange;
+        for (ArenaPlayer player : players) {
+            Location playerLocation = player.getPlayer().getLocation();
+            if (playerLocation.distanceSquared(center) < rangeSquared) {
                 player.sendMessage(message);
             }
         }
@@ -587,7 +599,7 @@ public class Arena {
 
         final Server server = controller.getPlugin().getServer();
         if (players.size() == 0 && state != ArenaState.WON) {
-            server.broadcastMessage(ChatColor.RED + "The " + ChatColor.YELLOW + getName() + ChatColor.RED + " match ended in a default");
+            announce(ChatColor.RED + "The " + ChatColor.YELLOW + getName() + ChatColor.RED + " match ended in a default");
             exitPlayers();
             finish();
             return;
@@ -604,7 +616,7 @@ public class Arena {
                         if (winner != null) {
                             winner.teleport(getExit());
                         }
-                        server.broadcastMessage(ChatColor.RED + "The " + ChatColor.YELLOW + getName() + ChatColor.RED + " match ended in a default");
+                        announce(ChatColor.RED + "The " + ChatColor.YELLOW + getName() + ChatColor.RED + " match ended in a default");
                     } else if (won) {
                         winner.won();
                         updateLeaderboard(winner);
@@ -623,8 +635,8 @@ public class Arena {
                         if (health >= 0.5) {
                             heartDescription = heartDescription + " 1/2";
                         }
-                        server.broadcastMessage(ChatColor.GOLD + winner.getDisplayName() + " is the champion of " + ChatColor.YELLOW + getName());
-                        server.broadcastMessage(ChatColor.GOLD + " with " + ChatColor.DARK_RED + heartDescription + ChatColor.GOLD
+                        announce(ChatColor.GOLD + winner.getDisplayName() + " is the champion of " + ChatColor.YELLOW + getName());
+                        announce(ChatColor.GOLD + " with " + ChatColor.DARK_RED + heartDescription + ChatColor.GOLD
                                 + " hearts, and a total of " + ChatColor.GREEN + Integer.toString(winCount) + ChatColor.GOLD + " wins and "
                                 + ChatColor.RED + Integer.toString(lostCount) + ChatColor.GOLD + " losses.");
                         winner.teleport(getWinLocation());
@@ -636,7 +648,7 @@ public class Arena {
                         for (ArenaPlayer loser : deadPlayers) {
                             loser.draw();
                         }
-                        server.broadcastMessage(ChatColor.GRAY + "The " + ChatColor.YELLOW + getName() + ChatColor.GRAY + " match ended in a draw");
+                        announce(ChatColor.GRAY + "The " + ChatColor.YELLOW + getName() + ChatColor.GRAY + " match ended in a draw");
                     }
                     if (winner != null)
                     {
@@ -692,10 +704,10 @@ public class Arena {
         int lostCount = arenaPlayer.getLosses();
 
         if (winCount == 0 && lostCount == 0) {
-            Bukkit.broadcastMessage(ChatColor.AQUA + player.getDisplayName() + ChatColor.DARK_AQUA + " has joined " + ChatColor.AQUA + getName() + ChatColor.DARK_AQUA + " for the first time");
+            announce(ChatColor.AQUA + player.getDisplayName() + ChatColor.DARK_AQUA + " has joined " + ChatColor.AQUA + getName() + ChatColor.DARK_AQUA + " for the first time");
         } else {
-            Bukkit.broadcastMessage(ChatColor.AQUA + player.getDisplayName() + ChatColor.DARK_AQUA + " has joined " + ChatColor.AQUA + getName());
-            Bukkit.broadcastMessage(ChatColor.DARK_AQUA + " with " + ChatColor.GREEN + Integer.toString(winCount) + ChatColor.DARK_AQUA + " wins and "
+            announce(ChatColor.AQUA + player.getDisplayName() + ChatColor.DARK_AQUA + " has joined " + ChatColor.AQUA + getName());
+            announce(ChatColor.DARK_AQUA + " with " + ChatColor.GREEN + Integer.toString(winCount) + ChatColor.DARK_AQUA + " wins and "
             + ChatColor.RED + Integer.toString(lostCount) + ChatColor.DARK_AQUA + " losses.");
         }
         checkStart();
@@ -740,6 +752,9 @@ public class Arena {
         if (description != null) {
             sender.sendMessage(ChatColor.LIGHT_PURPLE + getDescription());
         }
+        if (opCheck) {
+            sender.sendMessage(ChatColor.RED + "OP Wand Check Enabled");
+        }
         int minPlayers = getMinPlayers();
         int maxPlayers = getMaxPlayers();
         sender.sendMessage(ChatColor.AQUA + "Min / Max Players: " + ChatColor.DARK_AQUA + minPlayers +
@@ -782,6 +797,7 @@ public class Arena {
                 sender.sendMessage(ChatColor.LIGHT_PURPLE + "Portal Death Message: " + ChatColor.DARK_PURPLE + portalDeathMessage);
             }
         }
+        sender.sendMessage(ChatColor.YELLOW + "Announcer Range: " + ChatColor.GOLD + announcerRange);
         sender.sendMessage(ChatColor.YELLOW + "Leaderboard Size: " + ChatColor.GOLD + leaderboardSize + ChatColor.WHITE + "/" + ChatColor.GOLD + leaderboardRecordSize);
         sender.sendMessage(ChatColor.AQUA + "State: " + ChatColor.DARK_AQUA + state);
 
@@ -1276,5 +1292,13 @@ public class Arena {
 
     public void setOpCheck(boolean check) {
         opCheck = check;
+    }
+
+    public void setAnnouncerRange(int range) {
+        this.announcerRange = range;
+    }
+
+    public int getAnnouncerRange() {
+        return announcerRange;
     }
 }
