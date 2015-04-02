@@ -66,7 +66,7 @@ public class ArenaListener implements Listener {
 
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerRespawn(PlayerRespawnEvent e) {
         Player player = e.getPlayer();
         if (player.hasMetadata("respawnLocation")) {
