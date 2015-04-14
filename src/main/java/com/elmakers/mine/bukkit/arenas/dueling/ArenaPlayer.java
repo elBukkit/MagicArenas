@@ -268,7 +268,10 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
             player.setFoodLevel(20);
             player.setFireTicks(0);
             for (PotionEffect pt : player.getActivePotionEffects()) {
-                player.removePotionEffect(pt.getType());
+                if (pt.getDuration() < Integer.MAX_VALUE / 4)
+                {
+                    player.removePotionEffect(pt.getType());
+                }
             }
             mage.deactivateAllSpells(true, true);
         }
