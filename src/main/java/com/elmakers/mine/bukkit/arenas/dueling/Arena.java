@@ -367,9 +367,10 @@ public class Arena {
 
     public void announce(String message) {
         int rangeSquared = announcerRange * announcerRange;
-        Collection<Player> players = center.getWorld().getPlayers();
+        Collection<Player> players = CompatibilityUtils.getOnlinePlayers(controller.getPlugin().getServer());
         for (Player player : players) {
             Location playerLocation = player.getLocation();
+            if (!playerLocation.getWorld().equals(center.getWorld())) continue;
             if (playerLocation.distanceSquared(center) < rangeSquared) {
                 player.sendMessage(message);
             }
