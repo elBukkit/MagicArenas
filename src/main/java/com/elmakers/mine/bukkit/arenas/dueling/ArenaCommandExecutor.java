@@ -23,20 +23,20 @@ public class ArenaCommandExecutor implements TabExecutor {
     };
 
     private final static String[] ARENA_PROPERTIES = {
-            "max", "min", "win", "lose", "lobby", "spawn", "exit", "center",
-            "add", "remove", "randomize", "name", "description", "portal_damage",
-            "portal_enter_damage", "portal_death_message", "leaderboard_games_required",
-            "leaderboard_size", "leaderboard_record_size", "max_teleport_distance",
-            "xp_win", "xp_lose", "xp_draw", "countdown", "countdown_max", "op_check",
-            "announcer_range"
+        "max", "min", "win", "lose", "lobby", "spawn", "exit", "center",
+        "add", "remove", "randomize", "name", "description", "portal_damage",
+        "portal_enter_damage", "portal_death_message", "leaderboard_games_required",
+        "leaderboard_size", "leaderboard_record_size", "max_teleport_distance",
+        "xp_win", "xp_lose", "xp_draw", "countdown", "countdown_max", "op_check",
+        "announcer_range", "sp_win", "sp_lose", "sp_draw"
     };
 
     private final static String[] ARENA_LISTS = {
-            "spawn"
+        "spawn"
     };
 
     private final static String[] ARENA_RANDOMIZE = {
-            "spawn"
+        "spawn"
     };
 
     private final ArenaController controller;
@@ -504,6 +504,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             propertyName.equalsIgnoreCase("leaderboard_games_required") || propertyName.equalsIgnoreCase("leaderboard_size") ||
             propertyName.equalsIgnoreCase("leaderboard_record_size") || propertyName.equalsIgnoreCase("max_teleport_distance") ||
             propertyName.equalsIgnoreCase("xp_win") || propertyName.equalsIgnoreCase("xp_lose") || propertyName.equalsIgnoreCase("xp_draw") ||
+            propertyName.equalsIgnoreCase("sp_win") || propertyName.equalsIgnoreCase("sp_lose") || propertyName.equalsIgnoreCase("sp_draw") ||
             propertyName.equalsIgnoreCase("countdown") || propertyName.equalsIgnoreCase("countdown_max") || propertyName.equalsIgnoreCase("announcer_range")
         ) {
             Integer intValue;
@@ -598,6 +599,27 @@ public class ArenaCommandExecutor implements TabExecutor {
             if (propertyName.equalsIgnoreCase("xp_draw")) {
                 arena.setDrawXP(intValue);
                 sender.sendMessage(ChatColor.AQUA + "Set draw XP of " + arena.getName() + " to " + intValue);
+                controller.save();
+                return;
+            }
+
+            if (propertyName.equalsIgnoreCase("sp_win")) {
+                arena.setWinSP(intValue);
+                sender.sendMessage(ChatColor.AQUA + "Set winning SP of " + arena.getName() + " to " + intValue);
+                controller.save();
+                return;
+            }
+
+            if (propertyName.equalsIgnoreCase("sp_lose")) {
+                arena.setLoseSP(intValue);
+                sender.sendMessage(ChatColor.AQUA + "Set losing SP of " + arena.getName() + " to " + intValue);
+                controller.save();
+                return;
+            }
+
+            if (propertyName.equalsIgnoreCase("sp_draw")) {
+                arena.setDrawSP(intValue);
+                sender.sendMessage(ChatColor.AQUA + "Set draw SP of " + arena.getName() + " to " + intValue);
                 controller.save();
                 return;
             }

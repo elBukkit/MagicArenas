@@ -95,6 +95,11 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
                 mage.sendMessage(ChatColor.AQUA + "You have been awarded " + ChatColor.DARK_AQUA + Integer.toString(xp) + ChatColor.AQUA + " experience!");
                 mage.giveExperience(xp);
             }
+            int sp = arena.getWinSP();
+            if (sp > 0) {
+                mage.sendMessage(ChatColor.AQUA + "You have been awarded " + ChatColor.DARK_AQUA + Integer.toString(sp) + ChatColor.AQUA + " skill points!");
+                mage.addSkillPoints(sp);
+            }
             increment("won");
             wins = get("won");
         }
@@ -107,6 +112,11 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
             if (xp > 0) {
                 mage.sendMessage(ChatColor.AQUA + "You have been awarded " + ChatColor.DARK_AQUA + Integer.toString(xp) + ChatColor.AQUA + " experience!");
                 mage.giveExperience(xp);
+            }
+            int sp = arena.getLoseSP();
+            if (sp > 0) {
+                mage.sendMessage(ChatColor.AQUA + "You have been awarded " + ChatColor.DARK_AQUA + Integer.toString(sp) + ChatColor.AQUA + " skill points!");
+                mage.addSkillPoints(sp);
             }
             increment("lost");
             losses = get("lost");
@@ -136,6 +146,11 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
             if (xp > 0) {
                 mage.sendMessage(ChatColor.AQUA + "You have been awarded " + ChatColor.DARK_AQUA + Integer.toString(xp) + ChatColor.AQUA + " experience!");
                 mage.giveExperience(xp);
+            }
+            int sp = arena.getLoseSP();
+            if (sp > 0) {
+                mage.sendMessage(ChatColor.AQUA + "You have been awarded " + ChatColor.DARK_AQUA + Integer.toString(sp) + ChatColor.AQUA + " skill points!");
+                mage.addSkillPoints(sp);
             }
             increment("draw");
             draws = get("draw");

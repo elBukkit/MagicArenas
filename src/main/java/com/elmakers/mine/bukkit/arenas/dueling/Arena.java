@@ -69,6 +69,9 @@ public class Arena {
     private int winXP = 0;
     private int loseXP = 0;
     private int drawXP = 0;
+    private int winSP = 0;
+    private int loseSP = 0;
+    private int drawSP = 0;
 
     private int countdown = 10;
     private int countdownMax = 10;
@@ -159,6 +162,10 @@ public class Arena {
         loseXP = configuration.getInt("lose_xp", 0);
         drawXP = configuration.getInt("draw_xp", 0);
 
+        winSP = configuration.getInt("win_sp", 0);
+        loseSP = configuration.getInt("lose_sp", 0);
+        drawSP = configuration.getInt("draw_sp", 0);
+
         for (String s : configuration.getStringList("spawns")){
             spawns.add(ConfigurationUtils.toLocation(s));
         }
@@ -188,6 +195,10 @@ public class Arena {
         configuration.set("lose_xp", loseXP);
         configuration.set("draw_xp", drawXP);
         configuration.set("win_xp", winXP);
+
+        configuration.set("lose_sp", loseSP);
+        configuration.set("draw_sp", drawSP);
+        configuration.set("win_sp", winSP);
 
         configuration.set("leaderboard_size", leaderboardSize);
         configuration.set("leaderboard_record_size", leaderboardRecordSize);
@@ -367,7 +378,7 @@ public class Arena {
 
     public void announce(String message) {
         int rangeSquared = announcerRange * announcerRange;
-        Collection<Player> players = CompatibilityUtils.getOnlinePlayers(controller.getPlugin().getServer());
+        Collection<? extends Player> players = controller.getPlugin().getServer().getOnlinePlayers();
         for (Player player : players) {
             Location playerLocation = player.getLocation();
             if (!playerLocation.getWorld().equals(center.getWorld())) continue;
@@ -773,6 +784,16 @@ public class Arena {
         }
         if (drawXP > 0) {
             sender.sendMessage(ChatColor.AQUA + "Draw Reward: " + ChatColor.LIGHT_PURPLE + drawXP + ChatColor.AQUA + " xp");
+        }
+
+        if (winXP > 0) {
+            sender.sendMessage(ChatColor.AQUA + "Winning Reward: " + ChatColor.LIGHT_PURPLE + winSP + ChatColor.AQUA + " sp");
+        }
+        if (loseXP > 0) {
+            sender.sendMessage(ChatColor.AQUA + "Losing Reward: " + ChatColor.LIGHT_PURPLE + loseSP + ChatColor.AQUA + " sp");
+        }
+        if (drawXP > 0) {
+            sender.sendMessage(ChatColor.AQUA + "Draw Reward: " + ChatColor.LIGHT_PURPLE + drawSP + ChatColor.AQUA + " sp");
         }
 
         int spawnSize = spawns.size();
@@ -1220,6 +1241,30 @@ public class Arena {
 
     public int getDrawXP() {
         return drawXP;
+    }
+
+    public void setWinSP(int sp) {
+        winSP = Math.max(sp, 0);
+    }
+
+    public void setLoseSP(int sp) {
+        loseSP = Math.max(sp, 0);
+    }
+
+    public void setDrawSP(int sp) {
+        drawSP = Math.max(sp, 0);
+    }
+
+    public int getWinSP() {
+        return winSP;
+    }
+
+    public int getLoseSP() {
+        return loseSP;
+    }
+
+    public int getDrawSP() {
+        return drawSP;
     }
 
     public void setMaxTeleportDistance(int distance) {

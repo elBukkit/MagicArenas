@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 3.0
+ - Depends on Magic 3.4
+ - Build against Bukkit 1.8
+ - Arenas can reward Magic SP on win/lose/draw
+
 ## 1.8
 
  - Depends on Magic 1.8
