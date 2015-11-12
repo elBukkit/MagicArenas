@@ -78,6 +78,7 @@ public class ArenaController {
         ConfigurationSection arenaSaves = loadDataFile("arenas");
         load(arenaSaves);
 
+        plugin.reloadConfig();
         Configuration config = plugin.getConfig();
         pathTemplate = config.getString("path_template", pathTemplate);
     }
