@@ -1,7 +1,8 @@
 package com.elmakers.mine.bukkit.arenas.dueling;
 
 import com.elmakers.mine.bukkit.api.magic.Mage;
-import com.elmakers.mine.bukkit.api.magic.MagicAPI;
+import com.elmakers.mine.bukkit.api.wand.Wand;
+import com.elmakers.mine.bukkit.api.wand.WandUpgradePath;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
@@ -13,6 +14,7 @@ import java.util.UUID;
 
 public class ArenaPlayer implements Comparable<ArenaPlayer> {
     private Mage mage;
+    private WandUpgradePath path;
     private final Arena arena;
     private final UUID uuid;
     private String name;
@@ -49,9 +51,20 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
             return;
         }
 
+        ArenaController controller = arena.getController();
         name = player.getName();
-        mage = arena.getController().getMagic().getMage(player);
+        mage = controller.getMagic().getMage(player);
         displayName = player.getDisplayName();
+
+        path = null;
+        String baseTemplate = controller.getPathTemplate();
+        if (baseTemplate != null)
+        {
+            Wand boundWand = mage.getBoundWand(baseTemplate);
+            if (boundWand != null) {
+                path = boundWand.getPath();
+            }
+        }
 
         wins = get("won");
         losses = get("lost");
@@ -84,7 +97,15 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
     }
 
     public String getDisplayName() {
-        return displayName;
+        String display = displayName;
+        if (displayName == null) {
+            displayName = mage.getDisplayName();
+            display = displayName;
+        }
+        if (path != null) {
+            display = display + " " + ChatColor.GRAY + "(" + ChatColor.GOLD + path.getName() + ChatColor.GRAY + ")";
+        }
+        return display;
     }
 
     public void won() {

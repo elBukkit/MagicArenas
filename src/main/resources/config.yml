@@ -1,1 +1,4 @@
-# Default config for MagicArenas .. not much to see here.
+# Default config for MagicArenas
+
+# The base wand template to use for determining a player's current path
+path_template: "beginner"

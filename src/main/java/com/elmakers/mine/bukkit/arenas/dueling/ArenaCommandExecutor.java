@@ -158,6 +158,7 @@ public class ArenaCommandExecutor implements TabExecutor {
                 player = Bukkit.getPlayer(playerName);
             } else if (sender instanceof Player) {
                 player = (Player) sender;
+                playerName = player.getName();
             }
 
             if (player == null) {
@@ -170,7 +171,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             }
             ArenaPlayer leftPlayer = controller.leave(player);
             if (leftPlayer != null) {
-                sender.sendMessage(ChatColor.AQUA + playerName + " has left " + leftPlayer.getArena().getName());
+                sender.sendMessage(ChatColor.AQUA + leftPlayer.getDisplayName() + " has left " + leftPlayer.getArena().getName());
             } else {
                 sender.sendMessage(ChatColor.AQUA + playerName + ChatColor.RED + " is not in an arena");
             }

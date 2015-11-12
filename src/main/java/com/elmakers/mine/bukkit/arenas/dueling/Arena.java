@@ -304,14 +304,11 @@ public class Arena {
                 for (ArenaPlayer otherArenaPlayer : nextUpPlayers) {
                     String otherPlayerName = otherArenaPlayer.getDisplayName();
                     if (!otherPlayerName.equals(messagePlayerName)) {
-                        Player otherPlayer = otherArenaPlayer.getPlayer();
-                        if (otherPlayer != null) {
-                            int winCount = otherArenaPlayer.getWins();
-                            int lostCount = otherArenaPlayer.getLosses();
+                        int winCount = otherArenaPlayer.getWins();
+                        int lostCount = otherArenaPlayer.getLosses();
 
-                            player.sendMessage(ChatColor.YELLOW + " with " + ChatColor.DARK_AQUA + otherPlayer.getDisplayName() + ChatColor.WHITE + " ("
-                                + ChatColor.GREEN + winCount + "W" + ChatColor.WHITE + " / " + ChatColor.RED + lostCount + "L" + ChatColor.WHITE + ")");
-                        }
+                        player.sendMessage(ChatColor.YELLOW + " with " + ChatColor.DARK_AQUA + otherArenaPlayer.getDisplayName() + ChatColor.WHITE + " ("
+                            + ChatColor.GREEN + winCount + "W" + ChatColor.WHITE + " / " + ChatColor.RED + lostCount + "L" + ChatColor.WHITE + ")");
                     }
                 }
             }
@@ -717,9 +714,9 @@ public class Arena {
         int lostCount = arenaPlayer.getLosses();
 
         if (winCount == 0 && lostCount == 0) {
-            announce(ChatColor.AQUA + player.getDisplayName() + ChatColor.DARK_AQUA + " has joined " + ChatColor.AQUA + getName() + ChatColor.DARK_AQUA + " for the first time");
+            announce(ChatColor.AQUA + arenaPlayer.getDisplayName() + ChatColor.DARK_AQUA + " has joined " + ChatColor.AQUA + getName() + ChatColor.DARK_AQUA + " for the first time");
         } else {
-            announce(ChatColor.AQUA + player.getDisplayName() + ChatColor.DARK_AQUA + " has joined " + ChatColor.AQUA + getName());
+            announce(ChatColor.AQUA + arenaPlayer.getDisplayName() + ChatColor.DARK_AQUA + " has joined " + ChatColor.AQUA + getName());
             announce(ChatColor.DARK_AQUA + " with " + ChatColor.GREEN + Integer.toString(winCount) + ChatColor.DARK_AQUA + " wins and "
                     + ChatColor.RED + Integer.toString(lostCount) + ChatColor.DARK_AQUA + " losses.");
         }

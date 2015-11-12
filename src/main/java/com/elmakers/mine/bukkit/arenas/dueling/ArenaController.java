@@ -21,6 +21,8 @@ public class ArenaController {
     private final MageController magic;
     private final Object saveLock = new Object();
 
+    private String pathTemplate = "beginner";
+
     public ArenaController(Plugin plugin, MageController magic) {
         this.magic = magic;
         this.plugin = plugin;
@@ -75,6 +77,9 @@ public class ArenaController {
     public void load() {
         ConfigurationSection arenaSaves = loadDataFile("arenas");
         load(arenaSaves);
+
+        Configuration config = plugin.getConfig();
+        pathTemplate = config.getString("path_template", pathTemplate);
     }
 
     private void save(ConfigurationSection configuration) {
@@ -184,5 +189,9 @@ public class ArenaController {
 
     public MageController getMagic() {
         return magic;
+    }
+
+    public String getPathTemplate() {
+        return pathTemplate;
     }
 }
