@@ -4,7 +4,7 @@
 	<groupId>com.elmakers.mine.bukkit.plugins</groupId>
 	<artifactId>MagicArenas</artifactId>
 	<version>3.0-SNAPSHOT</version>
-	<name>elMakers - Bukkit Plugins : Magic Arenas</name>
+	<name>Magic Arenas</name>
 	<dependencyManagement>
 		<dependencies>
 		</dependencies>
