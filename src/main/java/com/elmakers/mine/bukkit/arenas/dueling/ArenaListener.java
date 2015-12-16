@@ -78,7 +78,7 @@ public class ArenaListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority=EventPriority.HIGH)
     public void onPlayerDeath(PlayerDeathEvent e) {
         Player player = e.getEntity();
         Arena arena = controller.getArena(player);
