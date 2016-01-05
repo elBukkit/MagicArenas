@@ -783,13 +783,13 @@ public class Arena {
             sender.sendMessage(ChatColor.AQUA + "Draw Reward: " + ChatColor.LIGHT_PURPLE + drawXP + ChatColor.AQUA + " xp");
         }
 
-        if (winXP > 0) {
+        if (winSP > 0) {
             sender.sendMessage(ChatColor.AQUA + "Winning Reward: " + ChatColor.LIGHT_PURPLE + winSP + ChatColor.AQUA + " sp");
         }
-        if (loseXP > 0) {
+        if (loseSP > 0) {
             sender.sendMessage(ChatColor.AQUA + "Losing Reward: " + ChatColor.LIGHT_PURPLE + loseSP + ChatColor.AQUA + " sp");
         }
-        if (drawXP > 0) {
+        if (drawSP > 0) {
             sender.sendMessage(ChatColor.AQUA + "Draw Reward: " + ChatColor.LIGHT_PURPLE + drawSP + ChatColor.AQUA + " sp");
         }
 
