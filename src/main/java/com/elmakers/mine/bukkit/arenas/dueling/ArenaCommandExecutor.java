@@ -30,7 +30,7 @@ public class ArenaCommandExecutor implements TabExecutor {
         "leaderboard_size", "leaderboard_record_size", "max_teleport_distance",
         "xp_win", "xp_lose", "xp_draw", "countdown", "countdown_max", "op_check",
         "announcer_range", "sp_win", "sp_lose", "sp_draw", "duration", "sudden_death",
-        "sudden_death_effect", "start_commands"
+        "sudden_death_effect", "start_commands", "border"
     };
 
     private final static String[] ARENA_LISTS = {
@@ -506,6 +506,35 @@ public class ArenaCommandExecutor implements TabExecutor {
                 sender.sendMessage(ChatColor.RED + "Cleared start commands for " + arena.getName());
             } else {
                 sender.sendMessage(ChatColor.AQUA + "Set start commands for " + arena.getName());
+            }
+            return;
+        }
+
+        if (propertyName.equalsIgnoreCase("border")) {
+            if (propertyValue == null || propertyValue.isEmpty()) {
+                arena.setBorder(0, 0);
+                sender.sendMessage(ChatColor.RED + "Cleared border for " + arena.getName());
+            } else {
+                int min = 0;
+                int max = 0;
+                try {
+                    if (propertyValue.contains("-")) {
+                        String[] pieces = StringUtils.split(propertyValue, '-');
+                        max = Integer.parseInt(pieces[0]);
+                        min = Integer.parseInt(pieces[1]);
+                        if (min > max) {
+                            int temp = min;
+                            min = max;
+                            max = temp;
+                        }
+                    } else {
+                        max = Integer.parseInt(propertyValue);
+                    }
+                } catch (Exception ex) {
+
+                }
+                arena.setBorder(min, max);
+                sender.sendMessage(ChatColor.AQUA + "Set border for " + arena.getName() + " to " + max + "-" + min);
             }
             return;
         }

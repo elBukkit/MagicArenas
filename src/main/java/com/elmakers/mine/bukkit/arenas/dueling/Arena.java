@@ -10,6 +10,8 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Server;
 import org.bukkit.SkullType;
+import org.bukkit.World;
+import org.bukkit.WorldBorder;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
@@ -94,6 +96,8 @@ public class Arena {
     private int suddenDeath = 0;
     private PotionEffect suddenDeathEffect = null;
     private String startCommands;
+    private int borderMin = 0;
+    private int borderMax = 0;
 
     private List<ArenaPlayer> leaderboard = new ArrayList<ArenaPlayer>();
     private Location leaderboardLocation;
@@ -146,6 +150,9 @@ public class Arena {
 
         opCheck = configuration.getBoolean("op_check", true);
         startCommands = configuration.getString("start_commands");
+
+        borderMin = configuration.getInt("border_min");
+        borderMax = configuration.getInt("border_max");
 
         arenaType = ArenaType.parse(configuration.getString("type"));
         if (arenaType == null) {
@@ -258,6 +265,8 @@ public class Arena {
                     suddenDeathEffect.getDuration()
             );
         }
+        configuration.set("border_min", borderMin);
+        configuration.set("border_max", borderMax);
         configuration.set("start_commands", startCommands);
 
         configuration.set("leaderboard_size", leaderboardSize);
@@ -320,6 +329,12 @@ public class Arena {
                 org.bukkit.Bukkit.getLogger().info("RUNNING: " + command);
                 controller.getPlugin().getServer().dispatchCommand(sender, command);
             }
+        }
+        if (borderMax > 0 && duration > 0) {
+            World world = getCenter().getWorld();
+            WorldBorder border = world.getWorldBorder();
+            border.setSize(borderMax);
+            border.setSize(borderMin, duration / 1000);
         }
 
         int num = 0;
@@ -859,6 +874,9 @@ public class Arena {
 
         if (startCommands != null && !startCommands.isEmpty()) {
             sender.sendMessage(ChatColor.LIGHT_PURPLE + "Start Commands: " + ChatColor.AQUA + startCommands);
+        }
+        if (borderMax > 0) {
+            sender.sendMessage(ChatColor.LIGHT_PURPLE + "Border: " + ChatColor.AQUA + borderMax + ChatColor.LIGHT_PURPLE + " to " + ChatColor.AQUA + borderMin);
         }
 
         if (winXP > 0) {
@@ -1444,6 +1462,11 @@ public class Arena {
 
     public void setStartCommands(String commands) {
         startCommands = commands;
+    }
+
+    public void setBorder(int min, int max) {
+        borderMin = min;
+        borderMax = max;
     }
 
     public void tick() {
