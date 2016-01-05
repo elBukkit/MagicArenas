@@ -2,3 +2,6 @@
 
 # The base wand template to use for determining a player's current path
 path_template: "default"
+
+# How often to check ("tick") active arenas, in ticks
+tick_interval: 40

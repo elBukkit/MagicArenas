@@ -3,6 +3,7 @@ package com.elmakers.mine.bukkit.arenas.dueling;
 import com.elmakers.mine.bukkit.utility.CompatibilityUtils;
 import com.elmakers.mine.bukkit.utility.ConfigurationUtils;
 import com.elmakers.mine.bukkit.utility.InventoryUtils;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -22,6 +23,8 @@ import org.bukkit.material.MaterialData;
 import org.bukkit.material.Sign;
 import org.bukkit.material.Skull;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.util.Vector;
 
@@ -48,6 +51,8 @@ public class Arena {
     private static Random random = new Random();
 
     private ArenaState state = ArenaState.LOBBY;
+    private long started;
+    private long lastTick;
     private Queue<ArenaPlayer> queue = new LinkedList<ArenaPlayer>();
     private Set<ArenaPlayer> players = new HashSet<ArenaPlayer>();
     private Set<ArenaPlayer> deadPlayers = new HashSet<ArenaPlayer>();
@@ -84,6 +89,11 @@ public class Arena {
     private int announcerRange = 64;
 
     private boolean opCheck = true;
+
+    private int duration = 0;
+    private int suddenDeath = 0;
+    private PotionEffect suddenDeathEffect = null;
+    private String startCommands;
 
     private List<ArenaPlayer> leaderboard = new ArrayList<ArenaPlayer>();
     private Location leaderboardLocation;
@@ -135,6 +145,7 @@ public class Arena {
         countdownMax = configuration.getInt("countdown_max", 30);
 
         opCheck = configuration.getBoolean("op_check", true);
+        startCommands = configuration.getString("start_commands");
 
         arenaType = ArenaType.parse(configuration.getString("type"));
         if (arenaType == null) {
@@ -166,6 +177,12 @@ public class Arena {
         loseSP = configuration.getInt("lose_sp", 0);
         drawSP = configuration.getInt("draw_sp", 0);
 
+        duration = configuration.getInt("duration", 0);
+        suddenDeath = configuration.getInt("sudden_death", 0);
+        if (configuration.contains("sudden_death_effect")) {
+            setSuddenDeathEffect(configuration.getString("sudden_death_effect"));
+        }
+
         for (String s : configuration.getStringList("spawns")){
             spawns.add(ConfigurationUtils.toLocation(s));
         }
@@ -185,6 +202,38 @@ public class Arena {
         }
     }
 
+    public boolean setSuddenDeathEffect(String value) {
+        if (value == null || value.isEmpty()) {
+            suddenDeathEffect = null;
+            return false;
+        }
+        int ticks = 100;
+        int power = 1;
+        PotionEffectType effectType;
+        try {
+            String effectName;
+            if (value.contains(":")) {
+                String[] pieces = value.split(":");
+                effectName = pieces[0];
+                if (pieces.length > 1) {
+                    power = (int)Float.parseFloat(pieces[1]);
+                }
+                if (pieces.length > 2) {
+                    ticks = (int) Float.parseFloat(pieces[2]);
+                }
+            } else {
+                effectName = value;
+            }
+            effectType = PotionEffectType.getByName(effectName.toUpperCase());
+            suddenDeathEffect = new PotionEffect(effectType, ticks, power, true);
+        } catch (Exception ex) {
+            Bukkit.getLogger().warning("Error parsing potion effect: " + value);
+            suddenDeathEffect = null;
+        }
+
+        return suddenDeathEffect != null;
+    }
+
     public void save(ConfigurationSection configuration) {
         configuration.set("name", name);
         configuration.set("description", description);
@@ -199,6 +248,17 @@ public class Arena {
         configuration.set("lose_sp", loseSP);
         configuration.set("draw_sp", drawSP);
         configuration.set("win_sp", winSP);
+
+        configuration.set("duration", duration);
+        configuration.set("sudden_death", suddenDeath);
+        if (suddenDeathEffect != null) {
+            configuration.set("sudden_death_effect",
+                    suddenDeathEffect.getType().getName().toLowerCase() + ":" +
+                    suddenDeathEffect.getAmplifier() + ":" +
+                    suddenDeathEffect.getDuration()
+            );
+        }
+        configuration.set("start_commands", startCommands);
 
         configuration.set("leaderboard_size", leaderboardSize);
         configuration.set("leaderboard_record_size", leaderboardRecordSize);
@@ -250,6 +310,18 @@ public class Arena {
 
     public void start() {
         state = ArenaState.ACTIVE;
+        started = System.currentTimeMillis();
+        lastTick = started;
+
+        if (startCommands != null && !startCommands.isEmpty()) {
+            String[] commands = StringUtils.split(startCommands, ',');
+            CommandSender sender = Bukkit.getConsoleSender();
+            for (String command : commands) {
+                org.bukkit.Bukkit.getLogger().info("RUNNING: " + command);
+                controller.getPlugin().getServer().dispatchCommand(sender, command);
+            }
+        }
+
         int num = 0;
         clearPlayers();
         while (queue.size() > 0 && players.size() < maxPlayers) {
@@ -772,6 +844,22 @@ public class Arena {
         sender.sendMessage(ChatColor.AQUA + "Required Kills: " + ChatColor.DARK_AQUA + requiredKills);
         sender.sendMessage(ChatColor.AQUA + "Countdown: " + ChatColor.DARK_AQUA + countdown +
                 ChatColor.WHITE + " / " + ChatColor.DARK_AQUA + countdownMax);
+
+        if (duration > 0) {
+            int minutes = (int)Math.ceil((double)duration / 60 / 1000);
+            int sd = (int)Math.ceil((double)suddenDeath / 1000);
+            sender.sendMessage(ChatColor.AQUA + "Duration: " + ChatColor.DARK_AQUA + minutes +
+                    ChatColor.WHITE + " minutes)");
+            if (suddenDeathEffect != null && suddenDeath > 0) {
+                sender.sendMessage(ChatColor.DARK_RED + " Sudden death " + ChatColor.RED + sd + ChatColor.DARK_RED +
+                " seconds before end with " + ChatColor.RED + suddenDeathEffect.getType().getName().toLowerCase()
+                + "@" + suddenDeathEffect.getAmplifier());
+            }
+        }
+
+        if (startCommands != null && !startCommands.isEmpty()) {
+            sender.sendMessage(ChatColor.LIGHT_PURPLE + "Start Commands: " + ChatColor.AQUA + startCommands);
+        }
 
         if (winXP > 0) {
             sender.sendMessage(ChatColor.AQUA + "Winning Reward: " + ChatColor.LIGHT_PURPLE + winXP + ChatColor.AQUA + " xp");
@@ -1344,5 +1432,73 @@ public class Arena {
 
     public int getAnnouncerRange() {
         return announcerRange;
+    }
+
+    public void setDuration(int duration) {
+        this.duration = duration;
+    }
+
+    public void setSuddenDeath(int suddenDeath) {
+        this.suddenDeath = suddenDeath;
+    }
+
+    public void setStartCommands(String commands) {
+        startCommands = commands;
+    }
+
+    public void tick() {
+        if (duration <= 0) return;
+        long now = System.currentTimeMillis();
+        long previousTime = lastTick - started;
+        long currentTime = now - started;
+        lastTick = now;
+
+        if (currentTime > duration) {
+            announce(ChatColor.GRAY + "The " + ChatColor.YELLOW + getName() + ChatColor.GRAY + " match timed out in a draw");
+            for (ArenaPlayer player : players) {
+                player.draw();
+                player.heal();
+            }
+            for (ArenaPlayer loser : deadPlayers) {
+                loser.draw();
+                loser.heal();
+            }
+            finish();
+            return;
+        }
+
+        boolean hasSuddenDeath = suddenDeath > 0 && suddenDeathEffect != null && suddenDeath < duration;
+        if (currentTime >= duration - 120000 && previousTime < duration - 1200000) {
+            announce(ChatColor.GOLD + "The " + ChatColor.YELLOW + getName() + ChatColor.GOLD + " match will "
+                + ChatColor.RED + "END" + ChatColor.GOLD + " in " + ChatColor.RED + "two minutes!");
+        }
+        if (currentTime >= duration - 60000 && previousTime < duration - 60000) {
+            announce(ChatColor.GOLD + "The " + ChatColor.YELLOW + getName() + ChatColor.GOLD + " match will "
+                    + ChatColor.RED + "END" + ChatColor.GOLD + " in " + ChatColor.RED + "one minute!");
+        }
+        if (currentTime >= duration - 30000 && previousTime < duration - 30000) {
+            announce(ChatColor.GOLD + "The " + ChatColor.YELLOW + getName() + ChatColor.GOLD + " match will "
+                    + ChatColor.RED + "END" + ChatColor.GOLD + " in " + ChatColor.RED + "thirty seconds!");
+        }
+        if (currentTime >= duration - 10000 && previousTime < duration - 10000) {
+            announce(ChatColor.GOLD + "The " + ChatColor.YELLOW + getName() + ChatColor.GOLD + " match will "
+                    + ChatColor.RED + "END" + ChatColor.GOLD + " in " + ChatColor.RED + "ten seconds!");
+        }
+        if (currentTime >= duration - 5000 && previousTime < duration - 5000) {
+            announce(ChatColor.GOLD + "The " + ChatColor.YELLOW + getName() + ChatColor.GOLD + " match will "
+                    + ChatColor.RED + "END" + ChatColor.GOLD + " in " + ChatColor.RED + "five seconds!");
+        }
+
+        if (hasSuddenDeath) {
+            long suddenDeathDuration = duration - suddenDeath;
+            if (currentTime >= suddenDeathDuration) {
+                if (previousTime < suddenDeathDuration) {
+                    announce(ChatColor.RED + "SUDDEN DEATH!");
+                }
+                for (ArenaPlayer player : players) {
+                    player.getPlayer().addPotionEffect(suddenDeathEffect, true);
+                }
+            }
+        }
     }
 }

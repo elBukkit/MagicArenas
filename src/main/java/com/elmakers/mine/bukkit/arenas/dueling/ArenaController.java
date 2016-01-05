@@ -9,18 +9,22 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitScheduler;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ArenaController {
+public class ArenaController implements Runnable {
     private final Map<String, Arena> arenas = new HashMap<String, Arena>();
     private final Plugin plugin;
     private final MageController magic;
     private final Object saveLock = new Object();
 
+    private BukkitTask task = null;
+    private int tickInterval = 20;
     private String pathTemplate = "beginner";
 
     public ArenaController(Plugin plugin, MageController magic) {
@@ -75,12 +79,20 @@ public class ArenaController {
     }
 
     public void load() {
+        BukkitScheduler scheduler = plugin.getServer().getScheduler();
+        if (task != null) {
+            task.cancel();
+            task = null;
+        }
         ConfigurationSection arenaSaves = loadDataFile("arenas");
         load(arenaSaves);
 
         plugin.reloadConfig();
         Configuration config = plugin.getConfig();
         pathTemplate = config.getString("path_template", pathTemplate);
+        tickInterval = config.getInt("tick_interval", 40);
+
+        task = scheduler.runTaskTimer(plugin, this, 1, tickInterval);
     }
 
     private void save(ConfigurationSection configuration) {
@@ -194,5 +206,14 @@ public class ArenaController {
 
     public String getPathTemplate() {
         return pathTemplate;
+    }
+
+    @Override
+    public void run() {
+        for (Arena arena : arenas.values()) {
+            if (arena.isStarted()) {
+                arena.tick();
+            }
+        }
     }
 }

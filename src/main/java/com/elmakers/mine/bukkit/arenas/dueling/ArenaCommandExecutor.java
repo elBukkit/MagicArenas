@@ -9,6 +9,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
@@ -28,7 +29,8 @@ public class ArenaCommandExecutor implements TabExecutor {
         "portal_enter_damage", "portal_death_message", "leaderboard_games_required",
         "leaderboard_size", "leaderboard_record_size", "max_teleport_distance",
         "xp_win", "xp_lose", "xp_draw", "countdown", "countdown_max", "op_check",
-        "announcer_range", "sp_win", "sp_lose", "sp_draw"
+        "announcer_range", "sp_win", "sp_lose", "sp_draw", "duration", "sudden_death",
+        "sudden_death_effect", "start_commands"
     };
 
     private final static String[] ARENA_LISTS = {
@@ -66,6 +68,13 @@ public class ArenaCommandExecutor implements TabExecutor {
             allOptions.addAll(Arrays.asList(ARENA_LISTS));
         } else if (args.length == 4 && args[0].equalsIgnoreCase("configure") && args[2].equalsIgnoreCase("randomize")) {
             allOptions.addAll(Arrays.asList(ARENA_RANDOMIZE));
+        } else if (args.length == 4 && args[0].equalsIgnoreCase("configure") && args[2].equalsIgnoreCase("sudden_death_effect")) {
+            for (PotionEffectType pt : PotionEffectType.values()) {
+                if (pt == null) continue;
+                String name = pt.getName();
+                if (name == null) continue;
+                allOptions.add(name.toLowerCase());
+            }
         } else if (args.length == 3 && (args[0].equalsIgnoreCase("join") || args[0].equalsIgnoreCase("leave") || args[0].equalsIgnoreCase("stats") || args[0].equalsIgnoreCase("reset"))) {
             allOptions.addAll(controller.getMagic().getPlayerNames());
         }
@@ -482,11 +491,29 @@ public class ArenaCommandExecutor implements TabExecutor {
             return;
         }
 
+        if (propertyName.equalsIgnoreCase("sudden_death_effect")) {
+            if (arena.setSuddenDeathEffect(propertyValue)) {
+                sender.sendMessage(ChatColor.AQUA + "Set sudden death effects for " + arena.getName());
+            } else {
+                sender.sendMessage(ChatColor.RED + "Cleared sudden death effects for " + arena.getName());
+            }
+            return;
+        }
+
+        if (propertyName.equalsIgnoreCase("start_commands")) {
+            arena.setStartCommands(propertyValue);
+            if (propertyValue == null || propertyValue.isEmpty()) {
+                sender.sendMessage(ChatColor.RED + "Cleared start commands for " + arena.getName());
+            } else {
+                sender.sendMessage(ChatColor.AQUA + "Set start commands for " + arena.getName());
+            }
+            return;
+        }
+
         if (propertyValue == null) {
             sender.sendMessage(ChatColor.RED + "Must specify a property value");
             return;
         }
-
 
         if (propertyName.equalsIgnoreCase("op_check"))
         {
@@ -506,7 +533,8 @@ public class ArenaCommandExecutor implements TabExecutor {
             propertyName.equalsIgnoreCase("leaderboard_record_size") || propertyName.equalsIgnoreCase("max_teleport_distance") ||
             propertyName.equalsIgnoreCase("xp_win") || propertyName.equalsIgnoreCase("xp_lose") || propertyName.equalsIgnoreCase("xp_draw") ||
             propertyName.equalsIgnoreCase("sp_win") || propertyName.equalsIgnoreCase("sp_lose") || propertyName.equalsIgnoreCase("sp_draw") ||
-            propertyName.equalsIgnoreCase("countdown") || propertyName.equalsIgnoreCase("countdown_max") || propertyName.equalsIgnoreCase("announcer_range")
+            propertyName.equalsIgnoreCase("countdown") || propertyName.equalsIgnoreCase("countdown_max") || propertyName.equalsIgnoreCase("announcer_range") ||
+            propertyName.equalsIgnoreCase("duration") || propertyName.equalsIgnoreCase("sudden_death")
         ) {
             Integer intValue;
             try {
@@ -517,6 +545,20 @@ public class ArenaCommandExecutor implements TabExecutor {
 
             if (intValue == null) {
                 sender.sendMessage(ChatColor.RED + "Not a valid integer: " + propertyValue);
+                return;
+            }
+
+            if (propertyName.equalsIgnoreCase("duration")) {
+                arena.setDuration(intValue * 1000);
+                sender.sendMessage(ChatColor.AQUA + "Set duration of " + arena.getName() + " to " + intValue + " seconds");
+                controller.save();
+                return;
+            }
+
+            if (propertyName.equalsIgnoreCase("sudden_death")) {
+                arena.setSuddenDeath(intValue * 1000);
+                sender.sendMessage(ChatColor.AQUA + "Set sudden death time of " + arena.getName() + " to " + intValue + " seconds before end");
+                controller.save();
                 return;
             }
 
