@@ -42,6 +42,10 @@ permissions:
     description: Player may use the /arena leave command
     type: boolean
     default: op
+  MagicArenas.commands.arena.reset:
+    description: Player may use the /arena reset command
+    type: boolean
+    default: op
   MagicArenas.commands.arena.join.other:
     description: Player may use the /arena join command on others
     type: boolean

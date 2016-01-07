@@ -233,8 +233,14 @@ public class ArenaCommandExecutor implements TabExecutor {
             if (args.length > 2) {
                 playerName = args[2];
                 player = Bukkit.getPlayer(playerName);
-            } else if (sender instanceof Player) {
-                player = (Player) sender;
+            } else {
+                if (isAllArenas) {
+                    controller.reset();
+                    sender.sendMessage(ChatColor.AQUA + "All arenas" + ChatColor.GRAY + " have been " + ChatColor.RED + " reset");
+                } else {
+                    arena.reset();
+                    sender.sendMessage(ChatColor.AQUA + arena.getName() + ChatColor.GRAY + " has been " + ChatColor.RED + " reset");
+                }
             }
 
             if (player == null) {

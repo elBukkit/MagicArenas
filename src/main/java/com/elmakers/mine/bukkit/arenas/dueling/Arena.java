@@ -1322,6 +1322,10 @@ public class Arena {
         arenaPlayer.reset();
     }
 
+    public void reset() {
+        // TODO.. need to cycle the id or something :(
+    }
+
     public void setWinXP(int xp) {
         winXP = Math.max(xp, 0);
     }

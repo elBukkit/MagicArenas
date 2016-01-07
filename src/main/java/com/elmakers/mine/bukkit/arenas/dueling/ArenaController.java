@@ -196,6 +196,12 @@ public class ArenaController implements Runnable {
         }
     }
 
+    public void reset() {
+        for (Arena arena : arenas.values()) {
+            arena.reset();
+        }
+    }
+
     public boolean isInArena(Player player) {
         return player.hasMetadata("arena");
     }
