@@ -864,7 +864,7 @@ public class Arena {
             int minutes = (int)Math.ceil((double)duration / 60 / 1000);
             int sd = (int)Math.ceil((double)suddenDeath / 1000);
             sender.sendMessage(ChatColor.AQUA + "Duration: " + ChatColor.DARK_AQUA + minutes +
-                    ChatColor.WHITE + " minutes)");
+                    ChatColor.WHITE + " minutes");
             if (suddenDeathEffect != null && suddenDeath > 0) {
                 sender.sendMessage(ChatColor.DARK_RED + " Sudden death " + ChatColor.RED + sd + ChatColor.DARK_RED +
                 " seconds before end with " + ChatColor.RED + suddenDeathEffect.getType().getName().toLowerCase()
