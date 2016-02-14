@@ -858,6 +858,9 @@ public class Arena {
         if (opCheck) {
             sender.sendMessage(ChatColor.RED + "OP Wand Check Enabled");
         }
+        if (keepInventory) {
+            sender.sendMessage(ChatColor.GREEN + "Players keep their inventory on death");
+        }
         int minPlayers = getMinPlayers();
         int maxPlayers = getMaxPlayers();
         sender.sendMessage(ChatColor.AQUA + "Min / Max Players: " + ChatColor.DARK_AQUA + minPlayers +
@@ -1452,6 +1455,10 @@ public class Arena {
 
     public void setOpCheck(boolean check) {
         opCheck = check;
+    }
+
+    public void setKeepInventory(boolean keep) {
+        keepInventory = keep;
     }
 
     public void setAnnouncerRange(int range) {
