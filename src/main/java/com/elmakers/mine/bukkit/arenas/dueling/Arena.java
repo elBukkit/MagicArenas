@@ -273,6 +273,8 @@ public class Arena {
         configuration.set("border_max", borderMax);
         configuration.set("start_commands", startCommands);
 
+        configuration.set("keep_inventory", keepInventory);
+
         configuration.set("leaderboard_size", leaderboardSize);
         configuration.set("leaderboard_record_size", leaderboardRecordSize);
         configuration.set("leaderboard_games_required", leaderboardGamesRequired);
