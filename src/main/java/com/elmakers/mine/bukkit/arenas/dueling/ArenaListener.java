@@ -84,6 +84,10 @@ public class ArenaListener implements Listener {
         Arena arena = controller.getArena(player);
         if (arena != null) {
             arena.died(player);
+
+            if(arena.isKeepInventory()) {
+                e.setKeepInventory(true);
+            }
         }
         if (player.hasMetadata("death_message")) {
             Collection<MetadataValue> metadata = player.getMetadata("death_message");

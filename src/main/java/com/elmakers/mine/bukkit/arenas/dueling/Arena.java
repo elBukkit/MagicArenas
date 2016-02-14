@@ -112,6 +112,8 @@ public class Arena {
     private String name;
     private String description;
 
+    private boolean keepInventory;
+
     public Arena(final String key, final ArenaController controller) {
         this.key = key;
         this.controller = controller;
@@ -153,6 +155,8 @@ public class Arena {
 
         borderMin = configuration.getInt("border_min");
         borderMax = configuration.getInt("border_max");
+
+        keepInventory = configuration.getBoolean("keep_inventory", false);
 
         arenaType = ArenaType.parse(configuration.getString("type"));
         if (arenaType == null) {
@@ -268,6 +272,8 @@ public class Arena {
         configuration.set("border_min", borderMin);
         configuration.set("border_max", borderMax);
         configuration.set("start_commands", startCommands);
+
+        configuration.set("keep_inventory", keepInventory);
 
         configuration.set("leaderboard_size", leaderboardSize);
         configuration.set("leaderboard_record_size", leaderboardRecordSize);
@@ -1527,5 +1533,9 @@ public class Arena {
                 }
             }
         }
+    }
+
+    public boolean isKeepInventory() {
+        return keepInventory;
     }
 }
