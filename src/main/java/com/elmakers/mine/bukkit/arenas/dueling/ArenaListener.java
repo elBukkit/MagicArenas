@@ -85,8 +85,12 @@ public class ArenaListener implements Listener {
         if (arena != null) {
             arena.died(player);
 
-            if(arena.isKeepInventory()) {
+            if (arena.isKeepInventory()) {
                 e.setKeepInventory(true);
+            }
+
+            if (arena.isKeepLevel()) {
+                e.setKeepLevel(true);
             }
         }
         if (player.hasMetadata("death_message")) {

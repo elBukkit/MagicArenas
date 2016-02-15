@@ -113,6 +113,7 @@ public class Arena {
     private String description;
 
     private boolean keepInventory;
+    private boolean keepLevel;
 
     public Arena(final String key, final ArenaController controller) {
         this.key = key;
@@ -157,6 +158,7 @@ public class Arena {
         borderMax = configuration.getInt("border_max");
 
         keepInventory = configuration.getBoolean("keep_inventory", false);
+        keepLevel = configuration.getBoolean("keep_level", false);
 
         arenaType = ArenaType.parse(configuration.getString("type"));
         if (arenaType == null) {
@@ -274,6 +276,7 @@ public class Arena {
         configuration.set("start_commands", startCommands);
 
         configuration.set("keep_inventory", keepInventory);
+        configuration.set("keep_level", keepLevel);
 
         configuration.set("leaderboard_size", leaderboardSize);
         configuration.set("leaderboard_record_size", leaderboardRecordSize);
@@ -860,6 +863,9 @@ public class Arena {
         }
         if (keepInventory) {
             sender.sendMessage(ChatColor.GREEN + "Players keep their inventory on death");
+        }
+        if (keepLevel) {
+            sender.sendMessage(ChatColor.GREEN + "Players keep their XP levels on death");
         }
         int minPlayers = getMinPlayers();
         int maxPlayers = getMaxPlayers();
@@ -1461,6 +1467,10 @@ public class Arena {
         keepInventory = keep;
     }
 
+    public void setKeepLevel(boolean keep) {
+        keepLevel = keep;
+    }
+
     public void setAnnouncerRange(int range) {
         this.announcerRange = range;
     }
@@ -1544,5 +1554,9 @@ public class Arena {
 
     public boolean isKeepInventory() {
         return keepInventory;
+    }
+
+    public boolean isKeepLevel() {
+        return keepLevel;
     }
 }

@@ -30,7 +30,7 @@ public class ArenaCommandExecutor implements TabExecutor {
         "leaderboard_size", "leaderboard_record_size", "max_teleport_distance",
         "xp_win", "xp_lose", "xp_draw", "countdown", "countdown_max", "op_check",
         "announcer_range", "sp_win", "sp_lose", "sp_draw", "duration", "sudden_death",
-        "sudden_death_effect", "start_commands", "border", "keep_inventory"
+        "sudden_death_effect", "start_commands", "border", "keep_inventory", "keep_level"
     };
 
     private final static String[] ARENA_LISTS = {
@@ -571,6 +571,18 @@ public class ArenaCommandExecutor implements TabExecutor {
                 sender.sendMessage(ChatColor.RED + "Disabled keep inventory for " + arena.getName());
             }
             arena.setKeepInventory(keepOn);
+            return;
+        }
+
+        if (propertyName.equalsIgnoreCase("keep_level"))
+        {
+            boolean keepOn = propertyValue.equalsIgnoreCase("true");
+            if (keepOn) {
+                sender.sendMessage(ChatColor.GREEN + "Enabled keep XP levels for " + arena.getName());
+            } else {
+                sender.sendMessage(ChatColor.RED + "Disabled keep XP levels for " + arena.getName());
+            }
+            arena.setKeepLevel(keepOn);
             return;
         }
 
