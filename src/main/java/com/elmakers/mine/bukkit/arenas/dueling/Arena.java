@@ -208,11 +208,6 @@ public class Arena {
             leaderboardLocation = ConfigurationUtils.toLocation(configuration.getString("leaderboard_sign_location"));
             leaderboardFacing = ConfigurationUtils.toBlockFace(configuration.getString("leaderboard_sign_facing"));
         }
-
-        // Legacy backup check
-        if (center == null) {
-            center = lose;
-        }
     }
 
     public boolean setSuddenDeathEffect(String value) {
@@ -248,6 +243,8 @@ public class Arena {
     }
 
     public void save(ConfigurationSection configuration) {
+        if (!isValid()) return;
+        
         configuration.set("name", name);
         configuration.set("description", description);
         configuration.set("minplayers", minPlayers);
@@ -327,6 +324,8 @@ public class Arena {
     }
 
     public void start() {
+        if (!isValid()) return;
+        
         state = ArenaState.ACTIVE;
         started = System.currentTimeMillis();
         lastTick = started;
@@ -1550,6 +1549,10 @@ public class Arena {
                 }
             }
         }
+    }
+    
+    public boolean isValid() {
+        return center != null && center.getWorld() != null;
     }
 
     public boolean isKeepInventory() {
