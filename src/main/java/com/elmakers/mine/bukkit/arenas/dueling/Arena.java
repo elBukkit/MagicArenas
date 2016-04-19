@@ -684,6 +684,16 @@ public class Arena {
         return null;
     }
     
+    public void setStartSpell(String startSpell) {
+        ArenaStage stage = getOrCreateCurrentStage();
+        stage.setStartSpell(startSpell);
+    }
+
+    public void setEndSpell(String endSpell) {
+        ArenaStage stage = getOrCreateCurrentStage();
+        stage.setEndSpell(endSpell);
+    }
+    
     public void addMob(EntityData mobType, int count) {
         ArenaStage stage = getOrCreateCurrentStage();
         stage.addMob(mobType, count);

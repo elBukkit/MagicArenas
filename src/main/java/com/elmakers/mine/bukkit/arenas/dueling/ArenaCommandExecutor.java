@@ -1,6 +1,7 @@
 package com.elmakers.mine.bukkit.arenas.dueling;
 
 import com.elmakers.mine.bukkit.api.entity.EntityData;
+import com.elmakers.mine.bukkit.api.spell.SpellTemplate;
 import com.elmakers.mine.bukkit.utility.ConfigurationUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
@@ -31,7 +32,8 @@ public class ArenaCommandExecutor implements TabExecutor {
         "leaderboard_size", "leaderboard_record_size", "max_teleport_distance",
         "xp_win", "xp_lose", "xp_draw", "countdown", "countdown_max", "op_check",
         "announcer_range", "sp_win", "sp_lose", "sp_draw", "duration", "sudden_death",
-        "sudden_death_effect", "start_commands", "border", "keep_inventory", "keep_level"
+        "sudden_death_effect", "start_commands", "border", "keep_inventory", "keep_level",
+        "spell_start", "spell_end"
     };
 
     private final static String[] ARENA_LISTS = {
@@ -75,6 +77,11 @@ public class ArenaCommandExecutor implements TabExecutor {
                 String name = pt.getName();
                 if (name == null) continue;
                 allOptions.add(name.toLowerCase());
+            }
+        } else if (args.length == 4 && args[0].equalsIgnoreCase("configure") && (args[2].equalsIgnoreCase("spell_start") || args[2].equalsIgnoreCase("spell_start"))) {
+            Collection<SpellTemplate> spells = controller.getMagic().getSpellTemplates();
+            for (SpellTemplate spell : spells) {
+                allOptions.add(spell.getKey());
             }
         } else if (args.length == 3 && (args[0].equalsIgnoreCase("join") || args[0].equalsIgnoreCase("leave") || args[0].equalsIgnoreCase("stats") || args[0].equalsIgnoreCase("reset"))) {
             allOptions.addAll(controller.getMagic().getPlayerNames());
@@ -554,6 +561,26 @@ public class ArenaCommandExecutor implements TabExecutor {
                 sender.sendMessage(ChatColor.RED + "Cleared start commands for " + arena.getName());
             } else {
                 sender.sendMessage(ChatColor.AQUA + "Set start commands for " + arena.getName());
+            }
+            return;
+        }
+
+        if (propertyName.equalsIgnoreCase("spell_start")) {
+            arena.setStartSpell(propertyValue);
+            if (propertyValue == null || propertyValue.isEmpty()) {
+                sender.sendMessage(ChatColor.RED + "Cleared start spell for " + arena.getName());
+            } else {
+                sender.sendMessage(ChatColor.AQUA + "Set start spell for " + arena.getName());
+            }
+            return;
+        }
+        
+        if (propertyName.equalsIgnoreCase("spell_end")) {
+            arena.setEndSpell(propertyValue);
+            if (propertyValue == null || propertyValue.isEmpty()) {
+                sender.sendMessage(ChatColor.RED + "Cleared end spell for " + arena.getName());
+            } else {
+                sender.sendMessage(ChatColor.AQUA + "Set end spell for " + arena.getName());
             }
             return;
         }
