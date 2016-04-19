@@ -1,5 +1,6 @@
 package com.elmakers.mine.bukkit.arenas.dueling;
 
+import com.elmakers.mine.bukkit.api.entity.EntityData;
 import com.elmakers.mine.bukkit.utility.CompatibilityUtils;
 import com.elmakers.mine.bukkit.utility.ConfigurationUtils;
 import com.elmakers.mine.bukkit.utility.InventoryUtils;
@@ -17,6 +18,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -60,6 +62,9 @@ public class Arena {
     private Set<ArenaPlayer> deadPlayers = new HashSet<ArenaPlayer>();
 
     private List<Location> spawns = new ArrayList<Location>();
+    private List<Location> mobSpawns = new ArrayList<Location>();
+    private List<ArenaStage> stages = new ArrayList<ArenaStage>();
+    private int currentStage = 0;
     private final ArenaController controller;
 
     private Location center;
@@ -200,8 +205,19 @@ public class Arena {
             spawns.add(ConfigurationUtils.toLocation(s));
         }
 
+        for (String s : configuration.getStringList("mob_spawns")){
+            mobSpawns.add(ConfigurationUtils.toLocation(s));
+        }
+
         if (configuration.contains("randomize.spawn")) {
             randomizeSpawn = ConfigurationUtils.toVector(configuration.getString("randomize.spawn"));
+        }
+        
+        if (configuration.contains("stages")) {
+            Collection<ConfigurationSection> stageConfigurations = ConfigurationUtils.getNodeList(configuration, "stages");
+            for (ConfigurationSection stageConfiguration : stageConfigurations) {
+                stages.add(new ArenaStage(controller.getMagic(), stageConfiguration));
+            }
         }
 
         if (configuration.contains("leaderboard_sign_location") && configuration.contains("leaderboard_sign_facing")) {
@@ -303,6 +319,22 @@ public class Arena {
             spawnList.add(ConfigurationUtils.fromLocation(spawn));
         }
         configuration.set("spawns", spawnList);
+
+        List<String> mobSpawnList = new ArrayList<String>();
+        for (Location spawn : mobSpawns) {
+            mobSpawnList.add(ConfigurationUtils.fromLocation(spawn));
+        }
+        configuration.set("mob_spawns", mobSpawnList);
+        
+        if (!stages.isEmpty()) {
+            List<ConfigurationSection> stageConfigurations = new ArrayList<ConfigurationSection>();
+            for (ArenaStage stage : stages) {
+                ConfigurationSection section = new MemoryConfiguration();
+                stage.save(section);
+                stageConfigurations.add(section);
+            }
+            configuration.set("stages", stageConfigurations);
+        }
 
         if (randomizeSpawn != null) {
             configuration.set("randomize.spawn", ConfigurationUtils.fromVector(randomizeSpawn));
@@ -636,6 +668,42 @@ public class Arena {
 
         return spawns;
     }
+    public void addMobSpawn(Location location) {
+        mobSpawns.add(location.clone());
+    }
+
+    public Location removeMobSpawn(Location location) {
+        int rangeSquared = 3 * 3;
+        for (Location spawn : mobSpawns) {
+            if (spawn.distanceSquared(location) < rangeSquared) {
+                mobSpawns.remove(spawn);
+                return spawn;
+            }
+        }
+
+        return null;
+    }
+    
+    public void addMob(EntityData mobType, int count) {
+        ArenaStage stage = getOrCreateCurrentStage();
+        stage.addMob(mobType, count);
+    }
+    
+    public ArenaStage getCurrentStage() {
+        if (currentStage > 0 && currentStage < stages.size()) {
+            return stages.get(currentStage);
+        }
+        return null;
+    }
+    
+    public ArenaStage getOrCreateCurrentStage() {
+        if (stages.isEmpty()) {
+            stages.add(new ArenaStage());
+            currentStage = 0;
+        }
+        
+        return stages.get(currentStage);
+    }
 
     public void setMinPlayers(int players) {
         minPlayers = players;
@@ -915,21 +983,43 @@ public class Arena {
 
         int spawnSize = spawns.size();
         if (spawnSize == 1) {
-            sender.sendMessage(ChatColor.DARK_BLUE + "Spawn: " + ChatColor.BLUE + printLocation(spawns.get(0)));
+            sender.sendMessage(ChatColor.BLUE + "Spawn: " + printLocation(spawns.get(0)));
         } else {
-            sender.sendMessage(ChatColor.DARK_BLUE + "Spawns: " + ChatColor.BLUE + spawnSize);
+            sender.sendMessage(ChatColor.BLUE + "Spawns: " + ChatColor.GRAY + spawnSize);
             for (Location spawn : spawns) {
-                sender.sendMessage(ChatColor.BLUE + " " + printLocation(spawn));
+                sender.sendMessage(ChatColor.GRAY + " " + printLocation(spawn));
             }
         }
-        sender.sendMessage(ChatColor.DARK_BLUE + "Lobby: " + ChatColor.BLUE + printLocation(lobby));
-        sender.sendMessage(ChatColor.DARK_BLUE + "Win: " + ChatColor.BLUE + printLocation(win));
-        sender.sendMessage(ChatColor.DARK_BLUE + "Lose: " + ChatColor.BLUE + printLocation(lose));
-        sender.sendMessage(ChatColor.DARK_BLUE + "Exit: " + ChatColor.BLUE + printLocation(exit));
-        sender.sendMessage(ChatColor.DARK_BLUE + "Center: " + ChatColor.BLUE + printLocation(center));
         if (randomizeSpawn != null) {
-            sender.sendMessage(ChatColor.BLUE + "Randomize: " + ChatColor.BLUE + randomizeSpawn);
+            sender.sendMessage(ChatColor.DARK_BLUE + " Randomize: " + ChatColor.BLUE + randomizeSpawn);
         }
+        sender.sendMessage(ChatColor.BLUE + "Lobby: " + printLocation(lobby));
+        sender.sendMessage(ChatColor.BLUE + "Win: " + printLocation(win));
+        sender.sendMessage(ChatColor.BLUE + "Lose: " + printLocation(lose));
+        sender.sendMessage(ChatColor.BLUE + "Exit: " + printLocation(exit));
+        sender.sendMessage(ChatColor.BLUE + "Center: " + printLocation(center));
+        
+        int mobSpawnSize = mobSpawns.size();
+        if (mobSpawnSize == 1) {
+            sender.sendMessage(ChatColor.BLUE + "Spawn Mobs: " + printLocation(mobSpawns.get(0)));
+        } else if (mobSpawnSize > 1) {
+            sender.sendMessage(ChatColor.BLUE + "Spawns Mobs: " + ChatColor.GRAY + spawnSize);
+            for (Location spawn : mobSpawns) {
+                sender.sendMessage(" " + printLocation(spawn));
+            }
+        }
+        int numStages = stages.size();
+        if (numStages > 0) {
+            if (numStages == 1) {
+                stages.get(0).describe(sender);
+            } else {
+                sender.sendMessage(ChatColor.BLUE + "Stages: " + ChatColor.GRAY + numStages);
+                for (ArenaStage stage : stages) {
+                    stage.describe(sender);
+                }
+            }
+        }
+        
         if (portalDamage > 0 || portalEnterDamage > 0) {
             sender.sendMessage(ChatColor.LIGHT_PURPLE + "Portal Entry Damage: " + ChatColor.DARK_PURPLE + portalEnterDamage);
             sender.sendMessage(ChatColor.LIGHT_PURPLE + "Portal Damage: " + ChatColor.DARK_PURPLE + portalDamage);
@@ -961,7 +1051,10 @@ public class Arena {
     protected String printLocation(Location location) {
         if (location == null) return ChatColor.DARK_GRAY + "(None)";
 
-        return location.toVector().toString() + " : " + location.getWorld().getName();
+        return "" + ChatColor.GRAY + location.getBlockX() + ChatColor.DARK_GRAY + "," + 
+                ChatColor.GRAY + location.getBlockY() + ChatColor.DARK_GRAY + "," + 
+                ChatColor.GRAY + location.getBlockZ() + ChatColor.DARK_GRAY + " : " + 
+                ChatColor.GRAY + location.getWorld().getName();
     }
 
     public int getMinPlayers() {

@@ -1,5 +1,6 @@
 package com.elmakers.mine.bukkit.arenas.dueling;
 
+import com.elmakers.mine.bukkit.api.entity.EntityData;
 import com.elmakers.mine.bukkit.utility.ConfigurationUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
@@ -34,7 +35,7 @@ public class ArenaCommandExecutor implements TabExecutor {
     };
 
     private final static String[] ARENA_LISTS = {
-        "spawn"
+        "spawn", "mob_spawn", "mob"
     };
 
     private final static String[] ARENA_RANDOMIZE = {
@@ -77,6 +78,8 @@ public class ArenaCommandExecutor implements TabExecutor {
             }
         } else if (args.length == 3 && (args[0].equalsIgnoreCase("join") || args[0].equalsIgnoreCase("leave") || args[0].equalsIgnoreCase("stats") || args[0].equalsIgnoreCase("reset"))) {
             allOptions.addAll(controller.getMagic().getPlayerNames());
+        } else if (args.length == 5 && args[0].equalsIgnoreCase("configure") && args[2].equalsIgnoreCase("add") && args[3].equalsIgnoreCase("mob")) {
+            allOptions.addAll(controller.getMagic().getMobKeys());
         }
 
         completeCommand = completeCommand.toLowerCase();
@@ -402,17 +405,17 @@ public class ArenaCommandExecutor implements TabExecutor {
             Player player = (Player) sender;
             Location location = player.getLocation();
 
-            boolean addLocation = propertyName.equalsIgnoreCase("add");
-            boolean removeLocation = propertyName.equalsIgnoreCase("remove");
-            if (addLocation || removeLocation)
+            boolean isAdd = propertyName.equalsIgnoreCase("add");
+            boolean isRemove = propertyName.equalsIgnoreCase("remove");
+            if (isAdd || isRemove)
             {
-                String locList = "spawn";
+                String subItem = "spawn";
                 if (args.length > 0) {
-                    locList = args[0];
+                    subItem = args[0];
                 }
 
-                if (locList.equalsIgnoreCase("spawn")) {
-                    if (addLocation) {
+                if (subItem.equalsIgnoreCase("spawn")) {
+                    if (isAdd) {
                         arena.addSpawn(location);
                         controller.save();
                         sender.sendMessage(ChatColor.AQUA + "You have added a spawn location!");
@@ -427,9 +430,48 @@ public class ArenaCommandExecutor implements TabExecutor {
                     }
 
                     return;
+                } else if (subItem.equalsIgnoreCase("mob_spawn")) {
+                    if (isAdd) {
+                        arena.addMobSpawn(location);
+                        controller.save();
+                        sender.sendMessage(ChatColor.AQUA + "You have added a mob spawn location!");
+                    } else {
+                        Location removed = arena.removeMobSpawn(location);
+                        if (removed != null) {
+                            controller.save();
+                            sender.sendMessage(ChatColor.AQUA + "You have removed a mob spawn location at: " + removed.toVector());
+                        } else {
+                            sender.sendMessage(ChatColor.RED + "No nearby mob spawn locations");
+                        }
+                    }
+
+                    return;
+                } else if (subItem.equalsIgnoreCase("mob")) {
+                    if (args.length <= 1) {
+                        sender.sendMessage(ChatColor.RED + "Missing mob type specifier");
+                        return;
+                    }
+                    
+                    String entityType = args[1];
+                    int count = 1;
+                    if (args.length > 2) {
+                        try {
+                            count = Integer.parseInt(args[2]);
+                        } catch (Exception ex) {
+                            sender.sendMessage(ChatColor.RED + "Not a valid count: " + args[2]);
+                            return;
+                        }
+                    }
+                    EntityData mobType = controller.getMagic().getMob(entityType);
+                    if (mobType == null) {
+                        sender.sendMessage(ChatColor.RED + "Not a valid mob type: " + entityType);
+                        return;
+                    }
+                    arena.addMob(mobType, count);
+                    return;
                 }
 
-                sender.sendMessage(ChatColor.RED + "Not a valid location list: " + locList);
+                sender.sendMessage(ChatColor.RED + "Not a valid add/remove option: " + subItem);
                 sender.sendMessage(ChatColor.AQUA + "Options: " + StringUtils.join(ARENA_LISTS, ", "));
                 return;
             }
