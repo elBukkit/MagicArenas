@@ -155,7 +155,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             for (Arena arena : arenas) {
                 String arenaMessage = ChatColor.AQUA + arena.getName() + ChatColor.GRAY + " (" + arena.getKey() + ")";
                 if (arena.isStarted()) {
-                    arenaMessage = arenaMessage + ChatColor.GREEN + "ACTIVE";
+                    arenaMessage = arenaMessage + ChatColor.GREEN + " ACTIVE";
                 }
                 int minPlayers = arena.getMinPlayers();
                 int maxPlayers = arena.getMaxPlayers();
