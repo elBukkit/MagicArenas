@@ -775,7 +775,11 @@ public class Arena {
 
         final Server server = controller.getPlugin().getServer();
         if (players.size() == 0 && state != ArenaState.WON) {
-            announce(ChatColor.RED + "The " + ChatColor.YELLOW + getName() + ChatColor.RED + " match ended in a default");
+            if (isMobArena()) {
+                announce(ChatColor.RED + "The " + ChatColor.YELLOW + getName() + ChatColor.RED + " match has ended, better luck next time!");
+            } else {
+                announce(ChatColor.RED + "The " + ChatColor.YELLOW + getName() + ChatColor.RED + " match ended in a default");
+            }
             exitPlayers();
             finish();
             return;
