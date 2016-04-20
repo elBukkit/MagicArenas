@@ -62,7 +62,6 @@ public class Arena {
     private Set<ArenaPlayer> deadPlayers = new HashSet<ArenaPlayer>();
 
     private List<Location> spawns = new ArrayList<Location>();
-    private List<Location> mobSpawns = new ArrayList<Location>();
     private List<ArenaStage> stages = new ArrayList<ArenaStage>();
     private int currentStage = 0;
     private final ArenaController controller;
@@ -205,10 +204,6 @@ public class Arena {
             spawns.add(ConfigurationUtils.toLocation(s));
         }
 
-        for (String s : configuration.getStringList("mob_spawns")){
-            mobSpawns.add(ConfigurationUtils.toLocation(s));
-        }
-
         if (configuration.contains("randomize.spawn")) {
             randomizeSpawn = ConfigurationUtils.toVector(configuration.getString("randomize.spawn"));
         }
@@ -216,7 +211,7 @@ public class Arena {
         if (configuration.contains("stages")) {
             Collection<ConfigurationSection> stageConfigurations = ConfigurationUtils.getNodeList(configuration, "stages");
             for (ConfigurationSection stageConfiguration : stageConfigurations) {
-                stages.add(new ArenaStage(controller.getMagic(), stageConfiguration));
+                stages.add(new ArenaStage(this, controller.getMagic(), stageConfiguration));
             }
         }
 
@@ -319,12 +314,6 @@ public class Arena {
             spawnList.add(ConfigurationUtils.fromLocation(spawn));
         }
         configuration.set("spawns", spawnList);
-
-        List<String> mobSpawnList = new ArrayList<String>();
-        for (Location spawn : mobSpawns) {
-            mobSpawnList.add(ConfigurationUtils.fromLocation(spawn));
-        }
-        configuration.set("mob_spawns", mobSpawnList);
         
         if (!stages.isEmpty()) {
             List<ConfigurationSection> stageConfigurations = new ArrayList<ConfigurationSection>();
@@ -416,6 +405,11 @@ public class Arena {
             // Wrap index around to player
             num = (num + 1) % spawns.size();
             arenaPlayer.teleport(spawn);
+        }
+        
+        ArenaStage currentStage = getCurrentStage();
+        if (currentStage != null) {
+            currentStage.start();
         }
 
         messageNextRoundPlayerList(ChatColor.GOLD + "You are up for the next round!");
@@ -565,6 +559,10 @@ public class Arena {
     }
 
     protected void finish() {
+        ArenaStage currentStage = getCurrentStage();
+        if (currentStage != null) {
+            currentStage.finish();
+        }
         state = ArenaState.LOBBY;
         clearPlayers();
 
@@ -668,20 +666,13 @@ public class Arena {
 
         return spawns;
     }
+    
     public void addMobSpawn(Location location) {
-        mobSpawns.add(location.clone());
+        getOrCreateCurrentStage().addMobSpawn(location);
     }
 
     public Location removeMobSpawn(Location location) {
-        int rangeSquared = 3 * 3;
-        for (Location spawn : mobSpawns) {
-            if (spawn.distanceSquared(location) < rangeSquared) {
-                mobSpawns.remove(spawn);
-                return spawn;
-            }
-        }
-
-        return null;
+        return getOrCreateCurrentStage().removeMobSpawn(location);
     }
     
     public void setStartSpell(String startSpell) {
@@ -708,7 +699,7 @@ public class Arena {
     
     public ArenaStage getOrCreateCurrentStage() {
         if (stages.isEmpty()) {
-            stages.add(new ArenaStage());
+            stages.add(new ArenaStage(this));
             currentStage = 0;
         }
         
@@ -1008,24 +999,14 @@ public class Arena {
         sender.sendMessage(ChatColor.BLUE + "Lose: " + printLocation(lose));
         sender.sendMessage(ChatColor.BLUE + "Exit: " + printLocation(exit));
         sender.sendMessage(ChatColor.BLUE + "Center: " + printLocation(center));
-        
-        int mobSpawnSize = mobSpawns.size();
-        if (mobSpawnSize == 1) {
-            sender.sendMessage(ChatColor.BLUE + "Spawn Mobs: " + printLocation(mobSpawns.get(0)));
-        } else if (mobSpawnSize > 1) {
-            sender.sendMessage(ChatColor.BLUE + "Spawns Mobs: " + ChatColor.GRAY + spawnSize);
-            for (Location spawn : mobSpawns) {
-                sender.sendMessage(" " + printLocation(spawn));
-            }
-        }
         int numStages = stages.size();
         if (numStages > 0) {
             if (numStages == 1) {
-                stages.get(0).describe(sender);
+                stages.get(0).describe(sender, " ");
             } else {
                 sender.sendMessage(ChatColor.BLUE + "Stages: " + ChatColor.GRAY + numStages);
                 for (ArenaStage stage : stages) {
-                    stage.describe(sender);
+                    stage.describe(sender, " ");
                 }
             }
         }

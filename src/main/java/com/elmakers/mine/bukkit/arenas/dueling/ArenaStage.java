@@ -4,6 +4,7 @@ import com.elmakers.mine.bukkit.api.magic.MageController;
 import com.elmakers.mine.bukkit.api.entity.EntityData;
 import com.elmakers.mine.bukkit.utility.ConfigurationUtils;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
@@ -13,15 +14,18 @@ import java.util.Collection;
 import java.util.List;
 
 public class ArenaStage {
+    private final Arena arena;
     private List<ArenaMobSpawner> mobs = new ArrayList<ArenaMobSpawner>();
+    private List<Location> mobSpawns = new ArrayList<Location>();
     private String startSpell;
     private String endSpell;
     
-    public ArenaStage() {
-        
+    public ArenaStage(Arena arena) {
+        this.arena = arena;
     }
     
-    public ArenaStage(MageController controller, ConfigurationSection configuration) {
+    public ArenaStage(Arena arena, MageController controller, ConfigurationSection configuration) {
+        this.arena = arena;
         if (configuration.contains("mobs")) {
             Collection<ConfigurationSection> mobConfigurations = ConfigurationUtils.getNodeList(configuration, "mobs");
             for (ConfigurationSection mobConfiguration : mobConfigurations) {
@@ -30,6 +34,10 @@ public class ArenaStage {
         }
         startSpell = configuration.getString("spell_start");
         endSpell = configuration.getString("spell_end");
+        
+        for (String s : configuration.getStringList("mob_spawns")){
+            mobSpawns.add(ConfigurationUtils.toLocation(s));
+        }
     }
     
     public void save(ConfigurationSection configuration) {
@@ -42,31 +50,47 @@ public class ArenaStage {
         configuration.set("mobs", mobsConfigurations);
         configuration.set("spell_start", startSpell);
         configuration.set("spell_end", endSpell);
+        
+        List<String> mobSpawnList = new ArrayList<String>();
+        for (Location spawn : mobSpawns) {
+            mobSpawnList.add(ConfigurationUtils.fromLocation(spawn));
+        }
+        configuration.set("mob_spawns", mobSpawnList);
     }
     
     public void addMob(EntityData entityType, int count) {
         mobs.add(new ArenaMobSpawner(entityType, count));
     }
     
-    public void describe(CommandSender sender) {
+    public void describe(CommandSender sender, String prefix) {
+        int mobSpawnSize = mobSpawns.size();
+        if (mobSpawnSize == 1) {
+            sender.sendMessage(prefix + ChatColor.BLUE + "Spawn Mobs: " + arena.printLocation(mobSpawns.get(0)));
+        } else if (mobSpawnSize > 1) {
+            sender.sendMessage(prefix + ChatColor.BLUE + "Spawns Mobs: " + ChatColor.GRAY + mobSpawnSize);
+            for (Location spawn : mobSpawns) {
+                sender.sendMessage(prefix + arena.printLocation(spawn));
+            }
+        }
+        
         int numMobs = mobs.size();
         if (numMobs == 0) {
-            sender.sendMessage(ChatColor.GRAY + " (No Mobs)");
+            sender.sendMessage(prefix + ChatColor.GRAY + "(No Mobs)");
         } else if (numMobs == 1) {
-            sender.sendMessage(describeMob(mobs.get(0)));
+            sender.sendMessage(prefix + describeMob(mobs.get(0)));
         } else {
-            sender.sendMessage(ChatColor.DARK_BLUE + " Mobs: " + ChatColor.BLUE + numMobs);
+            sender.sendMessage(prefix + ChatColor.DARK_BLUE + "Mobs: " + ChatColor.BLUE + numMobs);
             for (ArenaMobSpawner mob : mobs) {
-                sender.sendMessage("  " + describeMob(mob));
+                sender.sendMessage(prefix + " " + describeMob(mob));
             }
         }
         
         if (startSpell != null) {
-            sender.sendMessage(ChatColor.DARK_AQUA + " Cast at Start: " + ChatColor.AQUA + startSpell);
+            sender.sendMessage(prefix + ChatColor.DARK_AQUA + "Cast at Start: " + ChatColor.AQUA + startSpell);
         }
 
         if (endSpell != null) {
-            sender.sendMessage(ChatColor.DARK_AQUA + " Cast at End: " + ChatColor.AQUA + endSpell);
+            sender.sendMessage(prefix + ChatColor.DARK_AQUA + "Cast at End: " + ChatColor.AQUA + endSpell);
         }
     }
     
@@ -88,5 +112,29 @@ public class ArenaStage {
 
     public void setEndSpell(String endSpell) {
         this.endSpell = endSpell;
+    }
+    
+    public void addMobSpawn(Location location) {
+        mobSpawns.add(location.clone());
+    }
+
+    public Location removeMobSpawn(Location location) {
+        int rangeSquared = 3 * 3;
+        for (Location spawn : mobSpawns) {
+            if (spawn.distanceSquared(location) < rangeSquared) {
+                mobSpawns.remove(spawn);
+                return spawn;
+            }
+        }
+
+        return null;
+    }
+    
+    public void start() {
+        
+    }
+    
+    public void finish() {
+        
     }
 }
