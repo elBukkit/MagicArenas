@@ -152,22 +152,28 @@ public class ArenaStage {
     public void start() {
         if (!mobs.isEmpty()) {
             MageController magic = arena.getController().getMagic();
-            Plugin plugin = arena.getController().getPlugin();
-            List<Location> spawns = getMobSpawns();
-            int num = 0;
-            for (ArenaMobSpawner mobSpawner : mobs) {
-                EntityData mobType = mobSpawner.getEntity();
-                if (mobType == null) continue;
-                for (int i = 0; i < mobSpawner.getCount(); i++) {
-                    Location spawn = spawns.get(num);
-                    num = (num + 1) % spawns.size();
-                    Entity spawnedEntity = mobType.spawn(magic, spawn);
-                    if (spawnedEntity != null) {
-                        spawnedEntity.setMetadata("arena", new FixedMetadataValue(plugin, arena));
-                        spawned.add(spawnedEntity);
+            magic.setForceSpawn(true);
+            try {
+                Plugin plugin = arena.getController().getPlugin();
+                List<Location> spawns = getMobSpawns();
+                int num = 0;
+                for (ArenaMobSpawner mobSpawner : mobs) {
+                    EntityData mobType = mobSpawner.getEntity();
+                    if (mobType == null) continue;
+                    for (int i = 0; i < mobSpawner.getCount(); i++) {
+                        Location spawn = spawns.get(num);
+                        num = (num + 1) % spawns.size();
+                        Entity spawnedEntity = mobType.spawn(magic, spawn);
+                        if (spawnedEntity != null) {
+                            spawnedEntity.setMetadata("arena", new FixedMetadataValue(plugin, arena));
+                            spawned.add(spawnedEntity);
+                        }
                     }
                 }
+            } catch (Exception ex) {
+                ex.printStackTrace();;
             }
+            magic.setForceSpawn(false);
         }
         
         if (startSpell != null && !startSpell.isEmpty()) {
