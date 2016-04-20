@@ -1,6 +1,7 @@
 package com.elmakers.mine.bukkit.arenas.dueling;
 
 import com.elmakers.mine.bukkit.api.entity.EntityData;
+import com.elmakers.mine.bukkit.api.magic.Mage;
 import com.elmakers.mine.bukkit.utility.CompatibilityUtils;
 import com.elmakers.mine.bukkit.utility.ConfigurationUtils;
 import com.elmakers.mine.bukkit.utility.InventoryUtils;
@@ -691,7 +692,7 @@ public class Arena {
     }
     
     public ArenaStage getCurrentStage() {
-        if (currentStage > 0 && currentStage < stages.size()) {
+        if (currentStage >= 0 && currentStage < stages.size()) {
             return stages.get(currentStage);
         }
         return null;
@@ -1645,5 +1646,9 @@ public class Arena {
 
     public boolean isKeepLevel() {
         return keepLevel;
+    }
+    
+    public Mage getMage() {
+       return controller.getMagic().getMage("ARENA: " + getKey(), getName());
     }
 }
