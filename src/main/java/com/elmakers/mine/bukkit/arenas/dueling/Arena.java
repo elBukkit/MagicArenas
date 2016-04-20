@@ -782,20 +782,23 @@ public class Arena {
         }
         
         if (state != ArenaState.WON && isMobArena()) {
-            state = ArenaState.WON;
-            server.getScheduler().runTaskLater(controller.getPlugin(), new Runnable() {
-                @Override
-                public void run() {
-                    for (final ArenaPlayer winner : players) {
-                        if (winner != null)
-                        {
-                            playerWon(winner);
-                            winner.heal();
+            ArenaStage currentStage = getCurrentStage();
+            if (currentStage.isFinished()) {
+                state = ArenaState.WON;
+                server.getScheduler().runTaskLater(controller.getPlugin(), new Runnable() {
+                    @Override
+                    public void run() {
+                        for (final ArenaPlayer winner : players) {
+                            if (winner != null)
+                            {
+                                playerWon(winner);
+                                winner.heal();
+                            }
                         }
+                        finish();
                     }
-                    finish();
-                }
-            }, 5 * 20);
+                }, 5 * 20);
+            }
         } else if (players.size() == 1 && state != ArenaState.WON) {
             state = ArenaState.WON;
             server.getScheduler().runTaskLater(controller.getPlugin(), new Runnable() {

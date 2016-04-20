@@ -209,4 +209,14 @@ public class ArenaStage {
     public boolean hasMobs() {
         return !mobs.isEmpty();
     }
+    
+    public boolean isFinished() {
+        for (Entity entity : spawned) {
+            if (entity.isValid()) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
 }
