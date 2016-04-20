@@ -475,6 +475,7 @@ public class ArenaCommandExecutor implements TabExecutor {
                         return;
                     }
                     arena.addMob(mobType, count);
+                    sender.sendMessage(ChatColor.AQUA + "Added " + ChatColor.YELLOW + count + ChatColor.BLUE + " " + mobType.describe());
                     return;
                 }
 
