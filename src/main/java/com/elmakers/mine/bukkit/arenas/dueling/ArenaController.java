@@ -6,6 +6,7 @@ import org.bukkit.Location;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
@@ -132,6 +133,21 @@ public class ArenaController implements Runnable {
         return arenas.get(arenaName.toLowerCase());
     }
 
+    public Arena getMobArena(LivingEntity entity) {
+        if (entity.hasMetadata("arena")) {
+            for (MetadataValue value : entity.getMetadata("arena")) {
+                if (value.getOwningPlugin().equals(getPlugin())) {
+                    Object arena = value.value();
+                    if (arena instanceof Arena) {
+                        return (Arena)value.value();
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+    
     public Arena getArena(Player player) {
         ArenaPlayer arenaPlayer = getArenaPlayer(player);
         return arenaPlayer == null ? null : arenaPlayer.getArena();

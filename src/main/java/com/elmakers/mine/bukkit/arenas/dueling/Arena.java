@@ -20,6 +20,7 @@ import org.bukkit.block.BlockState;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -779,9 +780,25 @@ public class Arena {
             finish();
             return;
         }
-        if (players.size() == 1 && state != ArenaState.WON) {
+        
+        if (state != ArenaState.WON && isMobArena()) {
             state = ArenaState.WON;
-            Bukkit.getScheduler().runTaskLater(controller.getPlugin(), new Runnable() {
+            server.getScheduler().runTaskLater(controller.getPlugin(), new Runnable() {
+                @Override
+                public void run() {
+                    for (final ArenaPlayer winner : players) {
+                        if (winner != null)
+                        {
+                            playerWon(winner);
+                            winner.heal();
+                        }
+                    }
+                    finish();
+                }
+            }, 5 * 20);
+        } else if (players.size() == 1 && state != ArenaState.WON) {
+            state = ArenaState.WON;
+            server.getScheduler().runTaskLater(controller.getPlugin(), new Runnable() {
                 @Override
                 public void run() {
                     final ArenaPlayer winner = getWinner();
@@ -793,28 +810,7 @@ public class Arena {
                         }
                         announce(ChatColor.RED + "The " + ChatColor.YELLOW + getName() + ChatColor.RED + " match ended in a default");
                     } else if (won) {
-                        winner.won();
-                        updateLeaderboard(winner);
-                        for (ArenaPlayer loser : deadPlayers) {
-                            loser.lost();
-                            updateLeaderboard(loser);
-                        }
-                        updateLeaderboard();
-                        winner.sendMessage(ChatColor.AQUA + "You have won! Congratulations!");
-                        int winCount = winner.getWins();
-                        int lostCount = winner.getLosses();
-                        double health = winner.getHealth() / 2;
-                        int hearts = (int)Math.floor(health);
-                        String heartDescription = Integer.toString(hearts);
-                        health = health - hearts;
-                        if (health >= 0.5) {
-                            heartDescription = heartDescription + " 1/2";
-                        }
-                        announce(ChatColor.GOLD + winner.getDisplayName() + " is the champion of " + ChatColor.YELLOW + getName());
-                        announce(ChatColor.GOLD + " with " + ChatColor.DARK_RED + heartDescription + ChatColor.GOLD
-                                + " hearts, and a total of " + ChatColor.GREEN + Integer.toString(winCount) + ChatColor.GOLD + " wins and "
-                                + ChatColor.RED + Integer.toString(lostCount) + ChatColor.GOLD + " losses.");
-                        winner.teleport(getWinLocation());
+                        playerWon(winner);
                     } else {
                         if (winner != null) {
                             winner.draw();
@@ -833,6 +829,31 @@ public class Arena {
                 }
             }, 5 * 20);
         }
+    }
+    
+    protected void playerWon(ArenaPlayer winner) {
+        winner.won();
+        updateLeaderboard(winner);
+        for (ArenaPlayer loser : deadPlayers) {
+            loser.lost();
+            updateLeaderboard(loser);
+        }
+        updateLeaderboard();
+        winner.sendMessage(ChatColor.AQUA + "You have won! Congratulations!");
+        int winCount = winner.getWins();
+        int lostCount = winner.getLosses();
+        double health = winner.getHealth() / 2;
+        int hearts = (int)Math.floor(health);
+        String heartDescription = Integer.toString(hearts);
+        health = health - hearts;
+        if (health >= 0.5) {
+            heartDescription = heartDescription + " 1/2";
+        }
+        announce(ChatColor.GOLD + winner.getDisplayName() + " is the champion of " + ChatColor.YELLOW + getName());
+        announce(ChatColor.GOLD + " with " + ChatColor.DARK_RED + heartDescription + ChatColor.GOLD
+                + " hearts, and a total of " + ChatColor.GREEN + Integer.toString(winCount) + ChatColor.GOLD + " wins and "
+                + ChatColor.RED + Integer.toString(lostCount) + ChatColor.GOLD + " losses.");
+        winner.teleport(getWinLocation());
     }
 
     public void remove() {
@@ -1097,6 +1118,16 @@ public class Arena {
         this.portalDeathMessage = message;
     }
 
+    public void mobDied(LivingEntity entity) {
+        ArenaStage currentStage = getCurrentStage();
+        if (currentStage != null) {
+            currentStage.mobDied(entity);
+            if (isStarted()) {
+                check();
+            }
+        }
+    }
+    
     public void died(Player player) {
         ArenaPlayer arenaPlayer = new ArenaPlayer(this, player);
         if (isStarted()) {
@@ -1646,6 +1677,12 @@ public class Arena {
 
     public boolean isKeepLevel() {
         return keepLevel;
+    }
+
+    public boolean isMobArena() {
+        ArenaStage currentStage = getCurrentStage();
+        if (currentStage == null) return false;
+        return currentStage.hasMobs();
     }
     
     public Mage getMage() {

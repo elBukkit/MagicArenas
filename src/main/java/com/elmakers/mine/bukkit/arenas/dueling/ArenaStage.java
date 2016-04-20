@@ -11,17 +11,21 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.plugin.Plugin;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ArenaStage {
     private final Arena arena;
     private List<ArenaMobSpawner> mobs = new ArrayList<ArenaMobSpawner>();
     private List<Location> mobSpawns = new ArrayList<Location>();
-    private List<WeakReference<Entity>> spawned = new ArrayList<WeakReference<Entity>>();
+    private Set<Entity> spawned = new HashSet<Entity>();
     private String startSpell;
     private String endSpell;
     
@@ -148,6 +152,7 @@ public class ArenaStage {
     public void start() {
         if (!mobs.isEmpty()) {
             MageController magic = arena.getController().getMagic();
+            Plugin plugin = arena.getController().getPlugin();
             List<Location> spawns = getMobSpawns();
             int num = 0;
             for (ArenaMobSpawner mobSpawner : mobs) {
@@ -158,7 +163,8 @@ public class ArenaStage {
                     num = (num + 1) % spawns.size();
                     Entity spawnedEntity = mobType.spawn(magic, spawn);
                     if (spawnedEntity != null) {
-                        spawned.add(new WeakReference<Entity>(spawnedEntity));
+                        spawnedEntity.setMetadata("arena", new FixedMetadataValue(plugin, arena));
+                        spawned.add(spawnedEntity);
                     }
                 }
             }
@@ -173,6 +179,12 @@ public class ArenaStage {
             }
         }
     }
+
+    public void mobDied(LivingEntity entity) {
+        Plugin plugin = arena.getController().getPlugin();
+        entity.removeMetadata("arena", plugin);
+        spawned.remove(entity);
+    }
     
     public void finish() {
         if (endSpell != null && !endSpell.isEmpty()) {
@@ -184,12 +196,17 @@ public class ArenaStage {
             }
         }
         
-        for (WeakReference<Entity> spawnedEntity : spawned) {
-            Entity entity = spawnedEntity.get();
-            if (entity != null) {
+        Plugin plugin = arena.getController().getPlugin();
+        for (Entity entity : spawned) {
+            if (entity.isValid()) {
+                entity.removeMetadata("arena", plugin);
                 entity.remove();
             }
         }
         spawned.clear();
+    }
+    
+    public boolean hasMobs() {
+        return !mobs.isEmpty();
     }
 }

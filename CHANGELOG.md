@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 3.1
+
+ - Depends on Magic 5.5.5 or higher
+ - Added support for mob arenas:
+   /arena configure MobArena add mob_spawns
+   /arena configure MobArena add mob
+
 ## 3.0
  - Depends on Magic 3.4
  - Build against Bukkit 1.8

@@ -11,12 +11,14 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityPortalEnterEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -78,6 +80,16 @@ public class ArenaListener implements Listener {
         }
     }
 
+    @EventHandler
+    public void onEntityDeath(EntityDeathEvent e) {
+        LivingEntity entity = e.getEntity();
+        if (entity instanceof Player) return;
+        Arena arena = controller.getMobArena(entity);
+        if (arena != null) {
+            arena.mobDied(entity);
+        }
+    }
+    
     @EventHandler(priority=EventPriority.HIGH)
     public void onPlayerDeath(PlayerDeathEvent e) {
         Player player = e.getEntity();
