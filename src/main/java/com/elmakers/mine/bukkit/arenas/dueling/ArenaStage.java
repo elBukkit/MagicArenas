@@ -104,7 +104,7 @@ public class ArenaStage {
     }
     
     protected String describeMob(ArenaMobSpawner mob) {
-        return ChatColor.DARK_GREEN + " " + mob.getEntity().describe() + ChatColor.YELLOW + " x" + mobs.get(0).getCount();
+        return ChatColor.DARK_GREEN + " " + mob.getEntity().describe() + ChatColor.YELLOW + " x" + mob.getCount();
     }
 
     public String getStartSpell() {
