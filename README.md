@@ -7,6 +7,7 @@ Works with the Magic plugin, though it is not required.
 
 ## Arena Set Up
 Creating an arena:
+
 1. Create an arena name.
 2. Stand where you want the spawn to be. (Can be changed later but it is easier if you just do it now.)
 3. Create the arena by doing /dueling admin create <arena name> <arena type> (FFA, onevone, TwoVTwo, ThreeVThree, FourVFour, Spleef)
