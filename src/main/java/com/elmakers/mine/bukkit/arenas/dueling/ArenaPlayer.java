@@ -247,6 +247,23 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
         return (float)wins / (losses + wins);
     }
 
+    /**
+     * @return The lower bound of a 95% confidence interval for a Bernoulli
+     *         parameter. (Read: Statistics voodo)
+     * @see http://www.evanmiller.org/how-not-to-sort-by-average-rating.html
+     */
+    public double getWinConfidence() {
+        int nGames = wins + losses;
+
+        if (nGames <= 0) {
+            return 0;
+        }
+
+        double b = (wins * losses) / nGames + 0.9604;
+        double a = ((wins + 1.9208) / nGames - 1.96 * Math.sqrt(b) / nGames);
+        return a / (1 + 3.8416 / nGames);
+    }
+
     @Override
     public int compareTo(ArenaPlayer other) {
         return uuid.compareTo(other.getUUID());

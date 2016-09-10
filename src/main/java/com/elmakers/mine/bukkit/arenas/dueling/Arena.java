@@ -37,7 +37,6 @@ import org.bukkit.util.Vector;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -46,14 +45,6 @@ import java.util.Random;
 import java.util.Set;
 
 public class Arena {
-    static class ArenaPlayerComparator implements Comparator<ArenaPlayer>
-    {
-        public int compare(ArenaPlayer player1, ArenaPlayer player2)
-        {
-            return ((Float)player2.getWinRatio()).compareTo(player1.getWinRatio());
-        }
-    }
-
     private static Random random = new Random();
 
     private ArenaState state = ArenaState.LOBBY;
@@ -1220,7 +1211,7 @@ public class Arena {
                         org.bukkit.block.Sign signBlock = (org.bukkit.block.Sign)blockState;
                         String playerName = ChatColor.DARK_PURPLE + player.getDisplayName();
                         signBlock.setLine(0, playerName);
-                        signBlock.setLine(1, ChatColor.LIGHT_PURPLE + "#" + Integer.toString(i + 1) + " " + ChatColor.WHITE + " : " + ChatColor.BLACK + Integer.toString((int)(player.getWinRatio() * 100)) + "%");
+                        signBlock.setLine(1, ChatColor.LIGHT_PURPLE + "#" + Integer.toString(i + 1) + " " + ChatColor.WHITE + " : " + ChatColor.BLACK + Integer.toString((int)(player.getWinRatio() * 100)) + "% " + String.format("(%.2f)", player.getWinConfidence())) ;
                         signBlock.setLine(2, ChatColor.GREEN + "Wins   : " + ChatColor.DARK_GREEN + player.getWins());
                         signBlock.setLine(3, ChatColor.RED + "Losses : " + ChatColor.DARK_RED +player.getLosses());
                     }
@@ -1366,6 +1357,7 @@ public class Arena {
         int draws = arenaPlayer.getDraws();
         int quits = arenaPlayer.getQuits();
         float ratio = arenaPlayer.getWinRatio();
+        double confidence = arenaPlayer.getWinConfidence();
 
         Integer rank = null;
         int ranking = 1;
@@ -1391,7 +1383,7 @@ public class Arena {
 
         sender.sendMessage(ChatColor.GREEN + "Wins: " + ChatColor.WHITE + Integer.toString(wins));
         sender.sendMessage(ChatColor.RED + "Losses: " + ChatColor.WHITE + Integer.toString(losses));
-        sender.sendMessage(ChatColor.GOLD + "Win Ratio: " + ChatColor.WHITE + Integer.toString((int)(ratio * 100)) + "%");
+        sender.sendMessage(ChatColor.GOLD + "Win Ratio: " + ChatColor.WHITE + Integer.toString((int)(ratio * 100)) + "% " + String.format("(%.2f)", confidence));
         sender.sendMessage(ChatColor.YELLOW + "Draws: " + ChatColor.WHITE + Integer.toString(draws));
         sender.sendMessage(ChatColor.GRAY + "Defaults: " + ChatColor.WHITE + Integer.toString(quits));
     }
@@ -1560,7 +1552,7 @@ public class Arena {
 
         lore.add(ChatColor.GREEN + "Wins: " + ChatColor.WHITE + Integer.toString(player.getWins()));
         lore.add(ChatColor.RED + "Losses: " + ChatColor.WHITE + Integer.toString(player.getLosses()));
-        lore.add(ChatColor.GOLD + "Win Ratio: " + ChatColor.WHITE + Integer.toString((int) (player.getWinRatio() * 100)) + "%");
+        lore.add(ChatColor.GOLD + "Win Ratio: " + ChatColor.WHITE + Integer.toString((int) (player.getWinRatio() * 100)) + "% " + String.format("(%.2f)", player.getWinConfidence()));
         lore.add(ChatColor.YELLOW + "Draws: " + ChatColor.WHITE + Integer.toString(player.getDraws()));
         lore.add(ChatColor.GRAY + "Defaults: " + ChatColor.WHITE + Integer.toString(player.getQuits()));
         meta.setLore(lore);
@@ -1619,7 +1611,9 @@ public class Arena {
     }
 
     public void tick() {
-        if (duration <= 0) return;
+        if (duration <= 0) {
+            return;
+        }
         long now = System.currentTimeMillis();
         long previousTime = lastTick - started;
         long currentTime = now - started;
