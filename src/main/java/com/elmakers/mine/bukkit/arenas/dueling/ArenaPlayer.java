@@ -250,7 +250,7 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
     /**
      * @return The lower bound of a 95% confidence interval for a Bernoulli
      *         parameter. (Read: Statistics voodo)
-     * @see http://www.evanmiller.org/how-not-to-sort-by-average-rating.html
+     * @see <a href="http://www.evanmiller.org/how-not-to-sort-by-average-rating.html">Reference</a>
      */
     public double getWinConfidence() {
         int nGames = wins + losses;
