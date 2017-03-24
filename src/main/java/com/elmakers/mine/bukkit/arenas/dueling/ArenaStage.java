@@ -104,6 +104,12 @@ public class ArenaStage {
     }
     
     protected String describeMob(ArenaMobSpawner mob) {
+        if (mob == null) {
+            return ChatColor.RED + "(Invalid Mob)";
+        }
+        if (mob.getEntity() == null) {
+            return ChatColor.RED + "(Invalid Mob)" + ChatColor.YELLOW + " x" + mob.getCount();
+        }
         return ChatColor.DARK_GREEN + " " + mob.getEntity().describe() + ChatColor.YELLOW + " x" + mob.getCount();
     }
 
