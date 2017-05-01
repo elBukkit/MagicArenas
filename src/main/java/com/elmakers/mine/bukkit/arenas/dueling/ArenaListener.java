@@ -299,6 +299,6 @@ public class ArenaListener implements Listener {
 
     @EventHandler
     public void onMagicSave(SaveEvent event) {
-        controller.save(event.isAsynchronousSave());
+        controller.saveData(event.isAsynchronousSave());
     }
 }

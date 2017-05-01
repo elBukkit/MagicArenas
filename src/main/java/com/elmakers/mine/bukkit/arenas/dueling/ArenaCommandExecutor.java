@@ -145,6 +145,7 @@ public class ArenaCommandExecutor implements TabExecutor {
 
         if (subCommand.equalsIgnoreCase("save")) {
             controller.save();
+            controller.saveData();
             sender.sendMessage("Data saved");
             return true;
         }

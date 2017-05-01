@@ -161,17 +161,6 @@ public class Arena {
         if (arenaType == null) {
             arenaType = ArenaType.FFA;
         }
-        leaderboard.clear();
-        if (configuration.contains("leaderboard")) {
-            ConfigurationSection leaders = configuration.getConfigurationSection("leaderboard");
-            Collection<String> leaderboardKeys = leaders.getKeys(false);
-            for (String key : leaderboardKeys) {
-                ConfigurationSection leaderConfig = leaders.getConfigurationSection(key);
-                ArenaPlayer loadedPlayer = new ArenaPlayer(this, leaderConfig);
-                leaderboard.add(loadedPlayer);
-            }
-            Collections.sort(leaderboard, new ArenaPlayerComparator());
-        }
 
         lose = ConfigurationUtils.toLocation(configuration.getString("lose"));
         win = ConfigurationUtils.toLocation(configuration.getString("win"));
@@ -211,6 +200,23 @@ public class Arena {
         if (configuration.contains("leaderboard_sign_location") && configuration.contains("leaderboard_sign_facing")) {
             leaderboardLocation = ConfigurationUtils.toLocation(configuration.getString("leaderboard_sign_location"));
             leaderboardFacing = ConfigurationUtils.toBlockFace(configuration.getString("leaderboard_sign_facing"));
+        }
+
+        // For migrating legacy data
+        leaderboard.clear();
+        loadData(configuration);
+    }
+
+    public void loadData(ConfigurationSection configuration) {
+        if (configuration.contains("leaderboard")) {
+            ConfigurationSection leaders = configuration.getConfigurationSection("leaderboard");
+            Collection<String> leaderboardKeys = leaders.getKeys(false);
+            for (String key : leaderboardKeys) {
+                ConfigurationSection leaderConfig = leaders.getConfigurationSection(key);
+                ArenaPlayer loadedPlayer = new ArenaPlayer(this, leaderConfig);
+                leaderboard.add(loadedPlayer);
+            }
+            Collections.sort(leaderboard, new ArenaPlayerComparator());
         }
     }
 
@@ -322,6 +328,15 @@ public class Arena {
             configuration.set("randomize.spawn", ConfigurationUtils.fromVector(randomizeSpawn));
         }
 
+        if (leaderboardLocation != null && leaderboardFacing != null) {
+            configuration.set("leaderboard_sign_location", ConfigurationUtils.fromLocation(leaderboardLocation));
+            configuration.set("leaderboard_sign_facing", ConfigurationUtils.fromBlockFace(leaderboardFacing));
+        }
+    }
+
+    public void saveData(ConfigurationSection configuration) {
+        if (!isValid()) return;
+
         if (leaderboard.size() > 0) {
             ConfigurationSection leaders = configuration.createSection("leaderboard");
             for (ArenaPlayer player : leaderboard) {
@@ -329,11 +344,6 @@ public class Arena {
                 ConfigurationSection playerData = leaders.createSection(key);
                 player.save(playerData);
             }
-        }
-
-        if (leaderboardLocation != null && leaderboardFacing != null) {
-            configuration.set("leaderboard_sign_location", ConfigurationUtils.fromLocation(leaderboardLocation));
-            configuration.set("leaderboard_sign_facing", ConfigurationUtils.fromBlockFace(leaderboardFacing));
         }
     }
 

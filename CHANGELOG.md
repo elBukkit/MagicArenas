@@ -6,6 +6,7 @@
  - Added support for mob arenas:
    /arena configure MobArena add mob_spawns
    /arena configure MobArena add mob
+ - Move leaderboard save data to a separate file
 
 ## 3.0
  - Depends on Magic 3.4

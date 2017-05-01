@@ -51,6 +51,46 @@ public class ArenaController implements Runnable {
         try {
             arenaSaves.save(arenaSaveFile);
         } catch (Exception ex) {
+            plugin.getLogger().warning("Error saving arena configuration to " + arenaSaveFile.getName());
+            ex.printStackTrace();
+        }
+
+        if (asynchronous) {
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, new Runnable() {
+                @Override
+                public void run() {
+                    synchronized (saveLock) {
+                        try {
+                            arenaSaves.save(arenaSaveFile);
+                        } catch (Exception ex) {
+                            plugin.getLogger().warning("Error saving arena configuration to " + arenaSaveFile.getName());
+                            ex.printStackTrace();
+                        }
+                    }
+                }
+            });
+        } else {
+            try {
+                arenaSaves.save(arenaSaveFile);
+            } catch (Exception ex) {
+                plugin.getLogger().warning("Error saving arena configuration to " + arenaSaveFile.getName() + " synchronously");
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    public void saveData() {
+        saveData(true);
+    }
+
+    public void saveData(boolean asynchronous) {
+        final File arenaSaveFile = getDataFile("data");
+        final YamlConfiguration arenaSaves = new YamlConfiguration();
+        saveData(arenaSaves);
+
+        try {
+            arenaSaves.save(arenaSaveFile);
+        } catch (Exception ex) {
             plugin.getLogger().warning("Error saving arena data to " + arenaSaveFile.getName());
             ex.printStackTrace();
         }
@@ -85,8 +125,11 @@ public class ArenaController implements Runnable {
             task.cancel();
             task = null;
         }
-        ConfigurationSection arenaSaves = loadDataFile("arenas");
-        load(arenaSaves);
+        ConfigurationSection arenaConfiguration = loadDataFile("arenas");
+        load(arenaConfiguration);
+
+        ConfigurationSection arenaData = loadDataFile("data");
+        loadData(arenaData);
 
         plugin.reloadConfig();
         Configuration config = plugin.getConfig();
@@ -107,6 +150,17 @@ public class ArenaController implements Runnable {
         }
     }
 
+    private void saveData(ConfigurationSection configuration) {
+        Collection<String> oldKeys = configuration.getKeys(false);
+        for (String oldKey : oldKeys) {
+            configuration.set(oldKey, null);
+        }
+        for (Arena arena : arenas.values()) {
+            ConfigurationSection arenaConfig = configuration.createSection(arena.getKey());
+            arena.saveData(arenaConfig);
+        }
+    }
+
     private void load(ConfigurationSection configuration) {
         if (configuration == null) return;
 
@@ -123,6 +177,19 @@ public class ArenaController implements Runnable {
         }
 
         plugin.getLogger().info("Loaded " + arenas.size() + " arenas");
+    }
+
+    private void loadData(ConfigurationSection configuration) {
+        if (configuration == null) return;
+
+        Collection<String> arenaKeys = configuration.getKeys(false);
+
+        for (String arenaKey : arenaKeys) {
+            Arena arena = arenas.get(arenaKey);
+            if (arena != null) {
+                arena.loadData(configuration.getConfigurationSection(arenaKey));
+            }
+        }
     }
 
     public Plugin getPlugin() {
