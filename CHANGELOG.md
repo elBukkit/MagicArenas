@@ -2,7 +2,7 @@
 
 ## 3.1
 
- - Depends on Magic 5.5.5 or higher
+ - Depends on Magic 6.9.9 or higher
  - Added support for mob arenas:
    /arena configure MobArena add mob_spawns
    /arena configure MobArena add mob
