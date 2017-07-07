@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 3.2
+
+ - Depends on Magic 6.9.13 or higher
+ - Add Vault currency support for rewards
+
 ## 3.1
 
  - Depends on Magic 6.9.9 or higher

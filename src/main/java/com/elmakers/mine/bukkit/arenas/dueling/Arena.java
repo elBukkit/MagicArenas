@@ -76,6 +76,9 @@ public class Arena {
     private int winSP = 0;
     private int loseSP = 0;
     private int drawSP = 0;
+    private int winMoney = 0;
+    private int loseMoney = 0;
+    private int drawMoney = 0;
 
     private int countdown = 10;
     private int countdownMax = 10;
@@ -176,6 +179,10 @@ public class Arena {
         loseSP = configuration.getInt("lose_sp", 0);
         drawSP = configuration.getInt("draw_sp", 0);
 
+        winMoney = configuration.getInt("win_money", 0);
+        loseMoney = configuration.getInt("lose_money", 0);
+        drawMoney = configuration.getInt("draw_money", 0);
+
         duration = configuration.getInt("duration", 0);
         suddenDeath = configuration.getInt("sudden_death", 0);
         if (configuration.contains("sudden_death_effect")) {
@@ -268,6 +275,10 @@ public class Arena {
         configuration.set("lose_sp", loseSP);
         configuration.set("draw_sp", drawSP);
         configuration.set("win_sp", winSP);
+
+        configuration.set("lose_money", loseMoney);
+        configuration.set("draw_money", drawMoney);
+        configuration.set("win_money", winMoney);
 
         configuration.set("duration", duration);
         configuration.set("sudden_death", suddenDeath);
@@ -1012,6 +1023,16 @@ public class Arena {
             sender.sendMessage(ChatColor.AQUA + "Draw Reward: " + ChatColor.LIGHT_PURPLE + drawSP + ChatColor.AQUA + " sp");
         }
 
+        if (winMoney > 0) {
+            sender.sendMessage(ChatColor.AQUA + "Winning Reward: $" + ChatColor.LIGHT_PURPLE + winMoney + ChatColor.AQUA);
+        }
+        if (loseMoney > 0) {
+            sender.sendMessage(ChatColor.AQUA + "Losing Reward: $" + ChatColor.LIGHT_PURPLE + loseMoney + ChatColor.AQUA);
+        }
+        if (drawMoney > 0) {
+            sender.sendMessage(ChatColor.AQUA + "Draw Reward: $" + ChatColor.LIGHT_PURPLE + drawMoney + ChatColor.AQUA);
+        }
+
         int spawnSize = spawns.size();
         if (spawnSize == 1) {
             sender.sendMessage(ChatColor.BLUE + "Spawn: " + printLocation(spawns.get(0)));
@@ -1511,6 +1532,30 @@ public class Arena {
 
     public int getDrawSP() {
         return drawSP;
+    }
+
+    public void setWinMoney(int money) {
+        winMoney = Math.max(money, 0);
+    }
+
+    public void setLoseMoney(int money) {
+        loseMoney = Math.max(money, 0);
+    }
+
+    public void setDrawMoney(int money) {
+        drawMoney = Math.max(money, 0);
+    }
+
+    public int getWinMoney() {
+        return winMoney;
+    }
+
+    public int getLoseMoney() {
+        return loseMoney;
+    }
+
+    public int getDrawMoney() {
+        return drawMoney;
     }
 
     public void setMaxTeleportDistance(int distance) {

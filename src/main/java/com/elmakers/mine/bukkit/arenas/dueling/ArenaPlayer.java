@@ -121,6 +121,11 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
                 mage.sendMessage(ChatColor.AQUA + "You have been awarded " + ChatColor.DARK_AQUA + Integer.toString(sp) + ChatColor.AQUA + " spell points!");
                 mage.addSkillPoints(sp);
             }
+            int money = arena.getWinMoney();
+            if (money > 0) {
+                mage.sendMessage(ChatColor.AQUA + "You have been awarded $" + ChatColor.DARK_AQUA + Integer.toString(money) + ChatColor.AQUA + "!");
+                mage.addVaultCurrency(money);
+            }
             increment("won");
             wins = get("won");
         }
@@ -138,6 +143,11 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
             if (sp > 0) {
                 mage.sendMessage(ChatColor.AQUA + "You have been awarded " + ChatColor.DARK_AQUA + Integer.toString(sp) + ChatColor.AQUA + " spell points!");
                 mage.addSkillPoints(sp);
+            }
+            int money = arena.getLoseMoney();
+            if (money > 0) {
+                mage.sendMessage(ChatColor.AQUA + "You have been awarded $" + ChatColor.DARK_AQUA + Integer.toString(money) + ChatColor.AQUA + "!");
+                mage.addVaultCurrency(money);
             }
             increment("lost");
             losses = get("lost");
@@ -168,10 +178,15 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
                 mage.sendMessage(ChatColor.AQUA + "You have been awarded " + ChatColor.DARK_AQUA + Integer.toString(xp) + ChatColor.AQUA + " experience!");
                 mage.giveExperience(xp);
             }
-            int sp = arena.getLoseSP();
+            int sp = arena.getDrawSP();
             if (sp > 0) {
                 mage.sendMessage(ChatColor.AQUA + "You have been awarded " + ChatColor.DARK_AQUA + Integer.toString(sp) + ChatColor.AQUA + " spell points!");
                 mage.addSkillPoints(sp);
+            }
+            int money = arena.getDrawMoney();
+            if (money > 0) {
+                mage.sendMessage(ChatColor.AQUA + "You have been awarded $" + ChatColor.DARK_AQUA + Integer.toString(money) + ChatColor.AQUA + "!");
+                mage.addVaultCurrency(money);
             }
             increment("draw");
             draws = get("draw");

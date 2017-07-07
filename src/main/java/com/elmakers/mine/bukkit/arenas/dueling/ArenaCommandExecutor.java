@@ -33,7 +33,7 @@ public class ArenaCommandExecutor implements TabExecutor {
         "xp_win", "xp_lose", "xp_draw", "countdown", "countdown_max", "op_check",
         "announcer_range", "sp_win", "sp_lose", "sp_draw", "duration", "sudden_death",
         "sudden_death_effect", "start_commands", "border", "keep_inventory", "keep_level",
-        "spell_start", "spell_end"
+        "spell_start", "spell_end", "money_win", "money_lose", "money_draw"
     };
 
     private final static String[] ARENA_LISTS = {
@@ -663,6 +663,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             propertyName.equalsIgnoreCase("leaderboard_record_size") || propertyName.equalsIgnoreCase("max_teleport_distance") ||
             propertyName.equalsIgnoreCase("xp_win") || propertyName.equalsIgnoreCase("xp_lose") || propertyName.equalsIgnoreCase("xp_draw") ||
             propertyName.equalsIgnoreCase("sp_win") || propertyName.equalsIgnoreCase("sp_lose") || propertyName.equalsIgnoreCase("sp_draw") ||
+            propertyName.equalsIgnoreCase("money_win") || propertyName.equalsIgnoreCase("money_lose") || propertyName.equalsIgnoreCase("money_draw") ||
             propertyName.equalsIgnoreCase("countdown") || propertyName.equalsIgnoreCase("countdown_max") || propertyName.equalsIgnoreCase("announcer_range") ||
             propertyName.equalsIgnoreCase("duration") || propertyName.equalsIgnoreCase("sudden_death")
         ) {
@@ -793,6 +794,27 @@ public class ArenaCommandExecutor implements TabExecutor {
             if (propertyName.equalsIgnoreCase("sp_draw")) {
                 arena.setDrawSP(intValue);
                 sender.sendMessage(ChatColor.AQUA + "Set draw SP of " + arena.getName() + " to " + intValue);
+                controller.save();
+                return;
+            }
+
+            if (propertyName.equalsIgnoreCase("money_win")) {
+                arena.setWinMoney(intValue);
+                sender.sendMessage(ChatColor.AQUA + "Set winning money of " + arena.getName() + " to " + intValue);
+                controller.save();
+                return;
+            }
+
+            if (propertyName.equalsIgnoreCase("money_lose")) {
+                arena.setLoseMoney(intValue);
+                sender.sendMessage(ChatColor.AQUA + "Set losing money of " + arena.getName() + " to " + intValue);
+                controller.save();
+                return;
+            }
+
+            if (propertyName.equalsIgnoreCase("money_draw")) {
+                arena.setDrawMoney(intValue);
+                sender.sendMessage(ChatColor.AQUA + "Set draw money of " + arena.getName() + " to " + intValue);
                 controller.save();
                 return;
             }
