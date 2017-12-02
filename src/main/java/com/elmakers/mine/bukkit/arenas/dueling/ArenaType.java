@@ -1,7 +1,5 @@
 package com.elmakers.mine.bukkit.arenas.dueling;
 
-import org.bukkit.ChatColor;
-
 public enum ArenaType {
     FFA,
     SPLEEF,

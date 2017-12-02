@@ -4,7 +4,6 @@ import com.elmakers.mine.bukkit.api.event.PreCastEvent;
 import com.elmakers.mine.bukkit.api.event.SaveEvent;
 import com.elmakers.mine.bukkit.api.magic.Mage;
 import com.elmakers.mine.bukkit.api.wand.Wand;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -89,7 +88,7 @@ public class ArenaListener implements Listener {
             arena.mobDied(entity);
         }
     }
-    
+
     @EventHandler(priority=EventPriority.HIGH)
     public void onPlayerDeath(PlayerDeathEvent e) {
         Player player = e.getEntity();
