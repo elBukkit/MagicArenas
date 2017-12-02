@@ -459,7 +459,7 @@ public class ArenaCommandExecutor implements TabExecutor {
                         sender.sendMessage(ChatColor.RED + "Missing mob type specifier");
                         return;
                     }
-                    
+
                     String entityType = args[1];
                     int count = 1;
                     if (args.length > 2) {
@@ -576,7 +576,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             }
             return;
         }
-        
+
         if (propertyName.equalsIgnoreCase("spell_end")) {
             arena.setEndSpell(propertyValue);
             if (propertyValue == null || propertyValue.isEmpty()) {

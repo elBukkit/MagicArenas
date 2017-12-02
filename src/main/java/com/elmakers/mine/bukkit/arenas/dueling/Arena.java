@@ -1092,9 +1092,9 @@ public class Arena {
     protected String printLocation(Location location) {
         if (location == null) return ChatColor.DARK_GRAY + "(None)";
 
-        return "" + ChatColor.GRAY + location.getBlockX() + ChatColor.DARK_GRAY + "," + 
-                ChatColor.GRAY + location.getBlockY() + ChatColor.DARK_GRAY + "," + 
-                ChatColor.GRAY + location.getBlockZ() + ChatColor.DARK_GRAY + " : " + 
+        return "" + ChatColor.GRAY + location.getBlockX() + ChatColor.DARK_GRAY + "," +
+                ChatColor.GRAY + location.getBlockY() + ChatColor.DARK_GRAY + "," +
+                ChatColor.GRAY + location.getBlockZ() + ChatColor.DARK_GRAY + " : " +
                 ChatColor.GRAY + location.getWorld().getName();
     }
 

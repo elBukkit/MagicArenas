@@ -214,7 +214,7 @@ public class ArenaController implements Runnable {
 
         return null;
     }
-    
+
     public Arena getArena(Player player) {
         ArenaPlayer arenaPlayer = getArenaPlayer(player);
         return arenaPlayer == null ? null : arenaPlayer.getArena();

@@ -28,11 +28,11 @@ public class ArenaStage {
     private Set<Entity> spawned = new HashSet<Entity>();
     private String startSpell;
     private String endSpell;
-    
+
     public ArenaStage(Arena arena) {
         this.arena = arena;
     }
-    
+
     public ArenaStage(Arena arena, MageController controller, ConfigurationSection configuration) {
         this.arena = arena;
         if (configuration.contains("mobs")) {
@@ -43,12 +43,12 @@ public class ArenaStage {
         }
         startSpell = configuration.getString("spell_start");
         endSpell = configuration.getString("spell_end");
-        
+
         for (String s : configuration.getStringList("mob_spawns")){
             mobSpawns.add(ConfigurationUtils.toLocation(s));
         }
     }
-    
+
     public void save(ConfigurationSection configuration) {
         List<ConfigurationSection> mobsConfigurations = new ArrayList<ConfigurationSection>();
         for (ArenaMobSpawner mob : mobs) {
@@ -59,18 +59,18 @@ public class ArenaStage {
         configuration.set("mobs", mobsConfigurations);
         configuration.set("spell_start", startSpell);
         configuration.set("spell_end", endSpell);
-        
+
         List<String> mobSpawnList = new ArrayList<String>();
         for (Location spawn : mobSpawns) {
             mobSpawnList.add(ConfigurationUtils.fromLocation(spawn));
         }
         configuration.set("mob_spawns", mobSpawnList);
     }
-    
+
     public void addMob(EntityData entityType, int count) {
         mobs.add(new ArenaMobSpawner(entityType, count));
     }
-    
+
     public void describe(CommandSender sender, String prefix) {
         int mobSpawnSize = mobSpawns.size();
         if (mobSpawnSize == 1) {
@@ -81,7 +81,7 @@ public class ArenaStage {
                 sender.sendMessage(prefix + arena.printLocation(spawn));
             }
         }
-        
+
         int numMobs = mobs.size();
         if (numMobs == 0) {
             sender.sendMessage(prefix + ChatColor.GRAY + "(No Mobs)");
@@ -93,7 +93,7 @@ public class ArenaStage {
                 sender.sendMessage(prefix + " " + describeMob(mob));
             }
         }
-        
+
         if (startSpell != null) {
             sender.sendMessage(prefix + ChatColor.DARK_AQUA + "Cast at Start: " + ChatColor.AQUA + startSpell);
         }
@@ -102,7 +102,7 @@ public class ArenaStage {
             sender.sendMessage(prefix + ChatColor.DARK_AQUA + "Cast at End: " + ChatColor.AQUA + endSpell);
         }
     }
-    
+
     protected String describeMob(ArenaMobSpawner mob) {
         if (mob == null) {
             return ChatColor.RED + "(Invalid Mob)";
@@ -128,7 +128,7 @@ public class ArenaStage {
     public void setEndSpell(String endSpell) {
         this.endSpell = endSpell;
     }
-    
+
     public void addMobSpawn(Location location) {
         mobSpawns.add(location.clone());
     }
@@ -144,7 +144,7 @@ public class ArenaStage {
 
         return null;
     }
-    
+
     public List<Location> getMobSpawns() {
         if (mobSpawns.size() == 0) {
             List<Location> centerList = new ArrayList<Location>();
@@ -154,7 +154,7 @@ public class ArenaStage {
 
         return mobSpawns;
     }
-    
+
     public void start() {
         if (!mobs.isEmpty()) {
             MageController magic = arena.getController().getMagic();
@@ -181,13 +181,13 @@ public class ArenaStage {
             }
             magic.setForceSpawn(false);
         }
-        
+
         if (startSpell != null && !startSpell.isEmpty()) {
             Mage arenaMage = arena.getMage();
             arenaMage.setLocation(arena.getCenter());
             Spell spell = arenaMage.getSpell(startSpell);
             if (spell != null) {
-               spell.cast(); 
+               spell.cast();
             }
         }
     }
@@ -197,7 +197,7 @@ public class ArenaStage {
         entity.removeMetadata("arena", plugin);
         spawned.remove(entity);
     }
-    
+
     public void finish() {
         if (endSpell != null && !endSpell.isEmpty()) {
             Mage arenaMage = arena.getMage();
@@ -207,7 +207,7 @@ public class ArenaStage {
                 spell.cast();
             }
         }
-        
+
         Plugin plugin = arena.getController().getPlugin();
         for (Entity entity : spawned) {
             if (entity.isValid()) {
@@ -217,18 +217,18 @@ public class ArenaStage {
         }
         spawned.clear();
     }
-    
+
     public boolean hasMobs() {
         return !mobs.isEmpty();
     }
-    
+
     public boolean isFinished() {
         for (Entity entity : spawned) {
             if (entity.isValid()) {
                 return false;
             }
         }
-        
+
         return true;
     }
 }

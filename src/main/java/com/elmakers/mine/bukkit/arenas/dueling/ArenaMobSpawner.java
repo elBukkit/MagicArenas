@@ -7,7 +7,7 @@ import org.bukkit.configuration.ConfigurationSection;
 public class ArenaMobSpawner {
     private EntityData entity;
     private int count;
-    
+
     public ArenaMobSpawner(EntityData entity, int count) {
         this.entity = entity;
         this.count = count;
@@ -28,7 +28,7 @@ public class ArenaMobSpawner {
         }
         configuration.set("count", count);
     }
-    
+
     public EntityData getEntity() {
         return entity;
     }
