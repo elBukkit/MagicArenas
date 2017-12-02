@@ -1,64 +1,40 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
 	<groupId>com.elmakers.mine.bukkit.plugins</groupId>
 	<artifactId>MagicArenas</artifactId>
 	<version>3.2</version>
-	<name>Magic Arenas</name>
-	<dependencyManagement>
-		<dependencies>
-		</dependencies>
-	</dependencyManagement>
 
-    <licenses>
-        <license>
-            <name>MIT License</name>
-            <url>LICENSE</url>
-        </license>
-    </licenses>
-  
-  	<scm>
-    	<connection>scm:git:git://github.com/elBukkit/MagicArenas.git</connection>
-    	<developerConnection>scm:git:git@github.com:elBukkit/MagicArenas.git</developerConnection>
-    	<url>https://github.com/elBukkit/MagicArenas</url>
-    	<tag>master</tag>
-  	</scm>
-  	
+	<name>Magic Arenas</name>
+
 	<properties>
-		<build.version>1.0</build.version>
-        	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<java.version>1.8</java.version>
+		<magic.version>6.9.21-SNAPSHOT</magic.version>
+		<bukkit.version>1.12.2-R0.1-SNAPSHOT</bukkit.version>
 	</properties>
-	
-	<dependencies>
-		<dependency>
-			<groupId>org.bukkit</groupId>
-			<artifactId>bukkit</artifactId>
-			<version>1.8.3-R0.1-SNAPSHOT</version>
-			<scope>provided</scope>
-		</dependency>
-        <dependency>
-            <groupId>com.elmakers.mine.bukkit.plugins</groupId>
-            <artifactId>Magic</artifactId>
-            <version>7.0-SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
-	<repositories>
-       <repository>
-            <id>bukkit-repo</id>
-            <url>http://repo.bukkit.org/content/groups/public/</url>
-      </repository>
-        <repository>
-            <id>elMakers</id>
-            <url>http://maven.elmakers.com/repository/</url>
-        </repository>
-    </repositories>
+
+	<licenses>
+		<license>
+			<name>MIT License</name>
+			<url>LICENSE</url>
+		</license>
+	</licenses>
+
+	<scm>
+		<connection>scm:git:git://github.com/elBukkit/MagicArenas.git</connection>
+		<developerConnection>scm:git:git@github.com:elBukkit/MagicArenas.git</developerConnection>
+		<url>https://github.com/elBukkit/MagicArenas</url>
+		<tag>master</tag>
+	</scm>
+
 	<build>
 		<resources>
-		    <resource>
-		        <directory>src/main/resources/</directory>
-		        <filtering>true</filtering>
-		    </resource>
+			<resource>
+				<directory>src/main/resources/</directory>
+				<filtering>true</filtering>
+			</resource>
 		</resources>
 		<plugins>
 			<plugin>
@@ -66,10 +42,35 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.0.2</version>
 				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+					<compilerArgument>-Xlint:all,-serial,-fallthrough</compilerArgument>
+					<showWarnings>true</showWarnings>
+					<showDeprecation>true</showDeprecation>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.bukkit</groupId>
+			<artifactId>bukkit</artifactId>
+			<version>${bukkit.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.elmakers.mine.bukkit.plugins</groupId>
+			<artifactId>Magic</artifactId>
+			<version>${magic.version}</version>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+
+	<repositories>
+		<repository>
+			<id>elMakers</id>
+			<url>http://maven.elmakers.com/repository/</url>
+		</repository>
+	</repositories>
 </project>
