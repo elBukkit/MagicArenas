@@ -2,7 +2,6 @@ package com.elmakers.mine.bukkit.arenas.dueling;
 
 import com.elmakers.mine.bukkit.api.entity.EntityData;
 import com.elmakers.mine.bukkit.api.magic.Mage;
-import com.elmakers.mine.bukkit.utility.CompatibilityUtils;
 import com.elmakers.mine.bukkit.utility.ConfigurationUtils;
 import com.elmakers.mine.bukkit.utility.InventoryUtils;
 import org.apache.commons.lang.StringUtils;
@@ -196,7 +195,7 @@ public class Arena {
         if (configuration.contains("randomize.spawn")) {
             randomizeSpawn = ConfigurationUtils.toVector(configuration.getString("randomize.spawn"));
         }
-        
+
         if (configuration.contains("stages")) {
             Collection<ConfigurationSection> stageConfigurations = ConfigurationUtils.getNodeList(configuration, "stages");
             for (ConfigurationSection stageConfiguration : stageConfigurations) {
@@ -261,7 +260,7 @@ public class Arena {
 
     public void save(ConfigurationSection configuration) {
         if (!isValid()) return;
-        
+
         configuration.set("name", name);
         configuration.set("description", description);
         configuration.set("minplayers", minPlayers);
@@ -324,7 +323,7 @@ public class Arena {
             spawnList.add(ConfigurationUtils.fromLocation(spawn));
         }
         configuration.set("spawns", spawnList);
-        
+
         if (!stages.isEmpty()) {
             List<ConfigurationSection> stageConfigurations = new ArrayList<ConfigurationSection>();
             for (ArenaStage stage : stages) {
@@ -360,7 +359,7 @@ public class Arena {
 
     public void start() {
         if (!isValid()) return;
-        
+
         state = ArenaState.ACTIVE;
         started = System.currentTimeMillis();
         lastTick = started;
@@ -420,7 +419,7 @@ public class Arena {
             num = (num + 1) % spawns.size();
             arenaPlayer.teleport(spawn);
         }
-        
+
         ArenaStage currentStage = getCurrentStage();
         if (currentStage != null) {
             currentStage.start();
@@ -680,7 +679,7 @@ public class Arena {
 
         return spawns;
     }
-    
+
     public void addMobSpawn(Location location) {
         getOrCreateCurrentStage().addMobSpawn(location);
     }
@@ -688,7 +687,7 @@ public class Arena {
     public Location removeMobSpawn(Location location) {
         return getOrCreateCurrentStage().removeMobSpawn(location);
     }
-    
+
     public void setStartSpell(String startSpell) {
         ArenaStage stage = getOrCreateCurrentStage();
         stage.setStartSpell(startSpell);
@@ -698,25 +697,25 @@ public class Arena {
         ArenaStage stage = getOrCreateCurrentStage();
         stage.setEndSpell(endSpell);
     }
-    
+
     public void addMob(EntityData mobType, int count) {
         ArenaStage stage = getOrCreateCurrentStage();
         stage.addMob(mobType, count);
     }
-    
+
     public ArenaStage getCurrentStage() {
         if (currentStage >= 0 && currentStage < stages.size()) {
             return stages.get(currentStage);
         }
         return null;
     }
-    
+
     public ArenaStage getOrCreateCurrentStage() {
         if (stages.isEmpty()) {
             stages.add(new ArenaStage(this));
             currentStage = 0;
         }
-        
+
         return stages.get(currentStage);
     }
 
@@ -796,7 +795,7 @@ public class Arena {
             finish();
             return;
         }
-        
+
         if (state != ArenaState.WON && isMobArena()) {
             ArenaStage currentStage = getCurrentStage();
             if (currentStage.isFinished()) {
@@ -849,7 +848,7 @@ public class Arena {
             }, 5 * 20);
         }
     }
-    
+
     protected void playerWon(ArenaPlayer winner) {
         winner.won();
         updateLeaderboard(winner);
@@ -1061,7 +1060,7 @@ public class Arena {
                 }
             }
         }
-        
+
         if (portalDamage > 0 || portalEnterDamage > 0) {
             sender.sendMessage(ChatColor.LIGHT_PURPLE + "Portal Entry Damage: " + ChatColor.DARK_PURPLE + portalEnterDamage);
             sender.sendMessage(ChatColor.LIGHT_PURPLE + "Portal Damage: " + ChatColor.DARK_PURPLE + portalDamage);
@@ -1093,9 +1092,9 @@ public class Arena {
     protected String printLocation(Location location) {
         if (location == null) return ChatColor.DARK_GRAY + "(None)";
 
-        return "" + ChatColor.GRAY + location.getBlockX() + ChatColor.DARK_GRAY + "," + 
-                ChatColor.GRAY + location.getBlockY() + ChatColor.DARK_GRAY + "," + 
-                ChatColor.GRAY + location.getBlockZ() + ChatColor.DARK_GRAY + " : " + 
+        return "" + ChatColor.GRAY + location.getBlockX() + ChatColor.DARK_GRAY + "," +
+                ChatColor.GRAY + location.getBlockY() + ChatColor.DARK_GRAY + "," +
+                ChatColor.GRAY + location.getBlockZ() + ChatColor.DARK_GRAY + " : " +
                 ChatColor.GRAY + location.getWorld().getName();
     }
 
@@ -1156,7 +1155,7 @@ public class Arena {
             }
         }
     }
-    
+
     public void died(Player player) {
         ArenaPlayer arenaPlayer = new ArenaPlayer(this, player);
         if (isStarted()) {
@@ -1722,7 +1721,7 @@ public class Arena {
             }
         }
     }
-    
+
     public boolean isValid() {
         return center != null && center.getWorld() != null;
     }
@@ -1740,7 +1739,7 @@ public class Arena {
         if (currentStage == null) return false;
         return currentStage.hasMobs();
     }
-    
+
     public Mage getMage() {
        return controller.getMagic().getMage("ARENA: " + getKey(), getName());
     }

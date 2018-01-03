@@ -3,6 +3,8 @@ package com.elmakers.mine.bukkit.arenas.dueling;
 import com.elmakers.mine.bukkit.api.magic.Mage;
 import com.elmakers.mine.bukkit.api.wand.Wand;
 import com.elmakers.mine.bukkit.api.wand.WandUpgradePath;
+import static com.google.common.base.Preconditions.checkState;
+
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
@@ -126,8 +128,8 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
                 mage.sendMessage(ChatColor.AQUA + "You have been awarded $" + ChatColor.DARK_AQUA + Integer.toString(money) + ChatColor.AQUA + "!");
                 mage.addVaultCurrency(money);
             }
-            increment("won");
-            wins = get("won");
+
+            wins = increment("won");
         }
     }
 
@@ -149,24 +151,22 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
                 mage.sendMessage(ChatColor.AQUA + "You have been awarded $" + ChatColor.DARK_AQUA + Integer.toString(money) + ChatColor.AQUA + "!");
                 mage.addVaultCurrency(money);
             }
-            increment("lost");
-            losses = get("lost");
+
+            losses = increment("lost");
         }
     }
 
     public void quit() {
         Player player = getPlayer();
         if (player != null) {
-            increment("quit");
-            quits = get("quit");
+            quits = increment("quit");
         }
     }
 
     public void joined() {
         Player player = getPlayer();
         if (player != null) {
-            increment("joined");
-            joins = get("joined");
+            joins = increment("joined");
         }
     }
 
@@ -188,8 +188,8 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
                 mage.sendMessage(ChatColor.AQUA + "You have been awarded $" + ChatColor.DARK_AQUA + Integer.toString(money) + ChatColor.AQUA + "!");
                 mage.addVaultCurrency(money);
             }
-            increment("draw");
-            draws = get("draw");
+
+            draws = increment("draw");
         }
     }
 
@@ -229,36 +229,34 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
         return arena;
     }
 
-    protected void increment(String statName) {
-        if (mage == null) {
-            return;
-        }
+    protected int increment(String statName) {
+        checkState(
+                mage != null,
+                "Cannot increment statistic %s, no mage present.", statName);
+
         String arenaKey = "arena." + arena.getKey() + "." + statName;
         ConfigurationSection data = mage.getData();
         int currentValue = data.getInt(arenaKey, 0);
-        data.set(arenaKey, currentValue + 1);
-    }
+        int newValue = currentValue + 1;
+        data.set(arenaKey, newValue);
 
-    private void set(String statName, int value) {
-        if (mage == null) {
-            return;
-        }
-        String arenaKey = "arena." + arena.getKey() + "." + statName;
-        ConfigurationSection data = mage.getData();
-        data.set(arenaKey, value);
+        return newValue;
     }
 
     protected int get(String statName) {
-        if (mage == null) {
-            return 0;
-        }
+        checkState(
+                mage != null,
+                "Cannot get statistic %s, no mage present.", statName);
+
         String arenaKey = "arena." + arena.getKey() + "." + statName;
         ConfigurationSection data = mage.getData();
         return data.getInt(arenaKey, 0);
     }
 
     public float getWinRatio() {
-        if (losses == 0 && wins == 0) return 0;
+        if (losses == 0 && wins == 0) {
+            return 0;
+        }
         return (float)wins / (losses + wins);
     }
 
@@ -292,7 +290,9 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
         if (other instanceof UUID) {
             return equals((UUID)other);
         }
-        if (!(other instanceof ArenaPlayer)) return false;
+        if (!(other instanceof ArenaPlayer)) {
+            return false;
+        }
         return uuid.equals(((ArenaPlayer) other).uuid);
     }
 
@@ -332,7 +332,10 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
     public void heal() {
         Player player = getPlayer();
         if (player != null) {
-            player.setHealth(player.getMaxHealth());
+            // TODO: Use attribute api
+            @SuppressWarnings("deprecation")
+            double maxHealth = player.getMaxHealth();
+            player.setHealth(maxHealth);
             player.setFoodLevel(20);
             player.setFireTicks(0);
             for (PotionEffect pt : player.getActivePotionEffects()) {
