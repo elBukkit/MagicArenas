@@ -1,9 +1,15 @@
 package com.elmakers.mine.bukkit.arenas.dueling;
 
-import com.elmakers.mine.bukkit.api.entity.EntityData;
-import com.elmakers.mine.bukkit.api.magic.Mage;
-import com.elmakers.mine.bukkit.utility.ConfigurationUtils;
-import com.elmakers.mine.bukkit.utility.InventoryUtils;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+import java.util.Random;
+import java.util.Set;
+
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -33,15 +39,11 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.util.Vector;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.Random;
-import java.util.Set;
+import com.elmakers.mine.bukkit.api.block.MaterialAndData;
+import com.elmakers.mine.bukkit.api.entity.EntityData;
+import com.elmakers.mine.bukkit.api.magic.Mage;
+import com.elmakers.mine.bukkit.block.DefaultMaterials;
+import com.elmakers.mine.bukkit.utility.ConfigurationUtils;
 
 public class Arena {
     private static Random random = new Random();
@@ -1199,34 +1201,29 @@ public class Arena {
     }
 
     public void updateLeaderboard() {
+        MaterialAndData skullMaterial = DefaultMaterials.getPlayerSkullWallBlock();
         Block leaderboardBlock = getLeaderboardBlock();
         if (leaderboardBlock != null && leaderboardFacing != null) {
             BlockFace rightDirection = goLeft(leaderboardFacing);
             leaderboardBlock = leaderboardBlock.getRelative(BlockFace.UP);
             int size = Math.min(leaderboard.size(), leaderboardSize);
-            for (int i = size - 1; i >=0; i--) {
+            BlockFace skullFace = leaderboardFacing;
+            for (int i = size - 1; i >= 0; i--) {
                 ArenaPlayer player = leaderboard.get(i);
                 if (canReplace(leaderboardBlock)) {
-                    leaderboardBlock.setType(Material.SKULL);
+                    skullMaterial.modify(leaderboardBlock);
                     BlockState blockState = leaderboardBlock.getState();
                     MaterialData data = blockState.getData();
                     if (data instanceof Skull) {
                         Skull skull = (Skull)data;
-                        // Skull E/W directions are backwards?
-                        BlockFace skullFace = leaderboardFacing;
-                        if (skullFace == BlockFace.EAST) {
-                            skullFace = BlockFace.WEST;
-                        } else if (skullFace == BlockFace.WEST) {
-                            skullFace = BlockFace.EAST;
-                        }
                         skull.setFacingDirection(skullFace);
                     }
                     if (blockState instanceof org.bukkit.block.Skull) {
                         org.bukkit.block.Skull skullBlock = (org.bukkit.block.Skull)blockState;
                         skullBlock.setSkullType(SkullType.PLAYER);
-                        skullBlock.setOwner(player.getName());
                     }
                     blockState.update();
+                    controller.getMagic().setSkull(leaderboardBlock, player.getName());
                 }
                 Block neighborBlock = leaderboardBlock.getRelative(rightDirection);
                 if (canReplace(neighborBlock)) {
@@ -1254,14 +1251,16 @@ public class Arena {
 
     protected void clearLeaderboardBlock(Block block) {
         Material blockType = block.getType();
-        if (blockType == Material.SKULL || blockType == Material.WALL_SIGN) {
+        MaterialAndData skullMaterial = DefaultMaterials.getPlayerSkullWallBlock();
+        if (blockType == skullMaterial.getMaterial() || blockType == Material.WALL_SIGN) {
             block.setType(Material.AIR);
         }
     }
 
     protected boolean canReplace(Block block) {
         Material blockType = block.getType();
-        return blockType == Material.AIR || blockType == Material.WALL_SIGN || blockType == Material.SKULL;
+        MaterialAndData skullMaterial = DefaultMaterials.getPlayerSkullWallBlock();
+        return blockType == Material.AIR || blockType == Material.WALL_SIGN || blockType == skullMaterial.getMaterial();
     }
 
     protected Block getLeaderboardBlock() {

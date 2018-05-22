@@ -2,7 +2,8 @@
 
 ## 3.3
 
- - Depends on Magic 7.5 or higher
+ - Depends on Magic 7.5.3 or higher
+ - Maybe support for 1.13
 
 ## 3.2
 

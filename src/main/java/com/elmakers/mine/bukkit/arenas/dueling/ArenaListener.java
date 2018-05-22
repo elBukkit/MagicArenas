@@ -1,5 +1,7 @@
 package com.elmakers.mine.bukkit.arenas.dueling;
 
+import java.util.Collection;
+
 import com.elmakers.mine.bukkit.api.event.PreCastEvent;
 import com.elmakers.mine.bukkit.api.event.SaveEvent;
 import com.elmakers.mine.bukkit.api.magic.Mage;
@@ -29,7 +31,11 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 
-import java.util.Collection;
+import com.elmakers.mine.bukkit.api.event.PreCastEvent;
+import com.elmakers.mine.bukkit.api.event.SaveEvent;
+import com.elmakers.mine.bukkit.api.magic.Mage;
+import com.elmakers.mine.bukkit.api.wand.Wand;
+import com.elmakers.mine.bukkit.block.DefaultMaterials;
 
 public class ArenaListener implements Listener {
     private final ArenaController controller;
@@ -185,7 +191,8 @@ public class ArenaListener implements Listener {
         }
 
         Block clickedBlock = e.getClickedBlock();
-        if (e.getAction() == Action.RIGHT_CLICK_BLOCK && (clickedBlock.getType() == Material.SIGN || clickedBlock.getType() == Material.SIGN_POST || clickedBlock.getType() == Material.WALL_SIGN)) {
+        Material signPost = DefaultMaterials.getGroundSignBlock();
+        if (e.getAction() == Action.RIGHT_CLICK_BLOCK && (clickedBlock.getType() == Material.SIGN || clickedBlock.getType() == signPost || clickedBlock.getType() == Material.WALL_SIGN)) {
             Sign sign = (Sign) e.getClickedBlock().getState();
             String firstLine = sign.getLine(0);
             if (firstLine.equals(SIGN_KEY)) {
