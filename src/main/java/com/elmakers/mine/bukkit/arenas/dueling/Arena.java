@@ -209,12 +209,12 @@ public class Arena {
         }
 
         // For migrating legacy data
-        leaderboard.clear();
         loadData(configuration);
     }
 
     public void loadData(ConfigurationSection configuration) {
         if (configuration.contains("leaderboard")) {
+            leaderboard.clear();
             ConfigurationSection leaders = configuration.getConfigurationSection("leaderboard");
             Collection<String> leaderboardKeys = leaders.getKeys(false);
             for (String key : leaderboardKeys) {
@@ -1224,7 +1224,7 @@ public class Arena {
                     if (blockState instanceof org.bukkit.block.Skull) {
                         org.bukkit.block.Skull skullBlock = (org.bukkit.block.Skull)blockState;
                         skullBlock.setSkullType(SkullType.PLAYER);
-                        InventoryUtils.setSkullOwner(skullBlock, player.getName(), player.getUUID());
+                        skullBlock.setOwner(player.getName());
                     }
                     blockState.update();
                 }
@@ -1573,8 +1573,10 @@ public class Arena {
         if (arenaName.length() > 32) {
             arenaName = arenaName.substring(0, 31);
         }
+        int maxSize = 9 * 8 - 1;
+        maxSize = Math.min(maxSize, leaderboard.size());
         Inventory leaderboardInventory = Bukkit.createInventory(null, multiple, arenaName);
-        for (int i = 0; i < leaderboard.size(); i++) {
+        for (int i = 0; i < maxSize; i++) {
             ArenaPlayer arenaPlayer = leaderboard.get(i);
             ItemStack playerItem = createLeaderboardIcon(i + 1, arenaPlayer);
             leaderboardInventory.setItem(i, playerItem);
@@ -1586,16 +1588,15 @@ public class Arena {
         if (!shownPlayer) {
             ArenaPlayer arenaPlayer = new ArenaPlayer(this, player);
             ItemStack currentPlayer = createLeaderboardIcon(null, arenaPlayer);
-            leaderboardInventory.setItem(leaderboard.size(), currentPlayer);
+            leaderboardInventory.setItem(maxSize - 1, currentPlayer);
         }
 
         player.openInventory(leaderboardInventory);
     }
 
     protected ItemStack createLeaderboardIcon(Integer rank, ArenaPlayer player) {
-        ItemStack playerItem = InventoryUtils.getPlayerSkull(player.getName(), player.getUUID());
+        ItemStack playerItem = controller.getMagic().getSkull(player.getName(), ChatColor.GOLD + player.getDisplayName());
         ItemMeta meta = playerItem.getItemMeta();
-        meta.setDisplayName(ChatColor.GOLD + player.getDisplayName());
         List<String> lore = new ArrayList<String>();
 
         if (rank != null) {

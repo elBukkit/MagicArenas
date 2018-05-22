@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 3.3
+
+ - Depends on Magic 7.5 or higher
+
 ## 3.2
 
  - Depends on Magic 6.9.13 or higher
