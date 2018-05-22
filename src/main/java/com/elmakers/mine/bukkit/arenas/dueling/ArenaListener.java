@@ -2,10 +2,6 @@ package com.elmakers.mine.bukkit.arenas.dueling;
 
 import java.util.Collection;
 
-import com.elmakers.mine.bukkit.api.event.PreCastEvent;
-import com.elmakers.mine.bukkit.api.event.SaveEvent;
-import com.elmakers.mine.bukkit.api.magic.Mage;
-import com.elmakers.mine.bukkit.api.wand.Wand;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;

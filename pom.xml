@@ -5,12 +5,13 @@
 	<groupId>com.elmakers.mine.bukkit.plugins</groupId>
 	<artifactId>MagicArenas</artifactId>
 	<version>3.3-SNAPSHOT</version>
+
 	<name>Magic Arenas</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>1.8</java.version>
-		<magic.version>6.9.21-SNAPSHOT</magic.version>
+		<magic.version>7.5.3-SNAPSHOT</magic.version>
 		<bukkit.version>1.12.2-R0.1-SNAPSHOT</bukkit.version>
 	</properties>
 
