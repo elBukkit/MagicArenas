@@ -1223,7 +1223,7 @@ public class Arena {
                         skullBlock.setSkullType(SkullType.PLAYER);
                     }
                     blockState.update();
-                    controller.getMagic().setSkull(leaderboardBlock, player.getName());
+                    controller.getMagic().setSkull(leaderboardBlock, player.getUUID());
                 }
                 Block neighborBlock = leaderboardBlock.getRelative(rightDirection);
                 if (canReplace(neighborBlock)) {
@@ -1594,7 +1594,7 @@ public class Arena {
     }
 
     protected ItemStack createLeaderboardIcon(Integer rank, ArenaPlayer player) {
-        ItemStack playerItem = controller.getMagic().getSkull(player.getName(), ChatColor.GOLD + player.getDisplayName());
+        ItemStack playerItem = controller.getMagic().getSkull(player.getUUID(), ChatColor.GOLD + player.getDisplayName());
         ItemMeta meta = playerItem.getItemMeta();
         List<String> lore = new ArrayList<String>();
 
