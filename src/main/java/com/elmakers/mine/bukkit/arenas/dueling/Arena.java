@@ -41,6 +41,7 @@ import org.bukkit.util.Vector;
 
 import com.elmakers.mine.bukkit.api.block.MaterialAndData;
 import com.elmakers.mine.bukkit.api.entity.EntityData;
+import com.elmakers.mine.bukkit.api.item.ItemUpdatedCallback;
 import com.elmakers.mine.bukkit.api.magic.Mage;
 import com.elmakers.mine.bukkit.block.DefaultMaterials;
 import com.elmakers.mine.bukkit.utility.ConfigurationUtils;
@@ -1567,17 +1568,23 @@ public class Arena {
         int inventorySize = leaderboard.size() + 1;
         int leaderboardRows = (int)Math.ceil((float)inventorySize / 9);
         leaderboardRows = Math.min(8, leaderboardRows);
-        int leaderboardSize = leaderboardRows * 9;
+        inventorySize = leaderboardRows * 9;
         boolean shownPlayer = false;
         String arenaName = ChatColor.DARK_AQUA + "Leaderboard: " + ChatColor.GOLD + getName();
         if (arenaName.length() > 32) {
             arenaName = arenaName.substring(0, 31);
         }
-        Inventory leaderboardInventory = Bukkit.createInventory(null, leaderboardSize, arenaName);
+        Inventory leaderboardInventory = Bukkit.createInventory(null, inventorySize, arenaName);
+        int leaderboardSize = Math.min(leaderboard.size(), inventorySize);
         for (int i = 0; i < leaderboardSize; i++) {
             ArenaPlayer arenaPlayer = leaderboard.get(i);
-            ItemStack playerItem = createLeaderboardIcon(i + 1, arenaPlayer);
-            leaderboardInventory.setItem(i, playerItem);
+            final int slot = i;
+            createLeaderboardIcon(i + 1, arenaPlayer, new ItemUpdatedCallback() {
+                @Override
+                public void updated(ItemStack itemStack) {
+                    leaderboardInventory.setItem(slot, itemStack);
+                }
+            });
             if (player.getUniqueId().equals(arenaPlayer.getUUID())) {
                 shownPlayer = true;
             }
@@ -1585,33 +1592,42 @@ public class Arena {
 
         if (!shownPlayer) {
             ArenaPlayer arenaPlayer = new ArenaPlayer(this, player);
-            ItemStack currentPlayer = createLeaderboardIcon(null, arenaPlayer);
-            leaderboardInventory.setItem(leaderboardSize - 1, currentPlayer);
+            createLeaderboardIcon(null, arenaPlayer, new ItemUpdatedCallback() {
+                @Override
+                public void updated(ItemStack itemStack) {
+                    leaderboardInventory.setItem(leaderboardSize - 1, itemStack);
+                }
+            });
         }
 
         player.openInventory(leaderboardInventory);
     }
 
-    protected ItemStack createLeaderboardIcon(Integer rank, ArenaPlayer player) {
-        ItemStack playerItem = controller.getMagic().getSkull(player.getUUID(), ChatColor.GOLD + player.getDisplayName());
-        ItemMeta meta = playerItem.getItemMeta();
-        List<String> lore = new ArrayList<String>();
+    protected void createLeaderboardIcon(Integer rank, ArenaPlayer player, ItemUpdatedCallback callback) {
+        ItemStack playerItem = controller.getMagic().getSkull(player.getUUID(),
+                ChatColor.GOLD + player.getDisplayName(),
+                new ItemUpdatedCallback() {
+                    @Override
+                    public void updated(ItemStack itemStack) {
+                        ItemMeta meta = itemStack.getItemMeta();
+                        List<String> lore = new ArrayList<String>();
 
-        if (rank != null) {
-            lore.add(ChatColor.DARK_PURPLE + "Ranked " + ChatColor.AQUA + "#" + Integer.toString(rank) + ChatColor.DARK_PURPLE + " for " + ChatColor.GOLD + getName());
-        } else {
-            lore.add(ChatColor.DARK_PURPLE + "Not ranked for " + ChatColor.GOLD + getName());
-        }
+                        if (rank != null) {
+                            lore.add(ChatColor.DARK_PURPLE + "Ranked " + ChatColor.AQUA + "#" + Integer.toString(rank) + ChatColor.DARK_PURPLE + " for " + ChatColor.GOLD + getName());
+                        } else {
+                            lore.add(ChatColor.DARK_PURPLE + "Not ranked for " + ChatColor.GOLD + getName());
+                        }
 
-        lore.add(ChatColor.GREEN + "Wins: " + ChatColor.WHITE + Integer.toString(player.getWins()));
-        lore.add(ChatColor.RED + "Losses: " + ChatColor.WHITE + Integer.toString(player.getLosses()));
-        lore.add(ChatColor.GOLD + "Win Ratio: " + ChatColor.WHITE + Integer.toString((int) (player.getWinRatio() * 100)) + "% " + String.format("(%.2f)", player.getWinConfidence()));
-        lore.add(ChatColor.YELLOW + "Draws: " + ChatColor.WHITE + Integer.toString(player.getDraws()));
-        lore.add(ChatColor.GRAY + "Defaults: " + ChatColor.WHITE + Integer.toString(player.getQuits()));
-        meta.setLore(lore);
-        playerItem.setItemMeta(meta);
-
-        return playerItem;
+                        lore.add(ChatColor.GREEN + "Wins: " + ChatColor.WHITE + Integer.toString(player.getWins()));
+                        lore.add(ChatColor.RED + "Losses: " + ChatColor.WHITE + Integer.toString(player.getLosses()));
+                        lore.add(ChatColor.GOLD + "Win Ratio: " + ChatColor.WHITE + Integer.toString((int) (player.getWinRatio() * 100)) + "% " + String.format("(%.2f)", player.getWinConfidence()));
+                        lore.add(ChatColor.YELLOW + "Draws: " + ChatColor.WHITE + Integer.toString(player.getDraws()));
+                        lore.add(ChatColor.GRAY + "Defaults: " + ChatColor.WHITE + Integer.toString(player.getQuits()));
+                        meta.setLore(lore);
+                        itemStack.setItemMeta(meta);
+                        callback.updated(itemStack);
+                    }
+                });
     }
 
     public void setCountdown(int countdown) {
