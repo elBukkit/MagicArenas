@@ -4,6 +4,7 @@
 
  - Depends on Magic 7.5.3 or higher
  - Maybe support for 1.13
+ - Fix server lag when generating leaderboards or showing leaderboard GUI
 
 ## 3.2
 
