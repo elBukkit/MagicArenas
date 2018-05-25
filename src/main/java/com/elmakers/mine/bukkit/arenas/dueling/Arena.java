@@ -1565,16 +1565,16 @@ public class Arena {
 
     public void showLeaderboard(Player player) {
         int inventorySize = leaderboard.size() + 1;
-        int multiple = (int)Math.ceil((float)inventorySize / 9) * 9;
+        int leaderboardRows = (int)Math.ceil((float)inventorySize / 9);
+        leaderboardRows = Math.min(8, leaderboardRows);
+        int leaderboardSize = leaderboardRows * 9;
         boolean shownPlayer = false;
         String arenaName = ChatColor.DARK_AQUA + "Leaderboard: " + ChatColor.GOLD + getName();
         if (arenaName.length() > 32) {
             arenaName = arenaName.substring(0, 31);
         }
-        int maxSize = 9 * 8 - 1;
-        maxSize = Math.min(maxSize, leaderboard.size());
-        Inventory leaderboardInventory = Bukkit.createInventory(null, multiple, arenaName);
-        for (int i = 0; i < maxSize; i++) {
+        Inventory leaderboardInventory = Bukkit.createInventory(null, leaderboardSize, arenaName);
+        for (int i = 0; i < leaderboardSize; i++) {
             ArenaPlayer arenaPlayer = leaderboard.get(i);
             ItemStack playerItem = createLeaderboardIcon(i + 1, arenaPlayer);
             leaderboardInventory.setItem(i, playerItem);
@@ -1586,7 +1586,7 @@ public class Arena {
         if (!shownPlayer) {
             ArenaPlayer arenaPlayer = new ArenaPlayer(this, player);
             ItemStack currentPlayer = createLeaderboardIcon(null, arenaPlayer);
-            leaderboardInventory.setItem(maxSize - 1, currentPlayer);
+            leaderboardInventory.setItem(leaderboardSize - 1, currentPlayer);
         }
 
         player.openInventory(leaderboardInventory);
