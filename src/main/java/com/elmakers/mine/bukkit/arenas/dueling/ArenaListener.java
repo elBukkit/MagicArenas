@@ -58,7 +58,7 @@ public class ArenaListener implements Listener {
             boolean op = wand != null && (
                        wand.isSuperPowered() || wand.isSuperProtected()
                     || wand.getPower() > 1 || wand.getHealthRegeneration() > 0
-                    || wand.getCooldownReduction() > 1 || wand.getCostReduction() > 1);
+                    || wand.getCooldownReduction() > 1);
             if (op)
             {
                 event.setCancelled(true);

@@ -2,6 +2,8 @@
 
 ## 3.4
 
+ - OP wand check will now allow cost-free wands
+
 ## 3.3
 
  - Depends on Magic 7.5.3 or higher
