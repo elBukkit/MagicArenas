@@ -1591,7 +1591,7 @@ public class Arena {
             }
         }
 
-        if (!shownPlayer) {
+        if (!shownPlayer && leaderboardSize > 0) {
             ArenaPlayer arenaPlayer = new ArenaPlayer(this, player);
             createLeaderboardIcon(null, arenaPlayer, new ItemUpdatedCallback() {
                 @Override
