@@ -3,7 +3,6 @@ package com.elmakers.mine.bukkit.arenas.dueling;
 import com.elmakers.mine.bukkit.api.magic.Mage;
 import com.elmakers.mine.bukkit.api.wand.Wand;
 import com.elmakers.mine.bukkit.api.wand.WandUpgradePath;
-import static com.google.common.base.Preconditions.checkState;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -230,9 +229,10 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
     }
 
     protected int increment(String statName) {
-        checkState(
-                mage != null,
-                "Cannot increment statistic %s, no mage present.", statName);
+        if (mage == null) {
+            arena.getController().getPlugin().getLogger().warning("Cannot increment statistic " + statName + ", no mage present.");
+            return 0;
+        }
 
         String arenaKey = "arena." + arena.getKey() + "." + statName;
         ConfigurationSection data = mage.getData();
@@ -244,9 +244,10 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
     }
 
     protected int get(String statName) {
-        checkState(
-                mage != null,
-                "Cannot get statistic %s, no mage present.", statName);
+        if (mage == null) {
+            arena.getController().getPlugin().getLogger().warning("Cannot get statistic " + statName + ", no mage present.");
+            return 0;
+        }
 
         String arenaKey = "arena." + arena.getKey() + "." + statName;
         ConfigurationSection data = mage.getData();
