@@ -294,7 +294,7 @@ public class ArenaListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
-        if (event.getInventory().getName().contains("Leaderboard")) {
+        if (event.getView().getTitle().contains("Leaderboard")) {
             event.getWhoClicked().closeInventory();
         }
     }

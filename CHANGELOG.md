@@ -2,6 +2,7 @@
 
 ## 3.4
 
+ - Fix inventory click errors in 1.14
  - OP wand check will now allow cost-free wands
 
 ## 3.3
