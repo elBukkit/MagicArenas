@@ -273,9 +273,11 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
             return 0;
         }
 
-        double b = (wins * losses) / nGames + 0.9604;
-        double a = ((wins + 1.9208) / nGames - 1.96 * Math.sqrt(b) / nGames);
-        return a / (1 + 3.8416 / nGames);
+        double z = 1.96;
+        double winRate = wins / (double) nGames;
+        double b = (winRate *  (1 - winRate) + z * z / (4 * nGames)) / nGames;
+        double a = winRate + z * z / (2 * nGames) -  z *  Math.sqrt(b);
+        return a / (1 + z * z  / nGames);
     }
 
     @Override
