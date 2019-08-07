@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ArenaController implements Runnable {
-    private final Map<String, Arena> arenas = new HashMap<String, Arena>();
+    private final Map<String, Arena> arenas = new HashMap<>();
     private final Plugin plugin;
     private final MageController magic;
     private final Object saveLock = new Object();

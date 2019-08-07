@@ -54,7 +54,7 @@ public class ArenaCommandExecutor implements TabExecutor {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         String completeCommand = args.length > 0 ? args[args.length - 1] : "";
 
-        List<String> allOptions = new ArrayList<String>();
+        List<String> allOptions = new ArrayList<>();
         if (args.length < 2) {
             allOptions.addAll(Arrays.asList(SUB_COMMANDS));
         } else if (args.length == 2) {
@@ -90,7 +90,7 @@ public class ArenaCommandExecutor implements TabExecutor {
         }
 
         completeCommand = completeCommand.toLowerCase();
-        List<String> options = new ArrayList<String>();
+        List<String> options = new ArrayList<>();
         for (String option : allOptions) {
             String lowercase = option.toLowerCase();
             if (lowercase.startsWith(completeCommand)) {

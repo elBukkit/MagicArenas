@@ -23,9 +23,9 @@ import java.util.Set;
 
 public class ArenaStage {
     private final Arena arena;
-    private List<ArenaMobSpawner> mobs = new ArrayList<ArenaMobSpawner>();
-    private List<Location> mobSpawns = new ArrayList<Location>();
-    private Set<Entity> spawned = new HashSet<Entity>();
+    private List<ArenaMobSpawner> mobs = new ArrayList<>();
+    private List<Location> mobSpawns = new ArrayList<>();
+    private Set<Entity> spawned = new HashSet<>();
     private String startSpell;
     private String endSpell;
 
@@ -50,7 +50,7 @@ public class ArenaStage {
     }
 
     public void save(ConfigurationSection configuration) {
-        List<ConfigurationSection> mobsConfigurations = new ArrayList<ConfigurationSection>();
+        List<ConfigurationSection> mobsConfigurations = new ArrayList<>();
         for (ArenaMobSpawner mob : mobs) {
             ConfigurationSection section = new MemoryConfiguration();
             mob.save(section);
@@ -60,7 +60,7 @@ public class ArenaStage {
         configuration.set("spell_start", startSpell);
         configuration.set("spell_end", endSpell);
 
-        List<String> mobSpawnList = new ArrayList<String>();
+        List<String> mobSpawnList = new ArrayList<>();
         for (Location spawn : mobSpawns) {
             mobSpawnList.add(ConfigurationUtils.fromLocation(spawn));
         }
@@ -147,7 +147,7 @@ public class ArenaStage {
 
     public List<Location> getMobSpawns() {
         if (mobSpawns.size() == 0) {
-            List<Location> centerList = new ArrayList<Location>();
+            List<Location> centerList = new ArrayList<>();
             centerList.add(arena.getCenter());
             return centerList;
         }

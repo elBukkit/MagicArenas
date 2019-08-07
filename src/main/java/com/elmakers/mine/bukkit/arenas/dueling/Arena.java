@@ -52,12 +52,12 @@ public class Arena {
     private ArenaState state = ArenaState.LOBBY;
     private long started;
     private long lastTick;
-    private Queue<ArenaPlayer> queue = new LinkedList<ArenaPlayer>();
-    private Set<ArenaPlayer> players = new HashSet<ArenaPlayer>();
-    private Set<ArenaPlayer> deadPlayers = new HashSet<ArenaPlayer>();
+    private Queue<ArenaPlayer> queue = new LinkedList<>();
+    private Set<ArenaPlayer> players = new HashSet<>();
+    private Set<ArenaPlayer> deadPlayers = new HashSet<>();
 
-    private List<Location> spawns = new ArrayList<Location>();
-    private List<ArenaStage> stages = new ArrayList<ArenaStage>();
+    private List<Location> spawns = new ArrayList<>();
+    private List<ArenaStage> stages = new ArrayList<>();
     private int currentStage = 0;
     private final ArenaController controller;
 
@@ -101,7 +101,7 @@ public class Arena {
     private int borderMin = 0;
     private int borderMax = 0;
 
-    private List<ArenaPlayer> leaderboard = new ArrayList<ArenaPlayer>();
+    private List<ArenaPlayer> leaderboard = new ArrayList<>();
     private Location leaderboardLocation;
     private BlockFace leaderboardFacing;
 
@@ -262,7 +262,9 @@ public class Arena {
     }
 
     public void save(ConfigurationSection configuration) {
-        if (!isValid()) return;
+        if (!isValid()) {
+            return;
+        }
 
         configuration.set("name", name);
         configuration.set("description", description);
@@ -321,14 +323,14 @@ public class Arena {
         configuration.set("center", ConfigurationUtils.fromLocation(center));
         configuration.set("exit", ConfigurationUtils.fromLocation(exit));
 
-        List<String> spawnList = new ArrayList<String>();
+        List<String> spawnList = new ArrayList<>();
         for (Location spawn : spawns) {
             spawnList.add(ConfigurationUtils.fromLocation(spawn));
         }
         configuration.set("spawns", spawnList);
 
         if (!stages.isEmpty()) {
-            List<ConfigurationSection> stageConfigurations = new ArrayList<ConfigurationSection>();
+            List<ConfigurationSection> stageConfigurations = new ArrayList<>();
             for (ArenaStage stage : stages) {
                 ConfigurationSection section = new MemoryConfiguration();
                 stage.save(section);
@@ -348,7 +350,9 @@ public class Arena {
     }
 
     public void saveData(ConfigurationSection configuration) {
-        if (!isValid()) return;
+        if (!isValid()) {
+            return;
+        }
 
         if (leaderboard.size() > 0) {
             ConfigurationSection leaders = configuration.createSection("leaderboard");
@@ -361,7 +365,9 @@ public class Arena {
     }
 
     public void start() {
-        if (!isValid()) return;
+        if (!isValid()) {
+            return;
+        }
 
         state = ArenaState.ACTIVE;
         started = System.currentTimeMillis();
@@ -516,7 +522,9 @@ public class Arena {
         Collection<? extends Player> players = controller.getPlugin().getServer().getOnlinePlayers();
         for (Player player : players) {
             Location playerLocation = player.getLocation();
-            if (!playerLocation.getWorld().equals(center.getWorld())) continue;
+            if (!playerLocation.getWorld().equals(center.getWorld())) {
+                continue;
+            }
             if (playerLocation.distanceSquared(center) < rangeSquared) {
                 player.sendMessage(message);
             }
@@ -540,7 +548,9 @@ public class Arena {
     }
 
     public void startCountdown(int time) {
-        if (state != ArenaState.LOBBY) return;
+        if (state != ArenaState.LOBBY) {
+            return;
+        }
         state = ArenaState.COUNTDOWN;
         messageNextRoundPlayerList(ChatColor.YELLOW + "A round of " + getName() + " is about to start!");
         countdown(time);
@@ -569,7 +579,9 @@ public class Arena {
     }
 
     public boolean stop() {
-        if (state == ArenaState.LOBBY) return false;
+        if (state == ArenaState.LOBBY) {
+            return false;
+        }
         messageInGamePlayers(ChatColor.DARK_RED + "This match has been cancelled!");
         finish();
         return true;
@@ -676,7 +688,7 @@ public class Arena {
 
     public List<Location> getSpawns() {
         if (spawns.size() == 0) {
-            List<Location> centerList = new ArrayList<Location>();
+            List<Location> centerList = new ArrayList<>();
             centerList.add(center);
             return centerList;
         }
@@ -932,7 +944,9 @@ public class Arena {
     }
 
     protected void checkStart() {
-        if (isStarted()) return;
+        if (isStarted()) {
+            return;
+        }
 
         if (isReady()) {
             if (isFull()) {
@@ -946,16 +960,18 @@ public class Arena {
     }
 
     protected Collection<ArenaPlayer> getAllPlayers() {
-        List<ArenaPlayer> allPlayers = new ArrayList<ArenaPlayer>(players);
+        List<ArenaPlayer> allPlayers = new ArrayList<>(players);
         allPlayers.addAll(queue);
         allPlayers.addAll(deadPlayers);
         return allPlayers;
     }
 
     protected Collection<ArenaPlayer> getNextRoundPlayers() {
-        List<ArenaPlayer> allPlayers = new ArrayList<ArenaPlayer>();
+        List<ArenaPlayer> allPlayers = new ArrayList<>();
         for (ArenaPlayer queuedPlayer : queue) {
-            if (allPlayers.size() >= maxPlayers) break;
+            if (allPlayers.size() >= maxPlayers) {
+                break;
+            }
             allPlayers.add(queuedPlayer);
         }
         return allPlayers;
@@ -1094,7 +1110,9 @@ public class Arena {
     }
 
     protected String printLocation(Location location) {
-        if (location == null) return ChatColor.DARK_GRAY + "(None)";
+        if (location == null) {
+            return ChatColor.DARK_GRAY + "(None)";
+        }
 
         return "" + ChatColor.GRAY + location.getBlockX() + ChatColor.DARK_GRAY + "," +
                 ChatColor.GRAY + location.getBlockY() + ChatColor.DARK_GRAY + "," +
@@ -1371,7 +1389,7 @@ public class Arena {
 
     public void setLeaderboardGamesRequired(int required) {
         leaderboardGamesRequired = required;
-        Collection<ArenaPlayer> currentLeaderboard = new ArrayList<ArenaPlayer>(leaderboard);
+        Collection<ArenaPlayer> currentLeaderboard = new ArrayList<>(leaderboard);
         leaderboard.clear();
         for (ArenaPlayer player : currentLeaderboard) {
             updateLeaderboard(player);
@@ -1605,13 +1623,14 @@ public class Arena {
     }
 
     protected void createLeaderboardIcon(Integer rank, ArenaPlayer player, ItemUpdatedCallback callback) {
-        ItemStack playerItem = controller.getMagic().getSkull(player.getUUID(),
+        controller.getMagic().getSkull(
+                player.getUUID(),
                 ChatColor.GOLD + player.getDisplayName(),
                 new ItemUpdatedCallback() {
                     @Override
                     public void updated(ItemStack itemStack) {
                         ItemMeta meta = itemStack.getItemMeta();
-                        List<String> lore = new ArrayList<String>();
+                        List<String> lore = new ArrayList<>();
 
                         if (rank != null) {
                             lore.add(ChatColor.DARK_PURPLE + "Ranked " + ChatColor.AQUA + "#" + Integer.toString(rank) + ChatColor.DARK_PURPLE + " for " + ChatColor.GOLD + getName());
@@ -1752,7 +1771,9 @@ public class Arena {
 
     public boolean isMobArena() {
         ArenaStage currentStage = getCurrentStage();
-        if (currentStage == null) return false;
+        if (currentStage == null) {
+            return false;
+        }
         return currentStage.hasMobs();
     }
 
