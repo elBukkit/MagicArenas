@@ -1,8 +1,10 @@
 package com.elmakers.mine.bukkit.arenas.dueling;
 
-import com.elmakers.mine.bukkit.api.entity.EntityData;
-import com.elmakers.mine.bukkit.api.spell.SpellTemplate;
-import com.elmakers.mine.bukkit.utility.ConfigurationUtils;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -14,18 +16,17 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import com.elmakers.mine.bukkit.api.entity.EntityData;
+import com.elmakers.mine.bukkit.api.spell.SpellTemplate;
+import com.elmakers.mine.bukkit.utility.ConfigurationUtils;
 
 public class ArenaCommandExecutor implements TabExecutor {
-    private final static String[] SUB_COMMANDS = {
+    private static final String[] SUB_COMMANDS = {
         "start", "stop", "add", "remove", "configure", "describe", "join", "leave", "load",
         "save", "stats", "reset"
     };
 
-    private final static String[] ARENA_PROPERTIES = {
+    private static final String[] ARENA_PROPERTIES = {
         "max", "min", "win", "lose", "lobby", "spawn", "exit", "center",
         "add", "remove", "randomize", "name", "description", "portal_damage",
         "portal_enter_damage", "portal_death_message", "leaderboard_games_required",
@@ -36,11 +37,11 @@ public class ArenaCommandExecutor implements TabExecutor {
         "spell_start", "spell_end", "money_win", "money_lose", "money_draw"
     };
 
-    private final static String[] ARENA_LISTS = {
+    private static final String[] ARENA_LISTS = {
         "spawn", "mob_spawn", "mob"
     };
 
-    private final static String[] ARENA_RANDOMIZE = {
+    private static final String[] ARENA_RANDOMIZE = {
         "spawn"
     };
 
@@ -54,7 +55,7 @@ public class ArenaCommandExecutor implements TabExecutor {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         String completeCommand = args.length > 0 ? args[args.length - 1] : "";
 
-        List<String> allOptions = new ArrayList<String>();
+        List<String> allOptions = new ArrayList<>();
         if (args.length < 2) {
             allOptions.addAll(Arrays.asList(SUB_COMMANDS));
         } else if (args.length == 2) {
@@ -73,9 +74,13 @@ public class ArenaCommandExecutor implements TabExecutor {
             allOptions.addAll(Arrays.asList(ARENA_RANDOMIZE));
         } else if (args.length == 4 && args[0].equalsIgnoreCase("configure") && args[2].equalsIgnoreCase("sudden_death_effect")) {
             for (PotionEffectType pt : PotionEffectType.values()) {
-                if (pt == null) continue;
+                if (pt == null) {
+                    continue;
+                }
                 String name = pt.getName();
-                if (name == null) continue;
+                if (name == null) {
+                    continue;
+                }
                 allOptions.add(name.toLowerCase());
             }
         } else if (args.length == 4 && args[0].equalsIgnoreCase("configure") && (args[2].equalsIgnoreCase("spell_start") || args[2].equalsIgnoreCase("spell_start"))) {
@@ -90,7 +95,7 @@ public class ArenaCommandExecutor implements TabExecutor {
         }
 
         completeCommand = completeCommand.toLowerCase();
-        List<String> options = new ArrayList<String>();
+        List<String> options = new ArrayList<>();
         for (String option : allOptions) {
             String lowercase = option.toLowerCase();
             if (lowercase.startsWith(completeCommand)) {
@@ -101,9 +106,10 @@ public class ArenaCommandExecutor implements TabExecutor {
         return options;
     }
 
-    protected void sendNoPermission(CommandSender sender)
-    {
-        if (sender != null) sender.sendMessage(ChatColor.RED + "You are not allowed to use that command.");
+    protected void sendNoPermission(CommandSender sender) {
+        if (sender != null) {
+            sender.sendMessage(ChatColor.RED + "You are not allowed to use that command.");
+        }
     }
 
     @Override
@@ -175,7 +181,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             String playerName = null;
             if (args.length > 1) {
                 playerName = args[1];
-                player = Bukkit.getPlayer(playerName);
+                player = getPlayerForArgument(playerName);
             } else if (sender instanceof Player) {
                 player = (Player) sender;
                 playerName = player.getName();
@@ -243,7 +249,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             String playerName = null;
             if (args.length > 2) {
                 playerName = args[2];
-                player = Bukkit.getPlayer(playerName);
+                player = getPlayerForArgument(playerName);
             } else {
                 if (isAllArenas) {
                     controller.reset();
@@ -307,7 +313,7 @@ public class ArenaCommandExecutor implements TabExecutor {
         if (subCommand.equalsIgnoreCase("stats")) {
             if (args.length > 2) {
                 String playerName = args[2];
-                Player player = Bukkit.getPlayer(playerName);
+                Player player = getPlayerForArgument(playerName);
                 if (player == null) {
                     sender.sendMessage(ChatColor.RED + "Unknown player: " + playerName);
                     return true;
@@ -325,7 +331,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             String playerName = null;
             if (args.length > 2) {
                 playerName = args[2];
-                player = Bukkit.getPlayer(playerName);
+                player = getPlayerForArgument(playerName);
             } else if (sender instanceof Player) {
                 player = (Player) sender;
             }
@@ -369,10 +375,8 @@ public class ArenaCommandExecutor implements TabExecutor {
         return true;
     }
 
-    protected void onConfigureArena(CommandSender sender, Arena arena, String propertyName, String[] args)
-    {
-        if (propertyName.equalsIgnoreCase("randomize"))
-        {
+    protected void onConfigureArena(CommandSender sender, Arena arena, String propertyName, String[] args) {
+        if (propertyName.equalsIgnoreCase("randomize")) {
             String randomizeType = "spawn";
             if (args.length > 0) {
                 randomizeType = args[0];
@@ -399,8 +403,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             return;
         }
 
-        if
-        (
+        if (
             propertyName.equalsIgnoreCase("lobby") || propertyName.equalsIgnoreCase("spawn")
         ||  propertyName.equalsIgnoreCase("win") || propertyName.equalsIgnoreCase("lose")
         ||  propertyName.equalsIgnoreCase("center") || propertyName.equalsIgnoreCase("exit")
@@ -415,8 +418,7 @@ public class ArenaCommandExecutor implements TabExecutor {
 
             boolean isAdd = propertyName.equalsIgnoreCase("add");
             boolean isRemove = propertyName.equalsIgnoreCase("remove");
-            if (isAdd || isRemove)
-            {
+            if (isAdd || isRemove) {
                 String subItem = "spawn";
                 if (args.length > 0) {
                     subItem = args[0];
@@ -537,8 +539,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             return;
         }
 
-        if (propertyName.equalsIgnoreCase("portal_death_message"))
-        {
+        if (propertyName.equalsIgnoreCase("portal_death_message")) {
             if (propertyValue == null || propertyValue.isEmpty()) {
                 sender.sendMessage(ChatColor.RED + "Cleared portal death message of " + arena.getName());
             } else {
@@ -607,9 +608,9 @@ public class ArenaCommandExecutor implements TabExecutor {
                     } else {
                         max = Integer.parseInt(propertyValue);
                     }
-                } catch (Exception ex) {
-
+                } catch (Exception ignored) {
                 }
+
                 arena.setBorder(min, max);
                 sender.sendMessage(ChatColor.AQUA + "Set border for " + arena.getName() + " to " + max + "-" + min);
             }
@@ -621,8 +622,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             return;
         }
 
-        if (propertyName.equalsIgnoreCase("op_check"))
-        {
+        if (propertyName.equalsIgnoreCase("op_check")) {
             boolean checkOn = propertyValue.equalsIgnoreCase("true");
             if (checkOn) {
                 sender.sendMessage(ChatColor.RED + "Enabled OP check for " + arena.getName());
@@ -633,8 +633,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             return;
         }
 
-        if (propertyName.equalsIgnoreCase("keep_inventory"))
-        {
+        if (propertyName.equalsIgnoreCase("keep_inventory")) {
             boolean keepOn = propertyValue.equalsIgnoreCase("true");
             if (keepOn) {
                 sender.sendMessage(ChatColor.GREEN + "Enabled keep inventory for " + arena.getName());
@@ -645,8 +644,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             return;
         }
 
-        if (propertyName.equalsIgnoreCase("keep_level"))
-        {
+        if (propertyName.equalsIgnoreCase("keep_level")) {
             boolean keepOn = propertyValue.equalsIgnoreCase("true");
             if (keepOn) {
                 sender.sendMessage(ChatColor.GREEN + "Enabled keep XP levels for " + arena.getName());
@@ -657,16 +655,28 @@ public class ArenaCommandExecutor implements TabExecutor {
             return;
         }
 
-        if (propertyName.equalsIgnoreCase("min") || propertyName.equalsIgnoreCase("max") ||
-            propertyName.equalsIgnoreCase("portal_damage") || propertyName.equalsIgnoreCase("portal_enter_damage") ||
-            propertyName.equalsIgnoreCase("leaderboard_games_required") || propertyName.equalsIgnoreCase("leaderboard_size") ||
-            propertyName.equalsIgnoreCase("leaderboard_record_size") || propertyName.equalsIgnoreCase("max_teleport_distance") ||
-            propertyName.equalsIgnoreCase("xp_win") || propertyName.equalsIgnoreCase("xp_lose") || propertyName.equalsIgnoreCase("xp_draw") ||
-            propertyName.equalsIgnoreCase("sp_win") || propertyName.equalsIgnoreCase("sp_lose") || propertyName.equalsIgnoreCase("sp_draw") ||
-            propertyName.equalsIgnoreCase("money_win") || propertyName.equalsIgnoreCase("money_lose") || propertyName.equalsIgnoreCase("money_draw") ||
-            propertyName.equalsIgnoreCase("countdown") || propertyName.equalsIgnoreCase("countdown_max") || propertyName.equalsIgnoreCase("announcer_range") ||
-            propertyName.equalsIgnoreCase("duration") || propertyName.equalsIgnoreCase("sudden_death")
-        ) {
+        if (propertyName.equalsIgnoreCase("min")
+                || propertyName.equalsIgnoreCase("max")
+                || propertyName.equalsIgnoreCase("portal_damage")
+                || propertyName.equalsIgnoreCase("portal_enter_damage")
+                || propertyName.equalsIgnoreCase("leaderboard_games_required")
+                || propertyName.equalsIgnoreCase("leaderboard_size")
+                || propertyName.equalsIgnoreCase("leaderboard_record_size")
+                || propertyName.equalsIgnoreCase("max_teleport_distance")
+                || propertyName.equalsIgnoreCase("xp_win")
+                || propertyName.equalsIgnoreCase("xp_lose")
+                || propertyName.equalsIgnoreCase("xp_draw")
+                || propertyName.equalsIgnoreCase("sp_win")
+                || propertyName.equalsIgnoreCase("sp_lose")
+                || propertyName.equalsIgnoreCase("sp_draw")
+                || propertyName.equalsIgnoreCase("money_win")
+                || propertyName.equalsIgnoreCase("money_lose")
+                || propertyName.equalsIgnoreCase("money_draw")
+                || propertyName.equalsIgnoreCase("countdown")
+                || propertyName.equalsIgnoreCase("countdown_max")
+                || propertyName.equalsIgnoreCase("announcer_range")
+                || propertyName.equalsIgnoreCase("duration")
+                || propertyName.equalsIgnoreCase("sudden_death")) {
             Integer intValue;
             try {
                 intValue = Integer.parseInt(propertyValue);
@@ -836,5 +846,10 @@ public class ArenaCommandExecutor implements TabExecutor {
 
         sender.sendMessage(ChatColor.RED + "Not a valid property: " + propertyName);
         sender.sendMessage(ChatColor.AQUA + "Options: " + StringUtils.join(ARENA_PROPERTIES, ", "));
+    }
+
+    @SuppressWarnings("deprecation")
+    private Player getPlayerForArgument(String playerName) {
+        return Bukkit.getPlayer(playerName);
     }
 }

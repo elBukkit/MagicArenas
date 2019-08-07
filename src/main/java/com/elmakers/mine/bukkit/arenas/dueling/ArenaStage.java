@@ -1,10 +1,11 @@
 package com.elmakers.mine.bukkit.arenas.dueling;
 
-import com.elmakers.mine.bukkit.api.magic.Mage;
-import com.elmakers.mine.bukkit.api.magic.MageController;
-import com.elmakers.mine.bukkit.api.entity.EntityData;
-import com.elmakers.mine.bukkit.api.spell.Spell;
-import com.elmakers.mine.bukkit.utility.ConfigurationUtils;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
@@ -15,17 +16,17 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.Plugin;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import com.elmakers.mine.bukkit.api.entity.EntityData;
+import com.elmakers.mine.bukkit.api.magic.Mage;
+import com.elmakers.mine.bukkit.api.magic.MageController;
+import com.elmakers.mine.bukkit.api.spell.Spell;
+import com.elmakers.mine.bukkit.utility.ConfigurationUtils;
 
 public class ArenaStage {
     private final Arena arena;
-    private List<ArenaMobSpawner> mobs = new ArrayList<ArenaMobSpawner>();
-    private List<Location> mobSpawns = new ArrayList<Location>();
-    private Set<Entity> spawned = new HashSet<Entity>();
+    private List<ArenaMobSpawner> mobs = new ArrayList<>();
+    private List<Location> mobSpawns = new ArrayList<>();
+    private Set<Entity> spawned = new HashSet<>();
     private String startSpell;
     private String endSpell;
 
@@ -44,13 +45,13 @@ public class ArenaStage {
         startSpell = configuration.getString("spell_start");
         endSpell = configuration.getString("spell_end");
 
-        for (String s : configuration.getStringList("mob_spawns")){
+        for (String s : configuration.getStringList("mob_spawns")) {
             mobSpawns.add(ConfigurationUtils.toLocation(s));
         }
     }
 
     public void save(ConfigurationSection configuration) {
-        List<ConfigurationSection> mobsConfigurations = new ArrayList<ConfigurationSection>();
+        List<ConfigurationSection> mobsConfigurations = new ArrayList<>();
         for (ArenaMobSpawner mob : mobs) {
             ConfigurationSection section = new MemoryConfiguration();
             mob.save(section);
@@ -60,7 +61,7 @@ public class ArenaStage {
         configuration.set("spell_start", startSpell);
         configuration.set("spell_end", endSpell);
 
-        List<String> mobSpawnList = new ArrayList<String>();
+        List<String> mobSpawnList = new ArrayList<>();
         for (Location spawn : mobSpawns) {
             mobSpawnList.add(ConfigurationUtils.fromLocation(spawn));
         }
@@ -147,7 +148,7 @@ public class ArenaStage {
 
     public List<Location> getMobSpawns() {
         if (mobSpawns.size() == 0) {
-            List<Location> centerList = new ArrayList<Location>();
+            List<Location> centerList = new ArrayList<>();
             centerList.add(arena.getCenter());
             return centerList;
         }
@@ -165,7 +166,9 @@ public class ArenaStage {
                 int num = 0;
                 for (ArenaMobSpawner mobSpawner : mobs) {
                     EntityData mobType = mobSpawner.getEntity();
-                    if (mobType == null) continue;
+                    if (mobType == null) {
+                        continue;
+                    }
                     for (int i = 0; i < mobSpawner.getCount(); i++) {
                         Location spawn = spawns.get(num);
                         num = (num + 1) % spawns.size();

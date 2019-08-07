@@ -35,7 +35,7 @@ import com.elmakers.mine.bukkit.block.DefaultMaterials;
 
 public class ArenaListener implements Listener {
     private final ArenaController controller;
-    private final static String SIGN_KEY = ChatColor.GOLD + "[" + ChatColor.BLUE + "Arena" + ChatColor.GOLD + "]";
+    private static final String SIGN_KEY = ChatColor.GOLD + "[" + ChatColor.BLUE + "Arena" + ChatColor.GOLD + "]";
 
     public ArenaListener(ArenaController controller) {
         this.controller = controller;
@@ -59,8 +59,7 @@ public class ArenaListener implements Listener {
                        wand.isSuperPowered() || wand.isSuperProtected()
                     || wand.getPower() > 1 || wand.getHealthRegeneration() > 0
                     || wand.getCooldownReduction() > 1);
-            if (op)
-            {
+            if (op) {
                 event.setCancelled(true);
                 mage.sendMessage("You're too OP!!");
                 controller.leave(player);
@@ -84,14 +83,16 @@ public class ArenaListener implements Listener {
     @EventHandler
     public void onEntityDeath(EntityDeathEvent e) {
         LivingEntity entity = e.getEntity();
-        if (entity instanceof Player) return;
+        if (entity instanceof Player) {
+            return;
+        }
         Arena arena = controller.getMobArena(entity);
         if (arena != null) {
             arena.mobDied(entity);
         }
     }
 
-    @EventHandler(priority=EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerDeath(PlayerDeathEvent e) {
         Player player = e.getEntity();
         Arena arena = controller.getArena(player);
@@ -146,7 +147,7 @@ public class ArenaListener implements Listener {
                         e.getBlock().breakNaturally();
                         e.getPlayer().sendMessage(ChatColor.RED + "Unknown arena: " + arenaName);
                     }
-                } else{
+                } else {
                     e.getBlock().breakNaturally();
                     e.getPlayer().sendMessage(ChatColor.RED + "You must specify an arena!");
                 }
@@ -168,7 +169,7 @@ public class ArenaListener implements Listener {
                         e.getBlock().breakNaturally();
                         e.getPlayer().sendMessage(ChatColor.RED + "Unknown arena: " + arenaName);
                     }
-                } else{
+                } else {
                     e.getBlock().breakNaturally();
                     e.getPlayer().sendMessage(ChatColor.RED + "You must specify an arena!");
                 }

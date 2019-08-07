@@ -1,6 +1,10 @@
 package com.elmakers.mine.bukkit.arenas.dueling;
 
-import com.elmakers.mine.bukkit.api.magic.MageController;
+import java.io.File;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.Configuration;
@@ -13,13 +17,10 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.io.File;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import com.elmakers.mine.bukkit.api.magic.MageController;
 
 public class ArenaController implements Runnable {
-    private final Map<String, Arena> arenas = new HashMap<String, Arena>();
+    private final Map<String, Arena> arenas = new HashMap<>();
     private final Plugin plugin;
     private final MageController magic;
     private final Object saveLock = new Object();
@@ -79,6 +80,18 @@ public class ArenaController implements Runnable {
         }
     }
 
+    private void save(ConfigurationSection configuration) {
+        Collection<String> oldKeys = configuration.getKeys(false);
+        for (String oldKey : oldKeys) {
+            configuration.set(oldKey, null);
+        }
+        for (Arena arena : arenas.values()) {
+            ConfigurationSection arenaConfig = configuration.createSection(arena.getKey());
+            arena.save(arenaConfig);
+        }
+    }
+
+
     public void saveData() {
         saveData(true);
     }
@@ -119,6 +132,17 @@ public class ArenaController implements Runnable {
         }
     }
 
+    private void saveData(ConfigurationSection configuration) {
+        Collection<String> oldKeys = configuration.getKeys(false);
+        for (String oldKey : oldKeys) {
+            configuration.set(oldKey, null);
+        }
+        for (Arena arena : arenas.values()) {
+            ConfigurationSection arenaConfig = configuration.createSection(arena.getKey());
+            arena.saveData(arenaConfig);
+        }
+    }
+
     public void load() {
         BukkitScheduler scheduler = plugin.getServer().getScheduler();
         if (task != null) {
@@ -139,30 +163,10 @@ public class ArenaController implements Runnable {
         task = scheduler.runTaskTimer(plugin, this, 1, tickInterval);
     }
 
-    private void save(ConfigurationSection configuration) {
-        Collection<String> oldKeys = configuration.getKeys(false);
-        for (String oldKey : oldKeys) {
-            configuration.set(oldKey, null);
-        }
-        for (Arena arena : arenas.values()) {
-            ConfigurationSection arenaConfig = configuration.createSection(arena.getKey());
-            arena.save(arenaConfig);
-        }
-    }
-
-    private void saveData(ConfigurationSection configuration) {
-        Collection<String> oldKeys = configuration.getKeys(false);
-        for (String oldKey : oldKeys) {
-            configuration.set(oldKey, null);
-        }
-        for (Arena arena : arenas.values()) {
-            ConfigurationSection arenaConfig = configuration.createSection(arena.getKey());
-            arena.saveData(arenaConfig);
-        }
-    }
-
     private void load(ConfigurationSection configuration) {
-        if (configuration == null) return;
+        if (configuration == null) {
+            return;
+        }
 
         Collection<String> arenaKeys = configuration.getKeys(false);
 
@@ -180,7 +184,9 @@ public class ArenaController implements Runnable {
     }
 
     private void loadData(ConfigurationSection configuration) {
-        if (configuration == null) return;
+        if (configuration == null) {
+            return;
+        }
 
         Collection<String> arenaKeys = configuration.getKeys(false);
 
@@ -200,6 +206,11 @@ public class ArenaController implements Runnable {
         return arenas.get(arenaName.toLowerCase());
     }
 
+    public Arena getArena(Player player) {
+        ArenaPlayer arenaPlayer = getArenaPlayer(player);
+        return arenaPlayer == null ? null : arenaPlayer.getArena();
+    }
+
     public Arena getMobArena(LivingEntity entity) {
         if (entity.hasMetadata("arena")) {
             for (MetadataValue value : entity.getMetadata("arena")) {
@@ -213,11 +224,6 @@ public class ArenaController implements Runnable {
         }
 
         return null;
-    }
-
-    public Arena getArena(Player player) {
-        ArenaPlayer arenaPlayer = getArenaPlayer(player);
-        return arenaPlayer == null ? null : arenaPlayer.getArena();
     }
 
     public ArenaPlayer getArenaPlayer(Player player) {
@@ -264,7 +270,7 @@ public class ArenaController implements Runnable {
         ArenaPlayer arenaPlayer = getArenaPlayer(player);
         if (arenaPlayer != null) {
             Arena arena = arenaPlayer.getArena();
-            arena.remove(player);
+            arena.removePlayer(player);
             player.sendMessage("You have left " + arena.getName());
             arenaPlayer.teleport(arena.getExit());
             arena.check();

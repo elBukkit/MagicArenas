@@ -1,9 +1,10 @@
 package com.elmakers.mine.bukkit.arenas.dueling;
 
-import com.elmakers.mine.bukkit.api.magic.MagicAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import com.elmakers.mine.bukkit.api.magic.MagicAPI;
 
 public class ArenasPlugin extends JavaPlugin {
     private ArenaController controller;

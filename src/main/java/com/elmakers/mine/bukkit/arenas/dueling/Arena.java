@@ -52,12 +52,12 @@ public class Arena {
     private ArenaState state = ArenaState.LOBBY;
     private long started;
     private long lastTick;
-    private Queue<ArenaPlayer> queue = new LinkedList<ArenaPlayer>();
-    private Set<ArenaPlayer> players = new HashSet<ArenaPlayer>();
-    private Set<ArenaPlayer> deadPlayers = new HashSet<ArenaPlayer>();
+    private Queue<ArenaPlayer> queue = new LinkedList<>();
+    private Set<ArenaPlayer> players = new HashSet<>();
+    private Set<ArenaPlayer> deadPlayers = new HashSet<>();
 
-    private List<Location> spawns = new ArrayList<Location>();
-    private List<ArenaStage> stages = new ArrayList<ArenaStage>();
+    private List<Location> spawns = new ArrayList<>();
+    private List<ArenaStage> stages = new ArrayList<>();
     private int currentStage = 0;
     private final ArenaController controller;
 
@@ -101,7 +101,7 @@ public class Arena {
     private int borderMin = 0;
     private int borderMax = 0;
 
-    private List<ArenaPlayer> leaderboard = new ArrayList<ArenaPlayer>();
+    private List<ArenaPlayer> leaderboard = new ArrayList<>();
     private Location leaderboardLocation;
     private BlockFace leaderboardFacing;
 
@@ -191,7 +191,7 @@ public class Arena {
             setSuddenDeathEffect(configuration.getString("sudden_death_effect"));
         }
 
-        for (String s : configuration.getStringList("spawns")){
+        for (String s : configuration.getStringList("spawns")) {
             spawns.add(ConfigurationUtils.toLocation(s));
         }
 
@@ -262,7 +262,9 @@ public class Arena {
     }
 
     public void save(ConfigurationSection configuration) {
-        if (!isValid()) return;
+        if (!isValid()) {
+            return;
+        }
 
         configuration.set("name", name);
         configuration.set("description", description);
@@ -286,9 +288,9 @@ public class Arena {
         configuration.set("sudden_death", suddenDeath);
         if (suddenDeathEffect != null) {
             configuration.set("sudden_death_effect",
-                    suddenDeathEffect.getType().getName().toLowerCase() + ":" +
-                    suddenDeathEffect.getAmplifier() + ":" +
-                    suddenDeathEffect.getDuration()
+                    suddenDeathEffect.getType().getName().toLowerCase() + ":"
+                            + suddenDeathEffect.getAmplifier() + ":"
+                            + suddenDeathEffect.getDuration()
             );
         }
         configuration.set("border_min", borderMin);
@@ -321,14 +323,14 @@ public class Arena {
         configuration.set("center", ConfigurationUtils.fromLocation(center));
         configuration.set("exit", ConfigurationUtils.fromLocation(exit));
 
-        List<String> spawnList = new ArrayList<String>();
+        List<String> spawnList = new ArrayList<>();
         for (Location spawn : spawns) {
             spawnList.add(ConfigurationUtils.fromLocation(spawn));
         }
         configuration.set("spawns", spawnList);
 
         if (!stages.isEmpty()) {
-            List<ConfigurationSection> stageConfigurations = new ArrayList<ConfigurationSection>();
+            List<ConfigurationSection> stageConfigurations = new ArrayList<>();
             for (ArenaStage stage : stages) {
                 ConfigurationSection section = new MemoryConfiguration();
                 stage.save(section);
@@ -348,7 +350,9 @@ public class Arena {
     }
 
     public void saveData(ConfigurationSection configuration) {
-        if (!isValid()) return;
+        if (!isValid()) {
+            return;
+        }
 
         if (leaderboard.size() > 0) {
             ConfigurationSection leaders = configuration.createSection("leaderboard");
@@ -361,7 +365,9 @@ public class Arena {
     }
 
     public void start() {
-        if (!isValid()) return;
+        if (!isValid()) {
+            return;
+        }
 
         state = ArenaState.ACTIVE;
         started = System.currentTimeMillis();
@@ -411,8 +417,7 @@ public class Arena {
             Location spawn = spawns.get(num);
             if (randomizeSpawn != null) {
                 spawn = spawn.clone();
-                spawn.add
-                (
+                spawn.add(
                     (2 * random.nextDouble() - 1) * randomizeSpawn.getX(),
                     (2 * random.nextDouble() - 1) * randomizeSpawn.getY(),
                     (2 * random.nextDouble() - 1) * randomizeSpawn.getZ()
@@ -453,7 +458,7 @@ public class Arena {
         }
     }
 
-    public void remove(Player player) {
+    public void removePlayer(Player player) {
         ArenaPlayer removePlayer = new ArenaPlayer(this, player);
         players.remove(removePlayer);
         queue.remove(removePlayer);
@@ -502,6 +507,10 @@ public class Arena {
         }
     }
 
+    public void messagePlayers(String message) {
+        messagePlayers(message, getAllPlayers());
+    }
+
     protected void messagePlayers(String message, Collection<ArenaPlayer> players) {
         for (ArenaPlayer arenaPlayer : players) {
             Player player = arenaPlayer.getPlayer();
@@ -516,15 +525,13 @@ public class Arena {
         Collection<? extends Player> players = controller.getPlugin().getServer().getOnlinePlayers();
         for (Player player : players) {
             Location playerLocation = player.getLocation();
-            if (!playerLocation.getWorld().equals(center.getWorld())) continue;
+            if (!playerLocation.getWorld().equals(center.getWorld())) {
+                continue;
+            }
             if (playerLocation.distanceSquared(center) < rangeSquared) {
                 player.sendMessage(message);
             }
         }
-    }
-
-    public void messagePlayers(String message) {
-        messagePlayers(message, getAllPlayers());
     }
 
     public void messageInGamePlayers(String message) {
@@ -540,7 +547,9 @@ public class Arena {
     }
 
     public void startCountdown(int time) {
-        if (state != ArenaState.LOBBY) return;
+        if (state != ArenaState.LOBBY) {
+            return;
+        }
         state = ArenaState.COUNTDOWN;
         messageNextRoundPlayerList(ChatColor.YELLOW + "A round of " + getName() + " is about to start!");
         countdown(time);
@@ -569,7 +578,9 @@ public class Arena {
     }
 
     public boolean stop() {
-        if (state == ArenaState.LOBBY) return false;
+        if (state == ArenaState.LOBBY) {
+            return false;
+        }
         messageInGamePlayers(ChatColor.DARK_RED + "This match has been cancelled!");
         finish();
         return true;
@@ -623,14 +634,6 @@ public class Arena {
         return queue.size() >= maxPlayers;
     }
 
-    public ArenaPlayer add(Player player) {
-        ArenaPlayer arenaPlayer = new ArenaPlayer(this, player);
-        queue.add(arenaPlayer);
-        arenaPlayer.teleport(getLobby());
-        player.setMetadata("arena", new FixedMetadataValue(controller.getPlugin(), arenaPlayer));
-        return arenaPlayer;
-    }
-
     public void setLoseLocation(Location location) {
         lose = location == null ? null : location.clone();
     }
@@ -676,7 +679,7 @@ public class Arena {
 
     public List<Location> getSpawns() {
         if (spawns.size() == 0) {
-            List<Location> centerList = new ArrayList<Location>();
+            List<Location> centerList = new ArrayList<>();
             centerList.add(center);
             return centerList;
         }
@@ -731,7 +734,7 @@ public class Arena {
         maxPlayers = players;
     }
 
-    public void setType(ArenaType types){
+    public void setType(ArenaType types) {
         switch (types) {
             case FFA:
                 setMinPlayers(2);
@@ -808,8 +811,7 @@ public class Arena {
                     @Override
                     public void run() {
                         for (final ArenaPlayer winner : players) {
-                            if (winner != null)
-                            {
+                            if (winner != null) {
                                 playerWon(winner);
                                 winner.heal();
                             }
@@ -843,8 +845,7 @@ public class Arena {
                         }
                         announce(ChatColor.GRAY + "The " + ChatColor.YELLOW + getName() + ChatColor.GRAY + " match ended in a draw");
                     }
-                    if (winner != null)
-                    {
+                    if (winner != null) {
                         winner.heal();
                     }
                     finish();
@@ -915,9 +916,20 @@ public class Arena {
         if (description != null) {
             player.sendMessage(ChatColor.LIGHT_PURPLE + getDescription());
         }
-        ArenaPlayer arenaPlayer = add(player);
+
+        ArenaPlayer arenaPlayer = new ArenaPlayer(this, player);
+        queue.add(arenaPlayer);
+
+        arenaPlayer.teleport(getLobby());
+        player.setMetadata("arena",
+                new FixedMetadataValue(controller.getPlugin(), arenaPlayer));
+
         arenaPlayer.joined();
 
+        Bukkit.getPluginManager().callEvent(
+                new PlayerJoinedArenaEvent(player, arenaPlayer, this));
+
+        // Announce join
         int winCount = arenaPlayer.getWins();
         int lostCount = arenaPlayer.getLosses();
 
@@ -928,11 +940,15 @@ public class Arena {
             announce(ChatColor.DARK_AQUA + " with " + ChatColor.GREEN + Integer.toString(winCount) + ChatColor.DARK_AQUA + " wins and "
                     + ChatColor.RED + Integer.toString(lostCount) + ChatColor.DARK_AQUA + " losses.");
         }
+
+        // Check if we have enough players
         checkStart();
     }
 
     protected void checkStart() {
-        if (isStarted()) return;
+        if (isStarted()) {
+            return;
+        }
 
         if (isReady()) {
             if (isFull()) {
@@ -946,16 +962,18 @@ public class Arena {
     }
 
     protected Collection<ArenaPlayer> getAllPlayers() {
-        List<ArenaPlayer> allPlayers = new ArrayList<ArenaPlayer>(players);
+        List<ArenaPlayer> allPlayers = new ArrayList<>(players);
         allPlayers.addAll(queue);
         allPlayers.addAll(deadPlayers);
         return allPlayers;
     }
 
     protected Collection<ArenaPlayer> getNextRoundPlayers() {
-        List<ArenaPlayer> allPlayers = new ArrayList<ArenaPlayer>();
+        List<ArenaPlayer> allPlayers = new ArrayList<>();
         for (ArenaPlayer queuedPlayer : queue) {
-            if (allPlayers.size() >= maxPlayers) break;
+            if (allPlayers.size() >= maxPlayers) {
+                break;
+            }
             allPlayers.add(queuedPlayer);
         }
         return allPlayers;
@@ -981,20 +999,34 @@ public class Arena {
         }
         int minPlayers = getMinPlayers();
         int maxPlayers = getMaxPlayers();
-        sender.sendMessage(ChatColor.AQUA + "Min / Max Players: " + ChatColor.DARK_AQUA + minPlayers +
-                ChatColor.WHITE + " / " + ChatColor.DARK_AQUA + maxPlayers);
-        sender.sendMessage(ChatColor.AQUA + "Required Kills: " + ChatColor.DARK_AQUA + requiredKills);
-        sender.sendMessage(ChatColor.AQUA + "Countdown: " + ChatColor.DARK_AQUA + countdown +
-                ChatColor.WHITE + " / " + ChatColor.DARK_AQUA + countdownMax);
+        sender.sendMessage(
+                ChatColor.AQUA + "Min / Max Players: "
+                        + ChatColor.DARK_AQUA + minPlayers
+                        + ChatColor.WHITE + " / " + ChatColor.DARK_AQUA
+                        + maxPlayers);
+        sender.sendMessage(
+                ChatColor.AQUA + "Required Kills: "
+                        + ChatColor.DARK_AQUA + requiredKills);
+        sender.sendMessage(
+                ChatColor.AQUA + "Countdown: " + ChatColor.DARK_AQUA + countdown
+                        + ChatColor.WHITE + " / " + ChatColor.DARK_AQUA
+                        + countdownMax);
 
         if (duration > 0) {
             int minutes = (int)Math.ceil((double)duration / 60 / 1000);
             int sd = (int)Math.ceil((double)suddenDeath / 1000);
-            sender.sendMessage(ChatColor.AQUA + "Duration: " + ChatColor.DARK_AQUA + minutes +
-                    ChatColor.WHITE + " minutes");
+            sender.sendMessage(
+                    ChatColor.AQUA + "Duration: "
+                            + ChatColor.DARK_AQUA + minutes
+                            + ChatColor.WHITE + " minutes");
             if (suddenDeathEffect != null && suddenDeath > 0) {
-                sender.sendMessage(ChatColor.DARK_RED + " Sudden death " + ChatColor.RED + sd + ChatColor.DARK_RED +
-                " seconds before end with " + ChatColor.RED + suddenDeathEffect.getType().getName().toLowerCase()
+                sender.sendMessage(
+                        ChatColor.DARK_RED + " Sudden death "
+                                + ChatColor.RED + sd
+                                + ChatColor.DARK_RED
+                                + " seconds before end with " + ChatColor.RED
+                                + suddenDeathEffect.getType().getName()
+                                        .toLowerCase()
                 + "@" + suddenDeathEffect.getAmplifier());
             }
         }
@@ -1094,12 +1126,17 @@ public class Arena {
     }
 
     protected String printLocation(Location location) {
-        if (location == null) return ChatColor.DARK_GRAY + "(None)";
+        if (location == null) {
+            return ChatColor.DARK_GRAY + "(None)";
+        }
 
-        return "" + ChatColor.GRAY + location.getBlockX() + ChatColor.DARK_GRAY + "," +
-                ChatColor.GRAY + location.getBlockY() + ChatColor.DARK_GRAY + "," +
-                ChatColor.GRAY + location.getBlockZ() + ChatColor.DARK_GRAY + " : " +
-                ChatColor.GRAY + location.getWorld().getName();
+        return "" + ChatColor.GRAY + location.getBlockX()
+                + ChatColor.DARK_GRAY + ","
+                + ChatColor.GRAY + location.getBlockY()
+                + ChatColor.DARK_GRAY + ","
+                + ChatColor.GRAY + location.getBlockZ()
+                + ChatColor.DARK_GRAY + " : "
+                + ChatColor.GRAY + location.getWorld().getName();
     }
 
     public int getMinPlayers() {
@@ -1237,11 +1274,21 @@ public class Arena {
                     }
                     if (blockState instanceof org.bukkit.block.Sign) {
                         org.bukkit.block.Sign signBlock = (org.bukkit.block.Sign)blockState;
-                        String playerName = ChatColor.DARK_PURPLE + player.getDisplayName();
-                        signBlock.setLine(0, playerName);
-                        signBlock.setLine(1, ChatColor.LIGHT_PURPLE + "#" + Integer.toString(i + 1) + " " + ChatColor.WHITE + " : " + ChatColor.BLACK + Integer.toString((int)(player.getWinRatio() * 100)) + "% " + String.format("(%.2f)", player.getWinConfidence())) ;
-                        signBlock.setLine(2, ChatColor.GREEN + "Wins   : " + ChatColor.DARK_GREEN + player.getWins());
-                        signBlock.setLine(3, ChatColor.RED + "Losses : " + ChatColor.DARK_RED +player.getLosses());
+                        signBlock.setLine(0, ChatColor.DARK_PURPLE
+                                + player.getDisplayName());
+                        signBlock.setLine(1, ChatColor.LIGHT_PURPLE + "#"
+                                + Integer.toString(i + 1) + " "
+                                + ChatColor.WHITE + " : "
+                                + ChatColor.BLACK + Integer.toString(
+                                        (int) (player.getWinRatio() * 100))
+                                + "% "
+                                + String.format(
+                                        "(%.2f)",
+                                        player.getWinConfidence()));
+                        signBlock.setLine(2, ChatColor.GREEN + "Wins   : "
+                                + ChatColor.DARK_GREEN + player.getWins());
+                        signBlock.setLine(3, ChatColor.RED + "Losses : "
+                                + ChatColor.DARK_RED + player.getLosses());
                     }
                     blockState.update();
                 }
@@ -1281,52 +1328,48 @@ public class Arena {
     /**
      * A helper function to go change a given direction to the direction "to the right".
      *
-     * There's probably some better matrix-y, math-y way to do this.
+     * <p>There's probably some better matrix-y, math-y way to do this.
      * It'd be nice if this was in BlockFace.
      *
      * @param direction The current direction
      * @return The direction to the left
      */
-    public static BlockFace goLeft(BlockFace direction)
-    {
-        switch (direction)
-        {
-            case EAST:
-                return BlockFace.NORTH;
-            case NORTH:
-                return BlockFace.WEST;
-            case WEST:
-                return BlockFace.SOUTH;
-            case SOUTH:
-                return BlockFace.EAST;
-            default:
-                return direction;
+    public static BlockFace goLeft(BlockFace direction) {
+        switch (direction) {
+        case EAST:
+            return BlockFace.NORTH;
+        case NORTH:
+            return BlockFace.WEST;
+        case WEST:
+            return BlockFace.SOUTH;
+        case SOUTH:
+            return BlockFace.EAST;
+        default:
+            return direction;
         }
     }
 
     /**
      * A helper function to go change a given direction to the direction "to the right".
      *
-     * There's probably some better matrix-y, math-y way to do this.
+     * <p>There's probably some better matrix-y, math-y way to do this.
      * It'd be nice if this was in BlockFace.
      *
      * @param direction The current direction
      * @return The direction to the right
      */
-    public static BlockFace goRight(BlockFace direction)
-    {
-        switch (direction)
-        {
-            case EAST:
-                return BlockFace.SOUTH;
-            case SOUTH:
-                return BlockFace.WEST;
-            case WEST:
-                return BlockFace.NORTH;
-            case NORTH:
-                return BlockFace.EAST;
-            default:
-                return direction;
+    public static BlockFace goRight(BlockFace direction) {
+        switch (direction) {
+        case EAST:
+            return BlockFace.SOUTH;
+        case SOUTH:
+            return BlockFace.WEST;
+        case WEST:
+            return BlockFace.NORTH;
+        case NORTH:
+            return BlockFace.EAST;
+        default:
+            return direction;
         }
     }
 
@@ -1371,7 +1414,7 @@ public class Arena {
 
     public void setLeaderboardGamesRequired(int required) {
         leaderboardGamesRequired = required;
-        Collection<ArenaPlayer> currentLeaderboard = new ArrayList<ArenaPlayer>(leaderboard);
+        Collection<ArenaPlayer> currentLeaderboard = new ArrayList<>(leaderboard);
         leaderboard.clear();
         for (ArenaPlayer player : currentLeaderboard) {
             updateLeaderboard(player);
@@ -1399,11 +1442,18 @@ public class Arena {
             ranking++;
         }
         if (rank != null) {
-            sender.sendMessage(ChatColor.DARK_PURPLE + player.getDisplayName() + ChatColor.DARK_PURPLE +
-                    " is ranked " + ChatColor.AQUA + "#" + Integer.toString(rank) + ChatColor.DARK_PURPLE + " for " + ChatColor.GOLD + getName());
+            sender.sendMessage(
+                    ChatColor.DARK_PURPLE + player.getDisplayName()
+                            + ChatColor.DARK_PURPLE
+                            + " is ranked " + ChatColor.AQUA + "#"
+                            + Integer.toString(rank) + ChatColor.DARK_PURPLE
+                            + " for " + ChatColor.GOLD + getName());
         } else {
-            sender.sendMessage(ChatColor.DARK_PURPLE + player.getDisplayName() + ChatColor.DARK_RED +
-                    " is not on the leaderboard for " + ChatColor.GOLD + getName());
+            sender.sendMessage(
+                    ChatColor.DARK_PURPLE + player.getDisplayName()
+                            + ChatColor.DARK_RED
+                            + " is not on the leaderboard for "
+                            + ChatColor.GOLD + getName());
         }
 
         Arena currentArena = controller.getArena(player);
@@ -1419,9 +1469,15 @@ public class Arena {
     }
 
     public void describeLeaderboard(CommandSender sender) {
-        sender.sendMessage(ChatColor.GOLD + getName() + ChatColor.YELLOW +" Leaderboard: ");
-        sender.sendMessage(ChatColor.AQUA + Integer.toString(leaderboard.size()) + ChatColor.DARK_AQUA + " players with at least " +
-                ChatColor.AQUA + Integer.toString(leaderboardGamesRequired) + ChatColor.DARK_AQUA + " games:");
+        sender.sendMessage(
+                ChatColor.GOLD + getName()
+                        + ChatColor.YELLOW + " Leaderboard: ");
+        sender.sendMessage(
+                ChatColor.AQUA + Integer.toString(leaderboard.size())
+                        + ChatColor.DARK_AQUA + " players with at least "
+                        + ChatColor.AQUA
+                        + Integer.toString(leaderboardGamesRequired)
+                        + ChatColor.DARK_AQUA + " games:");
         int position = 1;
         for (ArenaPlayer arenaPlayer : leaderboard) {
             int wins = arenaPlayer.getWins();
@@ -1473,7 +1529,7 @@ public class Arena {
     }
 
     public void reset(Player player) {
-        remove(player);
+        removePlayer(player);
         ArenaPlayer arenaPlayer = new ArenaPlayer(this, player);
         removeFromLeaderboard(arenaPlayer);
         // Note that we don't rebuild the leaderboard here, just let that happen later.
@@ -1605,13 +1661,14 @@ public class Arena {
     }
 
     protected void createLeaderboardIcon(Integer rank, ArenaPlayer player, ItemUpdatedCallback callback) {
-        ItemStack playerItem = controller.getMagic().getSkull(player.getUUID(),
+        controller.getMagic().getSkull(
+                player.getUUID(),
                 ChatColor.GOLD + player.getDisplayName(),
                 new ItemUpdatedCallback() {
                     @Override
                     public void updated(ItemStack itemStack) {
                         ItemMeta meta = itemStack.getItemMeta();
-                        List<String> lore = new ArrayList<String>();
+                        List<String> lore = new ArrayList<>();
 
                         if (rank != null) {
                             lore.add(ChatColor.DARK_PURPLE + "Ranked " + ChatColor.AQUA + "#" + Integer.toString(rank) + ChatColor.DARK_PURPLE + " for " + ChatColor.GOLD + getName());
@@ -1752,7 +1809,9 @@ public class Arena {
 
     public boolean isMobArena() {
         ArenaStage currentStage = getCurrentStage();
-        if (currentStage == null) return false;
+        if (currentStage == null) {
+            return false;
+        }
         return currentStage.hasMobs();
     }
 
