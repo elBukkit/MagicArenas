@@ -181,7 +181,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             String playerName = null;
             if (args.length > 1) {
                 playerName = args[1];
-                player = Bukkit.getPlayer(playerName);
+                player = getPlayerForArgument(playerName);
             } else if (sender instanceof Player) {
                 player = (Player) sender;
                 playerName = player.getName();
@@ -249,7 +249,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             String playerName = null;
             if (args.length > 2) {
                 playerName = args[2];
-                player = Bukkit.getPlayer(playerName);
+                player = getPlayerForArgument(playerName);
             } else {
                 if (isAllArenas) {
                     controller.reset();
@@ -313,7 +313,7 @@ public class ArenaCommandExecutor implements TabExecutor {
         if (subCommand.equalsIgnoreCase("stats")) {
             if (args.length > 2) {
                 String playerName = args[2];
-                Player player = Bukkit.getPlayer(playerName);
+                Player player = getPlayerForArgument(playerName);
                 if (player == null) {
                     sender.sendMessage(ChatColor.RED + "Unknown player: " + playerName);
                     return true;
@@ -331,7 +331,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             String playerName = null;
             if (args.length > 2) {
                 playerName = args[2];
-                player = Bukkit.getPlayer(playerName);
+                player = getPlayerForArgument(playerName);
             } else if (sender instanceof Player) {
                 player = (Player) sender;
             }
@@ -846,5 +846,10 @@ public class ArenaCommandExecutor implements TabExecutor {
 
         sender.sendMessage(ChatColor.RED + "Not a valid property: " + propertyName);
         sender.sendMessage(ChatColor.AQUA + "Options: " + StringUtils.join(ARENA_PROPERTIES, ", "));
+    }
+
+    @SuppressWarnings("deprecation")
+    private Player getPlayerForArgument(String playerName) {
+        return Bukkit.getPlayer(playerName);
     }
 }
