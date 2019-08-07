@@ -191,7 +191,7 @@ public class Arena {
             setSuddenDeathEffect(configuration.getString("sudden_death_effect"));
         }
 
-        for (String s : configuration.getStringList("spawns")){
+        for (String s : configuration.getStringList("spawns")) {
             spawns.add(ConfigurationUtils.toLocation(s));
         }
 
@@ -288,9 +288,9 @@ public class Arena {
         configuration.set("sudden_death", suddenDeath);
         if (suddenDeathEffect != null) {
             configuration.set("sudden_death_effect",
-                    suddenDeathEffect.getType().getName().toLowerCase() + ":" +
-                    suddenDeathEffect.getAmplifier() + ":" +
-                    suddenDeathEffect.getDuration()
+                    suddenDeathEffect.getType().getName().toLowerCase() + ":"
+                            + suddenDeathEffect.getAmplifier() + ":"
+                            + suddenDeathEffect.getDuration()
             );
         }
         configuration.set("border_min", borderMin);
@@ -417,8 +417,7 @@ public class Arena {
             Location spawn = spawns.get(num);
             if (randomizeSpawn != null) {
                 spawn = spawn.clone();
-                spawn.add
-                (
+                spawn.add(
                     (2 * random.nextDouble() - 1) * randomizeSpawn.getX(),
                     (2 * random.nextDouble() - 1) * randomizeSpawn.getY(),
                     (2 * random.nextDouble() - 1) * randomizeSpawn.getZ()
@@ -459,7 +458,7 @@ public class Arena {
         }
     }
 
-    public void remove(Player player) {
+    public void removePlayer(Player player) {
         ArenaPlayer removePlayer = new ArenaPlayer(this, player);
         players.remove(removePlayer);
         queue.remove(removePlayer);
@@ -508,6 +507,10 @@ public class Arena {
         }
     }
 
+    public void messagePlayers(String message) {
+        messagePlayers(message, getAllPlayers());
+    }
+
     protected void messagePlayers(String message, Collection<ArenaPlayer> players) {
         for (ArenaPlayer arenaPlayer : players) {
             Player player = arenaPlayer.getPlayer();
@@ -529,10 +532,6 @@ public class Arena {
                 player.sendMessage(message);
             }
         }
-    }
-
-    public void messagePlayers(String message) {
-        messagePlayers(message, getAllPlayers());
     }
 
     public void messageInGamePlayers(String message) {
@@ -743,7 +742,7 @@ public class Arena {
         maxPlayers = players;
     }
 
-    public void setType(ArenaType types){
+    public void setType(ArenaType types) {
         switch (types) {
             case FFA:
                 setMinPlayers(2);
@@ -820,8 +819,7 @@ public class Arena {
                     @Override
                     public void run() {
                         for (final ArenaPlayer winner : players) {
-                            if (winner != null)
-                            {
+                            if (winner != null) {
                                 playerWon(winner);
                                 winner.heal();
                             }
@@ -855,8 +853,7 @@ public class Arena {
                         }
                         announce(ChatColor.GRAY + "The " + ChatColor.YELLOW + getName() + ChatColor.GRAY + " match ended in a draw");
                     }
-                    if (winner != null)
-                    {
+                    if (winner != null) {
                         winner.heal();
                     }
                     finish();
@@ -997,20 +994,34 @@ public class Arena {
         }
         int minPlayers = getMinPlayers();
         int maxPlayers = getMaxPlayers();
-        sender.sendMessage(ChatColor.AQUA + "Min / Max Players: " + ChatColor.DARK_AQUA + minPlayers +
-                ChatColor.WHITE + " / " + ChatColor.DARK_AQUA + maxPlayers);
-        sender.sendMessage(ChatColor.AQUA + "Required Kills: " + ChatColor.DARK_AQUA + requiredKills);
-        sender.sendMessage(ChatColor.AQUA + "Countdown: " + ChatColor.DARK_AQUA + countdown +
-                ChatColor.WHITE + " / " + ChatColor.DARK_AQUA + countdownMax);
+        sender.sendMessage(
+                ChatColor.AQUA + "Min / Max Players: "
+                        + ChatColor.DARK_AQUA + minPlayers
+                        + ChatColor.WHITE + " / " + ChatColor.DARK_AQUA
+                        + maxPlayers);
+        sender.sendMessage(
+                ChatColor.AQUA + "Required Kills: "
+                        + ChatColor.DARK_AQUA + requiredKills);
+        sender.sendMessage(
+                ChatColor.AQUA + "Countdown: " + ChatColor.DARK_AQUA + countdown
+                        + ChatColor.WHITE + " / " + ChatColor.DARK_AQUA
+                        + countdownMax);
 
         if (duration > 0) {
             int minutes = (int)Math.ceil((double)duration / 60 / 1000);
             int sd = (int)Math.ceil((double)suddenDeath / 1000);
-            sender.sendMessage(ChatColor.AQUA + "Duration: " + ChatColor.DARK_AQUA + minutes +
-                    ChatColor.WHITE + " minutes");
+            sender.sendMessage(
+                    ChatColor.AQUA + "Duration: "
+                            + ChatColor.DARK_AQUA + minutes
+                            + ChatColor.WHITE + " minutes");
             if (suddenDeathEffect != null && suddenDeath > 0) {
-                sender.sendMessage(ChatColor.DARK_RED + " Sudden death " + ChatColor.RED + sd + ChatColor.DARK_RED +
-                " seconds before end with " + ChatColor.RED + suddenDeathEffect.getType().getName().toLowerCase()
+                sender.sendMessage(
+                        ChatColor.DARK_RED + " Sudden death "
+                                + ChatColor.RED + sd
+                                + ChatColor.DARK_RED
+                                + " seconds before end with " + ChatColor.RED
+                                + suddenDeathEffect.getType().getName()
+                                        .toLowerCase()
                 + "@" + suddenDeathEffect.getAmplifier());
             }
         }
@@ -1114,10 +1125,13 @@ public class Arena {
             return ChatColor.DARK_GRAY + "(None)";
         }
 
-        return "" + ChatColor.GRAY + location.getBlockX() + ChatColor.DARK_GRAY + "," +
-                ChatColor.GRAY + location.getBlockY() + ChatColor.DARK_GRAY + "," +
-                ChatColor.GRAY + location.getBlockZ() + ChatColor.DARK_GRAY + " : " +
-                ChatColor.GRAY + location.getWorld().getName();
+        return "" + ChatColor.GRAY + location.getBlockX()
+                + ChatColor.DARK_GRAY + ","
+                + ChatColor.GRAY + location.getBlockY()
+                + ChatColor.DARK_GRAY + ","
+                + ChatColor.GRAY + location.getBlockZ()
+                + ChatColor.DARK_GRAY + " : "
+                + ChatColor.GRAY + location.getWorld().getName();
     }
 
     public int getMinPlayers() {
@@ -1255,11 +1269,21 @@ public class Arena {
                     }
                     if (blockState instanceof org.bukkit.block.Sign) {
                         org.bukkit.block.Sign signBlock = (org.bukkit.block.Sign)blockState;
-                        String playerName = ChatColor.DARK_PURPLE + player.getDisplayName();
-                        signBlock.setLine(0, playerName);
-                        signBlock.setLine(1, ChatColor.LIGHT_PURPLE + "#" + Integer.toString(i + 1) + " " + ChatColor.WHITE + " : " + ChatColor.BLACK + Integer.toString((int)(player.getWinRatio() * 100)) + "% " + String.format("(%.2f)", player.getWinConfidence())) ;
-                        signBlock.setLine(2, ChatColor.GREEN + "Wins   : " + ChatColor.DARK_GREEN + player.getWins());
-                        signBlock.setLine(3, ChatColor.RED + "Losses : " + ChatColor.DARK_RED +player.getLosses());
+                        signBlock.setLine(0, ChatColor.DARK_PURPLE
+                                + player.getDisplayName());
+                        signBlock.setLine(1, ChatColor.LIGHT_PURPLE + "#"
+                                + Integer.toString(i + 1) + " "
+                                + ChatColor.WHITE + " : "
+                                + ChatColor.BLACK + Integer.toString(
+                                        (int) (player.getWinRatio() * 100))
+                                + "% "
+                                + String.format(
+                                        "(%.2f)",
+                                        player.getWinConfidence()));
+                        signBlock.setLine(2, ChatColor.GREEN + "Wins   : "
+                                + ChatColor.DARK_GREEN + player.getWins());
+                        signBlock.setLine(3, ChatColor.RED + "Losses : "
+                                + ChatColor.DARK_RED + player.getLosses());
                     }
                     blockState.update();
                 }
@@ -1299,52 +1323,48 @@ public class Arena {
     /**
      * A helper function to go change a given direction to the direction "to the right".
      *
-     * There's probably some better matrix-y, math-y way to do this.
+     * <p>There's probably some better matrix-y, math-y way to do this.
      * It'd be nice if this was in BlockFace.
      *
      * @param direction The current direction
      * @return The direction to the left
      */
-    public static BlockFace goLeft(BlockFace direction)
-    {
-        switch (direction)
-        {
-            case EAST:
-                return BlockFace.NORTH;
-            case NORTH:
-                return BlockFace.WEST;
-            case WEST:
-                return BlockFace.SOUTH;
-            case SOUTH:
-                return BlockFace.EAST;
-            default:
-                return direction;
+    public static BlockFace goLeft(BlockFace direction) {
+        switch (direction) {
+        case EAST:
+            return BlockFace.NORTH;
+        case NORTH:
+            return BlockFace.WEST;
+        case WEST:
+            return BlockFace.SOUTH;
+        case SOUTH:
+            return BlockFace.EAST;
+        default:
+            return direction;
         }
     }
 
     /**
      * A helper function to go change a given direction to the direction "to the right".
      *
-     * There's probably some better matrix-y, math-y way to do this.
+     * <p>There's probably some better matrix-y, math-y way to do this.
      * It'd be nice if this was in BlockFace.
      *
      * @param direction The current direction
      * @return The direction to the right
      */
-    public static BlockFace goRight(BlockFace direction)
-    {
-        switch (direction)
-        {
-            case EAST:
-                return BlockFace.SOUTH;
-            case SOUTH:
-                return BlockFace.WEST;
-            case WEST:
-                return BlockFace.NORTH;
-            case NORTH:
-                return BlockFace.EAST;
-            default:
-                return direction;
+    public static BlockFace goRight(BlockFace direction) {
+        switch (direction) {
+        case EAST:
+            return BlockFace.SOUTH;
+        case SOUTH:
+            return BlockFace.WEST;
+        case WEST:
+            return BlockFace.NORTH;
+        case NORTH:
+            return BlockFace.EAST;
+        default:
+            return direction;
         }
     }
 
@@ -1417,11 +1437,18 @@ public class Arena {
             ranking++;
         }
         if (rank != null) {
-            sender.sendMessage(ChatColor.DARK_PURPLE + player.getDisplayName() + ChatColor.DARK_PURPLE +
-                    " is ranked " + ChatColor.AQUA + "#" + Integer.toString(rank) + ChatColor.DARK_PURPLE + " for " + ChatColor.GOLD + getName());
+            sender.sendMessage(
+                    ChatColor.DARK_PURPLE + player.getDisplayName()
+                            + ChatColor.DARK_PURPLE
+                            + " is ranked " + ChatColor.AQUA + "#"
+                            + Integer.toString(rank) + ChatColor.DARK_PURPLE
+                            + " for " + ChatColor.GOLD + getName());
         } else {
-            sender.sendMessage(ChatColor.DARK_PURPLE + player.getDisplayName() + ChatColor.DARK_RED +
-                    " is not on the leaderboard for " + ChatColor.GOLD + getName());
+            sender.sendMessage(
+                    ChatColor.DARK_PURPLE + player.getDisplayName()
+                            + ChatColor.DARK_RED
+                            + " is not on the leaderboard for "
+                            + ChatColor.GOLD + getName());
         }
 
         Arena currentArena = controller.getArena(player);
@@ -1437,9 +1464,15 @@ public class Arena {
     }
 
     public void describeLeaderboard(CommandSender sender) {
-        sender.sendMessage(ChatColor.GOLD + getName() + ChatColor.YELLOW +" Leaderboard: ");
-        sender.sendMessage(ChatColor.AQUA + Integer.toString(leaderboard.size()) + ChatColor.DARK_AQUA + " players with at least " +
-                ChatColor.AQUA + Integer.toString(leaderboardGamesRequired) + ChatColor.DARK_AQUA + " games:");
+        sender.sendMessage(
+                ChatColor.GOLD + getName()
+                        + ChatColor.YELLOW + " Leaderboard: ");
+        sender.sendMessage(
+                ChatColor.AQUA + Integer.toString(leaderboard.size())
+                        + ChatColor.DARK_AQUA + " players with at least "
+                        + ChatColor.AQUA
+                        + Integer.toString(leaderboardGamesRequired)
+                        + ChatColor.DARK_AQUA + " games:");
         int position = 1;
         for (ArenaPlayer arenaPlayer : leaderboard) {
             int wins = arenaPlayer.getWins();
@@ -1491,7 +1524,7 @@ public class Arena {
     }
 
     public void reset(Player player) {
-        remove(player);
+        removePlayer(player);
         ArenaPlayer arenaPlayer = new ArenaPlayer(this, player);
         removeFromLeaderboard(arenaPlayer);
         // Note that we don't rebuild the leaderboard here, just let that happen later.

@@ -1,8 +1,6 @@
 package com.elmakers.mine.bukkit.arenas.dueling;
 
-import com.elmakers.mine.bukkit.api.magic.Mage;
-import com.elmakers.mine.bukkit.api.wand.Wand;
-import com.elmakers.mine.bukkit.api.wand.WandUpgradePath;
+import java.util.UUID;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -11,7 +9,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 
-import java.util.UUID;
+import com.elmakers.mine.bukkit.api.magic.Mage;
+import com.elmakers.mine.bukkit.api.wand.Wand;
+import com.elmakers.mine.bukkit.api.wand.WandUpgradePath;
 
 public class ArenaPlayer implements Comparable<ArenaPlayer> {
     private Mage mage;
@@ -59,8 +59,7 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
 
         path = null;
         String baseTemplate = controller.getPathTemplate();
-        if (baseTemplate != null)
-        {
+        if (baseTemplate != null) {
             Wand boundWand = mage.getBoundWand(baseTemplate);
             if (boundWand != null) {
                 path = boundWand.getPath();
@@ -212,14 +211,6 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
         return draws;
     }
 
-    public boolean equals(Player player) {
-        return (player != null && player.getUniqueId().equals(uuid));
-    }
-
-    public boolean equals(UUID id) {
-        return (id != null && id.equals(uuid));
-    }
-
     public int getValidMatches() {
         return wins + losses;
     }
@@ -285,6 +276,14 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
         return uuid.compareTo(other.getUUID());
     }
 
+    public boolean equals(Player player) {
+        return (player != null && player.getUniqueId().equals(uuid));
+    }
+
+    public boolean equals(UUID id) {
+        return (id != null && id.equals(uuid));
+    }
+
     @Override
     public boolean equals(Object other) {
         if (other instanceof Player) {
@@ -342,8 +341,7 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
             player.setFoodLevel(20);
             player.setFireTicks(0);
             for (PotionEffect pt : player.getActivePotionEffects()) {
-                if (pt.getDuration() < Integer.MAX_VALUE / 4)
-                {
+                if (pt.getDuration() < Integer.MAX_VALUE / 4) {
                     player.removePotionEffect(pt.getType());
                 }
             }

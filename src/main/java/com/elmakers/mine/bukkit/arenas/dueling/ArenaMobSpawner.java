@@ -1,8 +1,9 @@
 package com.elmakers.mine.bukkit.arenas.dueling;
 
+import org.bukkit.configuration.ConfigurationSection;
+
 import com.elmakers.mine.bukkit.api.entity.EntityData;
 import com.elmakers.mine.bukkit.api.magic.MageController;
-import org.bukkit.configuration.ConfigurationSection;
 
 public class ArenaMobSpawner {
     private EntityData entity;
