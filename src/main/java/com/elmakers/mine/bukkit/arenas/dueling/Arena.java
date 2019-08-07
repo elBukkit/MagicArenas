@@ -634,14 +634,6 @@ public class Arena {
         return queue.size() >= maxPlayers;
     }
 
-    public ArenaPlayer add(Player player) {
-        ArenaPlayer arenaPlayer = new ArenaPlayer(this, player);
-        queue.add(arenaPlayer);
-        arenaPlayer.teleport(getLobby());
-        player.setMetadata("arena", new FixedMetadataValue(controller.getPlugin(), arenaPlayer));
-        return arenaPlayer;
-    }
-
     public void setLoseLocation(Location location) {
         lose = location == null ? null : location.clone();
     }
@@ -924,9 +916,20 @@ public class Arena {
         if (description != null) {
             player.sendMessage(ChatColor.LIGHT_PURPLE + getDescription());
         }
-        ArenaPlayer arenaPlayer = add(player);
+
+        ArenaPlayer arenaPlayer = new ArenaPlayer(this, player);
+        queue.add(arenaPlayer);
+
+        arenaPlayer.teleport(getLobby());
+        player.setMetadata("arena",
+                new FixedMetadataValue(controller.getPlugin(), arenaPlayer));
+
         arenaPlayer.joined();
 
+        Bukkit.getPluginManager().callEvent(
+                new PlayerJoinedArenaEvent(player, arenaPlayer, this));
+
+        // Announce join
         int winCount = arenaPlayer.getWins();
         int lostCount = arenaPlayer.getLosses();
 
@@ -937,6 +940,8 @@ public class Arena {
             announce(ChatColor.DARK_AQUA + " with " + ChatColor.GREEN + Integer.toString(winCount) + ChatColor.DARK_AQUA + " wins and "
                     + ChatColor.RED + Integer.toString(lostCount) + ChatColor.DARK_AQUA + " losses.");
         }
+
+        // Check if we have enough players
         checkStart();
     }
 
