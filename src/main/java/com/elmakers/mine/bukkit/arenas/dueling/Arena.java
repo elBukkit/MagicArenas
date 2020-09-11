@@ -1222,7 +1222,6 @@ public class Arena {
                     }
                     if (blockState instanceof org.bukkit.block.Skull) {
                         org.bukkit.block.Skull skullBlock = (org.bukkit.block.Skull)blockState;
-                        skullBlock.setSkullType(SkullType.PLAYER);
                         controller.getMagic().setSkullOwner(skullBlock, player.getUUID());
                     }
                 }
