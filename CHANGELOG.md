@@ -4,6 +4,7 @@
 
  - Fix inventory click errors in 1.14
  - OP wand check will now allow cost-free wands
+ - Fix leaderboards in modern spigot versions
 
 ## 3.3
 

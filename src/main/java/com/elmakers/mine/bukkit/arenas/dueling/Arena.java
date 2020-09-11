@@ -1215,13 +1215,9 @@ public class Arena {
                 if (canReplace(leaderboardBlock)) {
                     skullMaterial.modify(leaderboardBlock);
                     BlockState blockState = leaderboardBlock.getState();
-                    MaterialData data = blockState.getData();
-                    if (data instanceof Skull) {
-                        Skull skull = (Skull)data;
-                        skull.setFacingDirection(skullFace);
-                    }
                     if (blockState instanceof org.bukkit.block.Skull) {
                         org.bukkit.block.Skull skullBlock = (org.bukkit.block.Skull)blockState;
+                        skullBlock.setRotation(skullFace);
                         controller.getMagic().setSkullOwner(skullBlock, player.getUUID());
                     }
                 }
@@ -1233,6 +1229,7 @@ public class Arena {
                     if (data instanceof Sign) {
                         Sign sign = (Sign)data;
                         sign.setFacingDirection(leaderboardFacing);
+                        blockState.setData(data);
                     }
                     if (blockState instanceof org.bukkit.block.Sign) {
                         org.bukkit.block.Sign signBlock = (org.bukkit.block.Sign)blockState;
