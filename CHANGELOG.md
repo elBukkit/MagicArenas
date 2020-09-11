@@ -1,5 +1,7 @@
 # CHANGELOG
 
+## 3.5
+
 ## 3.4
 
  - Fix inventory click errors in 1.14
