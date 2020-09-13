@@ -1442,7 +1442,10 @@ public class Arena {
             return false;
         }
         Sign sign = (Sign)signData;
-        BlockFace signDirection = sign.getFacing();
+        BlockFace signDirection = BlockFace.NORTH;
+        if (sign.getAttachedFace() != null) {
+            signDirection = sign.getFacing();
+        }
         BlockFace rightDirection = goLeft(signDirection);
         Block checkBlock = leaderboardBlock;
         for (int y = 0; y <= leaderboardSize; y++) {
