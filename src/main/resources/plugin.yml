@@ -1,5 +1,6 @@
 name: MagicArenas
 version: ${project.version}
+api-version: 1.13
 authors: [NathanWolf, KmanCrazy]
 main: com.elmakers.mine.bukkit.arenas.dueling.ArenasPlugin
 depend: [Magic]
