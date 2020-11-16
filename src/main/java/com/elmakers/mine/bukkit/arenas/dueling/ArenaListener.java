@@ -82,7 +82,7 @@ public class ArenaListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.LOW)
+    @EventHandler
     public void onEntityDeath(EntityDeathEvent e) {
         LivingEntity entity = e.getEntity();
         if (entity instanceof Player) return;
@@ -93,7 +93,7 @@ public class ArenaListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true)
-    public void onItemDamage(PlayerItemConsumeEvent event) {
+    public void onItemConsume(PlayerItemConsumeEvent event) {
         Player player = event.getPlayer();
         Arena arena = controller.getArena(player);
         if (arena != null && !arena.isAllowConsuming()) {
@@ -110,7 +110,7 @@ public class ArenaListener implements Listener {
         }
     }
 
-    @EventHandler(priority=EventPriority.HIGH)
+    @EventHandler(priority=EventPriority.LOW)
     public void onPlayerDeath(PlayerDeathEvent e) {
         Player player = e.getEntity();
         Arena arena = controller.getArena(player);
@@ -119,10 +119,12 @@ public class ArenaListener implements Listener {
 
             if (arena.isKeepInventory()) {
                 e.setKeepInventory(true);
+                e.getDrops().clear();
             }
 
             if (arena.isKeepLevel()) {
                 e.setKeepLevel(true);
+                e.setDroppedExp(0);
             }
         }
         if (player.hasMetadata("death_message")) {
