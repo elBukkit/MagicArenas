@@ -6,7 +6,6 @@ import com.elmakers.mine.bukkit.utility.ConfigurationUtils;
 import com.elmakers.mine.bukkit.utility.DeprecatedUtils;
 
 import org.apache.commons.lang.StringUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -35,7 +34,7 @@ public class ArenaCommandExecutor implements TabExecutor {
         "xp_win", "xp_lose", "xp_draw", "countdown", "countdown_max", "op_check",
         "announcer_range", "sp_win", "sp_lose", "sp_draw", "duration", "sudden_death",
         "sudden_death_effect", "start_commands", "border", "keep_inventory", "keep_level",
-        "spell_start", "spell_end", "money_win", "money_lose", "money_draw"
+        "spell_start", "spell_end", "money_win", "money_lose", "money_draw", "item_wear"
     };
 
     private final static String[] ARENA_LISTS = {
@@ -644,6 +643,18 @@ public class ArenaCommandExecutor implements TabExecutor {
                 sender.sendMessage(ChatColor.RED + "Disabled keep inventory for " + arena.getName());
             }
             arena.setKeepInventory(keepOn);
+            return;
+        }
+
+        if (propertyName.equalsIgnoreCase("item_wear"))
+        {
+            boolean wear = propertyValue.equalsIgnoreCase("true");
+            if (wear) {
+                sender.sendMessage(ChatColor.GREEN + "Enabled item wear for " + arena.getName());
+            } else {
+                sender.sendMessage(ChatColor.RED + "Disabled item wear for " + arena.getName());
+            }
+            arena.setItemWear(wear);
             return;
         }
 

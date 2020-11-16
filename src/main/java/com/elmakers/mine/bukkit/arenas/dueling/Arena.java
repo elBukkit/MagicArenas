@@ -112,6 +112,7 @@ public class Arena {
     private String name;
     private String description;
 
+    private boolean itemWear;
     private boolean keepInventory;
     private boolean keepLevel;
 
@@ -157,6 +158,7 @@ public class Arena {
         borderMin = configuration.getInt("border_min");
         borderMax = configuration.getInt("border_max");
 
+        itemWear = configuration.getBoolean("item_wear", true);
         keepInventory = configuration.getBoolean("keep_inventory", false);
         keepLevel = configuration.getBoolean("keep_level", false);
 
@@ -295,6 +297,7 @@ public class Arena {
 
         configuration.set("keep_inventory", keepInventory);
         configuration.set("keep_level", keepLevel);
+        configuration.set("item_wear", itemWear);
 
         configuration.set("leaderboard_size", leaderboardSize);
         configuration.set("leaderboard_record_size", leaderboardRecordSize);
@@ -974,6 +977,9 @@ public class Arena {
         if (keepInventory) {
             sender.sendMessage(ChatColor.GREEN + "Players keep their inventory on death");
         }
+        if (!itemWear) {
+            sender.sendMessage(ChatColor.GREEN + "Players' items do not get worn out");
+        }
         if (keepLevel) {
             sender.sendMessage(ChatColor.GREEN + "Players keep their XP levels on death");
         }
@@ -1646,6 +1652,10 @@ public class Arena {
         keepInventory = keep;
     }
 
+    public void setItemWear(boolean wear) {
+        itemWear = wear;
+    }
+
     public void setKeepLevel(boolean keep) {
         keepLevel = keep;
     }
@@ -1743,6 +1753,10 @@ public class Arena {
 
     public boolean isKeepLevel() {
         return keepLevel;
+    }
+
+    public boolean isItemWear() {
+        return itemWear;
     }
 
     public boolean isMobArena() {

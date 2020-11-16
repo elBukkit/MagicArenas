@@ -91,6 +91,15 @@ public class ArenaListener implements Listener {
         }
     }
 
+    @EventHandler(ignoreCancelled = true)
+    public void onItemDamage(PlayerItemDamageEvent event) {
+        Player player = event.getPlayer();
+        Arena arena = controller.getArena(player);
+        if (arena != null && !arena.isItemWear()) {
+            event.setCancelled(true);
+        }
+    }
+
     @EventHandler(priority=EventPriority.HIGH)
     public void onPlayerDeath(PlayerDeathEvent e) {
         Player player = e.getEntity();
