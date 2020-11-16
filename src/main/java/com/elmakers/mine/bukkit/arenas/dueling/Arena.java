@@ -115,6 +115,7 @@ public class Arena {
     private boolean itemWear;
     private boolean keepInventory;
     private boolean keepLevel;
+    private boolean allowConsuming;
 
     public Arena(final String key, final ArenaController controller) {
         this.key = key;
@@ -161,6 +162,7 @@ public class Arena {
         itemWear = configuration.getBoolean("item_wear", true);
         keepInventory = configuration.getBoolean("keep_inventory", false);
         keepLevel = configuration.getBoolean("keep_level", false);
+        allowConsuming = configuration.getBoolean("allow_consuming", true);
 
         arenaType = ArenaType.parse(configuration.getString("type"));
         if (arenaType == null) {
@@ -298,6 +300,7 @@ public class Arena {
         configuration.set("keep_inventory", keepInventory);
         configuration.set("keep_level", keepLevel);
         configuration.set("item_wear", itemWear);
+        configuration.set("allow_consuming", allowConsuming);
 
         configuration.set("leaderboard_size", leaderboardSize);
         configuration.set("leaderboard_record_size", leaderboardRecordSize);
@@ -983,6 +986,9 @@ public class Arena {
         if (keepLevel) {
             sender.sendMessage(ChatColor.GREEN + "Players keep their XP levels on death");
         }
+        if (!allowConsuming) {
+            sender.sendMessage(ChatColor.GREEN + "Players may not eat or drink potions in the arena");
+        }
         int minPlayers = getMinPlayers();
         int maxPlayers = getMaxPlayers();
         sender.sendMessage(ChatColor.AQUA + "Min / Max Players: " + ChatColor.DARK_AQUA + minPlayers +
@@ -1656,6 +1662,10 @@ public class Arena {
         itemWear = wear;
     }
 
+    public void setAllowConsuming(boolean consume) {
+        allowConsuming = consume;
+    }
+
     public void setKeepLevel(boolean keep) {
         keepLevel = keep;
     }
@@ -1757,6 +1767,10 @@ public class Arena {
 
     public boolean isItemWear() {
         return itemWear;
+    }
+
+    public boolean isAllowConsuming() {
+        return allowConsuming;
     }
 
     public boolean isMobArena() {

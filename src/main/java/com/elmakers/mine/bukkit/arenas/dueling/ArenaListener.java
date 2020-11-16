@@ -19,6 +19,7 @@ import org.bukkit.event.entity.EntityPortalEnterEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -88,6 +89,15 @@ public class ArenaListener implements Listener {
         Arena arena = controller.getMobArena(entity);
         if (arena != null) {
             arena.mobDied(entity);
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onItemDamage(PlayerItemConsumeEvent event) {
+        Player player = event.getPlayer();
+        Arena arena = controller.getArena(player);
+        if (arena != null && !arena.isAllowConsuming()) {
+            event.setCancelled(true);
         }
     }
 

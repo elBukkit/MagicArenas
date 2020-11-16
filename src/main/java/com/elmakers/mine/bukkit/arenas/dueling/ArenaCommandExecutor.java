@@ -34,7 +34,8 @@ public class ArenaCommandExecutor implements TabExecutor {
         "xp_win", "xp_lose", "xp_draw", "countdown", "countdown_max", "op_check",
         "announcer_range", "sp_win", "sp_lose", "sp_draw", "duration", "sudden_death",
         "sudden_death_effect", "start_commands", "border", "keep_inventory", "keep_level",
-        "spell_start", "spell_end", "money_win", "money_lose", "money_draw", "item_wear"
+        "spell_start", "spell_end", "money_win", "money_lose", "money_draw", "item_wear",
+        "allow_consuming"
     };
 
     private final static String[] ARENA_LISTS = {
@@ -655,6 +656,18 @@ public class ArenaCommandExecutor implements TabExecutor {
                 sender.sendMessage(ChatColor.RED + "Disabled item wear for " + arena.getName());
             }
             arena.setItemWear(wear);
+            return;
+        }
+
+        if (propertyName.equalsIgnoreCase("allow_consuming"))
+        {
+            boolean consume = propertyValue.equalsIgnoreCase("true");
+            if (consume) {
+                sender.sendMessage(ChatColor.GREEN + "Enabled consuming for " + arena.getName());
+            } else {
+                sender.sendMessage(ChatColor.RED + "Disabled consuming for " + arena.getName());
+            }
+            arena.setAllowConsuming(consume);
             return;
         }
 
