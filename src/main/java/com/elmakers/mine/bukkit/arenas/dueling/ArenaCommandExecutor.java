@@ -393,6 +393,7 @@ public class ArenaCommandExecutor implements TabExecutor {
                     sender.sendMessage(ChatColor.AQUA + "Set randomized spawn of " + arena.getName() + " to " + vector);
                     arena.setRandomizeSpawn(vector);
                 }
+                controller.save();
                 return;
             }
 
@@ -478,6 +479,7 @@ public class ArenaCommandExecutor implements TabExecutor {
                         return;
                     }
                     arena.addMob(mobType, count);
+                    controller.save();
                     sender.sendMessage(ChatColor.AQUA + "Added " + ChatColor.YELLOW + count + ChatColor.BLUE + " " + mobType.describe());
                     return;
                 }
@@ -527,6 +529,7 @@ public class ArenaCommandExecutor implements TabExecutor {
                 sender.sendMessage(ChatColor.AQUA + "Change name of " + arena.getName() + " to " + propertyValue);
             }
             arena.setName(propertyValue);
+            controller.save();
             return;
         }
         if (propertyName.equalsIgnoreCase("description")) {
@@ -536,6 +539,7 @@ public class ArenaCommandExecutor implements TabExecutor {
                 sender.sendMessage(ChatColor.AQUA + "Change description of " + arena.getName() + " to " + propertyValue);
             }
             arena.setDescription(propertyValue);
+            controller.save();
             return;
         }
 
@@ -547,6 +551,7 @@ public class ArenaCommandExecutor implements TabExecutor {
                 sender.sendMessage(ChatColor.AQUA + "Change portal death message of " + arena.getName() + " to " + propertyValue);
             }
             arena.setPortalDeathMessage(propertyValue);
+            controller.save();
             return;
         }
 
@@ -566,6 +571,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             } else {
                 sender.sendMessage(ChatColor.AQUA + "Set start commands for " + arena.getName());
             }
+            controller.save();
             return;
         }
 
@@ -576,6 +582,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             } else {
                 sender.sendMessage(ChatColor.AQUA + "Set start spell for " + arena.getName());
             }
+            controller.save();
             return;
         }
 
@@ -586,6 +593,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             } else {
                 sender.sendMessage(ChatColor.AQUA + "Set end spell for " + arena.getName());
             }
+            controller.save();
             return;
         }
 
@@ -613,6 +621,7 @@ public class ArenaCommandExecutor implements TabExecutor {
 
                 }
                 arena.setBorder(min, max);
+                controller.save();
                 sender.sendMessage(ChatColor.AQUA + "Set border for " + arena.getName() + " to " + max + "-" + min);
             }
             return;
@@ -632,6 +641,7 @@ public class ArenaCommandExecutor implements TabExecutor {
                 sender.sendMessage(ChatColor.AQUA + "Disabled OP check for " + arena.getName());
             }
             arena.setOpCheck(checkOn);
+            controller.save();
             return;
         }
 
@@ -644,6 +654,7 @@ public class ArenaCommandExecutor implements TabExecutor {
                 sender.sendMessage(ChatColor.RED + "Disabled keep inventory for " + arena.getName());
             }
             arena.setKeepInventory(keepOn);
+            controller.save();
             return;
         }
 
@@ -656,6 +667,7 @@ public class ArenaCommandExecutor implements TabExecutor {
                 sender.sendMessage(ChatColor.RED + "Disabled item wear for " + arena.getName());
             }
             arena.setItemWear(wear);
+            controller.save();
             return;
         }
 
@@ -668,6 +680,7 @@ public class ArenaCommandExecutor implements TabExecutor {
                 sender.sendMessage(ChatColor.RED + "Disabled consuming for " + arena.getName());
             }
             arena.setAllowConsuming(consume);
+            controller.save();
             return;
         }
 
@@ -680,6 +693,7 @@ public class ArenaCommandExecutor implements TabExecutor {
                 sender.sendMessage(ChatColor.RED + "Disabled keep XP levels for " + arena.getName());
             }
             arena.setKeepLevel(keepOn);
+            controller.save();
             return;
         }
 
