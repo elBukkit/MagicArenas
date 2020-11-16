@@ -4,7 +4,6 @@ import java.util.Collection;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Entity;
@@ -20,6 +19,7 @@ import org.bukkit.event.entity.EntityPortalEnterEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
@@ -187,8 +187,7 @@ public class ArenaListener implements Listener {
         }
 
         Block clickedBlock = e.getClickedBlock();
-        Material signPost = DefaultMaterials.getGroundSignBlock();
-        if (e.getAction() == Action.RIGHT_CLICK_BLOCK && (clickedBlock.getType() == Material.SIGN || clickedBlock.getType() == signPost || clickedBlock.getType() == Material.WALL_SIGN)) {
+        if (e.getAction() == Action.RIGHT_CLICK_BLOCK && (DefaultMaterials.isSign(clickedBlock.getType()))) {
             Sign sign = (Sign) e.getClickedBlock().getState();
             String firstLine = sign.getLine(0);
             if (firstLine.equals(SIGN_KEY)) {

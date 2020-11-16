@@ -16,12 +16,13 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Server;
-import org.bukkit.SkullType;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.type.WallSign;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
@@ -30,9 +31,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.material.MaterialData;
-import org.bukkit.material.Sign;
-import org.bukkit.material.Skull;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -1202,6 +1200,7 @@ public class Arena {
         setLeaderboardSize(leaderboardSize);
     }
 
+    @SuppressWarnings("deprecation")
     public void updateLeaderboard() {
         MaterialAndData skullMaterial = DefaultMaterials.getPlayerSkullWallBlock();
         Block leaderboardBlock = getLeaderboardBlock();
@@ -1223,14 +1222,14 @@ public class Arena {
                 }
                 Block neighborBlock = leaderboardBlock.getRelative(rightDirection);
                 if (canReplace(neighborBlock)) {
-                    neighborBlock.setType(Material.WALL_SIGN);
-                    BlockState blockState = neighborBlock.getState();
-                    MaterialData data = blockState.getData();
-                    if (data instanceof Sign) {
-                        Sign sign = (Sign)data;
-                        sign.setFacingDirection(leaderboardFacing);
-                        blockState.setData(data);
+                    neighborBlock.setType(Material.BIRCH_WALL_SIGN);
+                    BlockData data = neighborBlock.getBlockData();
+                    if (data instanceof WallSign) {
+                        WallSign sign = (WallSign)data;
+                        sign.setFacing(leaderboardFacing);
+                        neighborBlock.setBlockData(data);
                     }
+                    BlockState blockState = neighborBlock.getState();
                     if (blockState instanceof org.bukkit.block.Sign) {
                         org.bukkit.block.Sign signBlock = (org.bukkit.block.Sign)blockState;
                         String playerName = ChatColor.DARK_PURPLE + player.getDisplayName();
@@ -1249,7 +1248,7 @@ public class Arena {
     protected void clearLeaderboardBlock(Block block) {
         Material blockType = block.getType();
         MaterialAndData skullMaterial = DefaultMaterials.getPlayerSkullWallBlock();
-        if (blockType == skullMaterial.getMaterial() || blockType == Material.WALL_SIGN) {
+        if (blockType == skullMaterial.getMaterial() || DefaultMaterials.isSign(blockType)) {
             block.setType(Material.AIR);
         }
     }
@@ -1257,14 +1256,14 @@ public class Arena {
     protected boolean canReplace(Block block) {
         Material blockType = block.getType();
         MaterialAndData skullMaterial = DefaultMaterials.getPlayerSkullWallBlock();
-        return blockType == Material.AIR || blockType == Material.WALL_SIGN || blockType == skullMaterial.getMaterial();
+        return blockType == Material.AIR || DefaultMaterials.isSign(blockType) || blockType == skullMaterial.getMaterial();
     }
 
     protected Block getLeaderboardBlock() {
         Block block = null;
         if (leaderboardLocation != null) {
             Block testBlock = leaderboardLocation.getBlock();
-            if (testBlock.getType() == Material.WALL_SIGN) {
+            if (DefaultMaterials.isSign(testBlock.getType())) {
                 block = testBlock;
             } else {
                 leaderboardLocation = null;
@@ -1433,19 +1432,16 @@ public class Arena {
     }
 
     public boolean placeLeaderboard(Block leaderboardBlock) {
-        if (leaderboardBlock.getType() != Material.WALL_SIGN) {
+        if (!DefaultMaterials.isSign(leaderboardBlock.getType())) {
             return false;
         }
-        MaterialData signData = leaderboardBlock.getState().getData();
-        if (!(signData instanceof Sign)) {
-            controller.getPlugin().getLogger().warning("Block at " + leaderboardBlock.getLocation() + " has no sign data! " + signData.getClass());
+        BlockData blockData = leaderboardBlock.getBlockData();
+        if (!(blockData instanceof WallSign)) {
+            controller.getPlugin().getLogger().warning("Block at " + leaderboardBlock.getLocation() + " has no sign data! " + blockData.getClass());
             return false;
         }
-        Sign sign = (Sign)signData;
-        BlockFace signDirection = BlockFace.NORTH;
-        if (sign.getAttachedFace() != null) {
-            signDirection = sign.getFacing();
-        }
+        WallSign sign = (WallSign)blockData;
+        BlockFace signDirection = sign.getFacing();
         BlockFace rightDirection = goLeft(signDirection);
         Block checkBlock = leaderboardBlock;
         for (int y = 0; y <= leaderboardSize; y++) {

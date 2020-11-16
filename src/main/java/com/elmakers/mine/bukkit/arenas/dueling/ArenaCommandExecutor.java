@@ -3,6 +3,8 @@ package com.elmakers.mine.bukkit.arenas.dueling;
 import com.elmakers.mine.bukkit.api.entity.EntityData;
 import com.elmakers.mine.bukkit.api.spell.SpellTemplate;
 import com.elmakers.mine.bukkit.utility.ConfigurationUtils;
+import com.elmakers.mine.bukkit.utility.DeprecatedUtils;
+
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -175,7 +177,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             String playerName = null;
             if (args.length > 1) {
                 playerName = args[1];
-                player = Bukkit.getPlayer(playerName);
+                player = DeprecatedUtils.getPlayer(playerName);
             } else if (sender instanceof Player) {
                 player = (Player) sender;
                 playerName = player.getName();
@@ -243,7 +245,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             String playerName = null;
             if (args.length > 2) {
                 playerName = args[2];
-                player = Bukkit.getPlayer(playerName);
+                player = DeprecatedUtils.getPlayer(playerName);
             } else {
                 if (isAllArenas) {
                     controller.reset();
@@ -307,7 +309,7 @@ public class ArenaCommandExecutor implements TabExecutor {
         if (subCommand.equalsIgnoreCase("stats")) {
             if (args.length > 2) {
                 String playerName = args[2];
-                Player player = Bukkit.getPlayer(playerName);
+                Player player = DeprecatedUtils.getPlayer(playerName);
                 if (player == null) {
                     sender.sendMessage(ChatColor.RED + "Unknown player: " + playerName);
                     return true;
@@ -325,7 +327,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             String playerName = null;
             if (args.length > 2) {
                 playerName = args[2];
-                player = Bukkit.getPlayer(playerName);
+                player = DeprecatedUtils.getPlayer(playerName);
             } else if (sender instanceof Player) {
                 player = (Player) sender;
             }
