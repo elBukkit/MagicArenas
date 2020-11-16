@@ -1,9 +1,10 @@
 # CHANGELOG
 
-## 3.5
+## 4.0
 
  - Updated to Spigot API 1.14, will no longer work on previous versions. May also require Magic 8.1 or higher.
  - Add item_wear arena property, to turn off items and armor getting worn in a battle
+ - Add allow_consuming arena property
 
 ## 3.4
 
