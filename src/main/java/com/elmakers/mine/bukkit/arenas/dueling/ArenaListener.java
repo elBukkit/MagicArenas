@@ -81,7 +81,7 @@ public class ArenaListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOW)
     public void onEntityDeath(EntityDeathEvent e) {
         LivingEntity entity = e.getEntity();
         if (entity instanceof Player) return;
