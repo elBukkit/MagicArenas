@@ -102,6 +102,7 @@ public class Arena {
     private List<ArenaPlayer> leaderboard = new ArrayList<ArenaPlayer>();
     private Location leaderboardLocation;
     private BlockFace leaderboardFacing;
+    private Material signMaterial = Material.BIRCH_WALL_SIGN;
 
     private int portalDamage;
     private int portalEnterDamage;
@@ -174,6 +175,12 @@ public class Arena {
         lobby = ConfigurationUtils.toLocation(configuration.getString("lobby"));
         center = ConfigurationUtils.toLocation(configuration.getString("center"));
         exit = ConfigurationUtils.toLocation(configuration.getString("exit"));
+        String signType = configuration.getString("leaderboard_sign_type");
+        try {
+            signMaterial = Material.valueOf(signType.toLowerCase());
+        } catch (Exception ex) {
+            controller.getPlugin().getLogger().warning("Invalid sign type: " + signType);
+        }
 
         winXP = configuration.getInt("win_xp", 0);
         loseXP = configuration.getInt("lose_xp", 0);
@@ -305,6 +312,7 @@ public class Arena {
         configuration.set("leaderboard_size", leaderboardSize);
         configuration.set("leaderboard_record_size", leaderboardRecordSize);
         configuration.set("leaderboard_games_required", leaderboardGamesRequired);
+        configuration.set("leaderboard_sign_type", signMaterial.name().toLowerCase());
 
         configuration.set("portal_damage", portalDamage);
         configuration.set("portal_enter_damage", portalEnterDamage);
@@ -1234,7 +1242,7 @@ public class Arena {
                 }
                 Block neighborBlock = leaderboardBlock.getRelative(rightDirection);
                 if (canReplace(neighborBlock)) {
-                    neighborBlock.setType(Material.BIRCH_WALL_SIGN);
+                    neighborBlock.setType(signMaterial);
                     BlockData data = neighborBlock.getBlockData();
                     if (data instanceof WallSign) {
                         WallSign sign = (WallSign)data;
@@ -1781,5 +1789,9 @@ public class Arena {
 
     public Mage getMage() {
        return controller.getMagic().getMage("ARENA: " + getKey(), getName());
+    }
+
+    public void setLeaderboardSignType(Material material) {
+        this.signMaterial = material;
     }
 }

@@ -8,6 +8,7 @@ import com.elmakers.mine.bukkit.utility.DeprecatedUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -35,7 +36,7 @@ public class ArenaCommandExecutor implements TabExecutor {
         "announcer_range", "sp_win", "sp_lose", "sp_draw", "duration", "sudden_death",
         "sudden_death_effect", "start_commands", "border", "keep_inventory", "keep_level",
         "spell_start", "spell_end", "money_win", "money_lose", "money_draw", "item_wear",
-        "allow_consuming"
+        "allow_consuming", "leaderboard_sign_type"
     };
 
     private final static String[] ARENA_LISTS = {
@@ -44,6 +45,10 @@ public class ArenaCommandExecutor implements TabExecutor {
 
     private final static String[] ARENA_RANDOMIZE = {
         "spawn"
+    };
+
+    private final static String[] BOOLEAN_PROPERTIES = {
+        "true", "false"
     };
 
     private final ArenaController controller;
@@ -73,6 +78,13 @@ public class ArenaCommandExecutor implements TabExecutor {
             allOptions.addAll(Arrays.asList(ARENA_LISTS));
         } else if (args.length == 4 && args[0].equalsIgnoreCase("configure") && args[2].equalsIgnoreCase("randomize")) {
             allOptions.addAll(Arrays.asList(ARENA_RANDOMIZE));
+        } else if (args.length == 4 && args[0].equalsIgnoreCase("configure") && (
+                args[2].equalsIgnoreCase("keep_inventory")
+                || args[2].equalsIgnoreCase("keep_level")
+                || args[2].equalsIgnoreCase("item_wear")
+                || args[2].equalsIgnoreCase("allow_consuming")
+                )) {
+            allOptions.addAll(Arrays.asList(BOOLEAN_PROPERTIES));
         } else if (args.length == 4 && args[0].equalsIgnoreCase("configure") && args[2].equalsIgnoreCase("sudden_death_effect")) {
             for (PotionEffectType pt : PotionEffectType.values()) {
                 if (pt == null) continue;
@@ -89,6 +101,10 @@ public class ArenaCommandExecutor implements TabExecutor {
             allOptions.addAll(controller.getMagic().getPlayerNames());
         } else if (args.length == 5 && args[0].equalsIgnoreCase("configure") && args[2].equalsIgnoreCase("add") && args[3].equalsIgnoreCase("mob")) {
             allOptions.addAll(controller.getMagic().getMobKeys());
+        } else if (args.length == 4 && args[0].equalsIgnoreCase("configure") && args[2].equalsIgnoreCase("leaderboard_sign_type")) {
+            for (Material sign : controller.getMagic().getMaterialSetManager().getMaterialSet("signs").getMaterials()) {
+                allOptions.add(sign.name().toLowerCase());
+            }
         }
 
         completeCommand = completeCommand.toLowerCase();
@@ -681,6 +697,20 @@ public class ArenaCommandExecutor implements TabExecutor {
             }
             arena.setAllowConsuming(consume);
             controller.save();
+            return;
+        }
+
+        if (propertyName.equalsIgnoreCase("leaderboard_sign_type"))
+        {
+            try {
+                Material signMaterial = Material.valueOf(propertyValue.toUpperCase());
+                arena.setLeaderboardSignType(signMaterial);
+                sender.sendMessage(ChatColor.RED + "Set leaderboard sign type to " + signMaterial.name().toLowerCase());
+                arena.updateLeaderboard();
+                controller.save();
+            } catch (Exception ex) {
+                sender.sendMessage(ChatColor.RED + "Invalid sign type: " + propertyValue);
+            }
             return;
         }
 
