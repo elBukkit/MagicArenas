@@ -175,9 +175,9 @@ public class Arena {
         lobby = ConfigurationUtils.toLocation(configuration.getString("lobby"));
         center = ConfigurationUtils.toLocation(configuration.getString("center"));
         exit = ConfigurationUtils.toLocation(configuration.getString("exit"));
-        String signType = configuration.getString("leaderboard_sign_type");
+        String signType = configuration.getString("leaderboard_sign_type", "birch_wall_sign");
         try {
-            signMaterial = Material.valueOf(signType.toLowerCase());
+            signMaterial = Material.valueOf(signType.toUpperCase());
         } catch (Exception ex) {
             controller.getPlugin().getLogger().warning("Invalid sign type: " + signType);
         }
