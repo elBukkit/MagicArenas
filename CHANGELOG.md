@@ -9,6 +9,7 @@
  - Add allow_consuming arena property
  - Fix arena config changes not saving when setting some properties
  - Add leaderboard_sign_type parameter to arenas
+ - Workaround problem with Spigot update that adds &r at the end of sign text
 
 ## 3.4
 

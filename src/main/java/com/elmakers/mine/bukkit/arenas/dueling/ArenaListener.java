@@ -211,6 +211,7 @@ public class ArenaListener implements Listener {
         if (e.getAction() == Action.RIGHT_CLICK_BLOCK && (DefaultMaterials.isSign(clickedBlock.getType()))) {
             Sign sign = (Sign) e.getClickedBlock().getState();
             String firstLine = sign.getLine(0);
+            firstLine = firstLine.replace("" + ChatColor.RESET, "");
             if (firstLine.equals(SIGN_KEY)) {
                 String secondLine = sign.getLine(1);
                 if (secondLine.contains("Join")) {
