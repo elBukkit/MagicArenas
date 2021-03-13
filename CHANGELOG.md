@@ -10,6 +10,7 @@
  - Fix arena config changes not saving when setting some properties
  - Add leaderboard_sign_type parameter to arenas
  - Workaround problem with Spigot update that adds &r at the end of sign text
+ - Add allow_melee and allow_projectiles flags, for making magic-only arenas
 
 ## 3.4
 

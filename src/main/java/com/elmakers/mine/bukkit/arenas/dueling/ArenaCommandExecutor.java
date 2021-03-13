@@ -700,6 +700,32 @@ public class ArenaCommandExecutor implements TabExecutor {
             return;
         }
 
+        if (propertyName.equalsIgnoreCase("allow_melee"))
+        {
+            boolean allow = propertyValue.equalsIgnoreCase("true");
+            if (allow) {
+                sender.sendMessage(ChatColor.GREEN + "Enabled melee for " + arena.getName());
+            } else {
+                sender.sendMessage(ChatColor.RED + "Disabled melee for " + arena.getName());
+            }
+            arena.setAllowMelee(allow);
+            controller.save();
+            return;
+        }
+
+        if (propertyName.equalsIgnoreCase("allow_projectiles"))
+        {
+            boolean allow = propertyValue.equalsIgnoreCase("true");
+            if (allow) {
+                sender.sendMessage(ChatColor.GREEN + "Enabled projectile weapons for " + arena.getName());
+            } else {
+                sender.sendMessage(ChatColor.RED + "Disabled projectile weapons for " + arena.getName());
+            }
+            arena.setAllowProjectiles(allow);
+            controller.save();
+            return;
+        }
+
         if (propertyName.equalsIgnoreCase("leaderboard_sign_type"))
         {
             try {

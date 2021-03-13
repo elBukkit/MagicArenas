@@ -117,6 +117,8 @@ public class Arena {
     private boolean keepInventory;
     private boolean keepLevel;
     private boolean allowConsuming;
+    private boolean allowMelee;
+    private boolean allowProjectiles;
 
     public Arena(final String key, final ArenaController controller) {
         this.key = key;
@@ -164,6 +166,8 @@ public class Arena {
         keepInventory = configuration.getBoolean("keep_inventory", false);
         keepLevel = configuration.getBoolean("keep_level", false);
         allowConsuming = configuration.getBoolean("allow_consuming", true);
+        allowMelee = configuration.getBoolean("allow_melee", true);
+        allowProjectiles = configuration.getBoolean("allow_projectiles", true);
 
         arenaType = ArenaType.parse(configuration.getString("type"));
         if (arenaType == null) {
@@ -308,6 +312,8 @@ public class Arena {
         configuration.set("keep_level", keepLevel);
         configuration.set("item_wear", itemWear);
         configuration.set("allow_consuming", allowConsuming);
+        configuration.set("allow_melee", allowMelee);
+        configuration.set("allow_projectiles", allowProjectiles);
 
         configuration.set("leaderboard_size", leaderboardSize);
         configuration.set("leaderboard_record_size", leaderboardRecordSize);
@@ -995,7 +1001,13 @@ public class Arena {
             sender.sendMessage(ChatColor.GREEN + "Players keep their XP levels on death");
         }
         if (!allowConsuming) {
-            sender.sendMessage(ChatColor.GREEN + "Players may not eat or drink potions in the arena");
+            sender.sendMessage(ChatColor.GREEN + "Players may not eat or drink potions");
+        }
+        if (!allowMelee) {
+            sender.sendMessage(ChatColor.GREEN + "Players may not use melee weapons");
+        }
+        if (!allowProjectiles) {
+            sender.sendMessage(ChatColor.GREEN + "Players may not use bows or other projectile weapons");
         }
         int minPlayers = getMinPlayers();
         int maxPlayers = getMaxPlayers();
@@ -1674,6 +1686,14 @@ public class Arena {
         allowConsuming = consume;
     }
 
+    public void setAllowMelee(boolean allow) {
+        allowMelee = allow;
+    }
+
+    public void setAllowProjectiles(boolean allow) {
+        allowProjectiles = allow;
+    }
+
     public void setKeepLevel(boolean keep) {
         keepLevel = keep;
     }
@@ -1779,6 +1799,14 @@ public class Arena {
 
     public boolean isAllowConsuming() {
         return allowConsuming;
+    }
+
+    public boolean isAllowMelee() {
+        return allowMelee;
+    }
+
+    public boolean isAllowProjectiles() {
+        return allowProjectiles;
     }
 
     public boolean isMobArena() {
