@@ -36,7 +36,7 @@ public class ArenaCommandExecutor implements TabExecutor {
         "announcer_range", "sp_win", "sp_lose", "sp_draw", "duration", "sudden_death",
         "sudden_death_effect", "start_commands", "border", "keep_inventory", "keep_level",
         "spell_start", "spell_end", "money_win", "money_lose", "money_draw", "item_wear",
-        "allow_consuming", "leaderboard_sign_type"
+        "allow_consuming", "leaderboard_sign_type", "allow_melee", "allow_projectiles"
     };
 
     private final static String[] ARENA_LISTS = {
