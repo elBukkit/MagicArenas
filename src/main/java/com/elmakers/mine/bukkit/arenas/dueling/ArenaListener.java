@@ -114,8 +114,8 @@ public class ArenaListener implements Listener {
         damager = CompatibilityUtils.getSource(damager);
         if (!(damager instanceof Player)) return;
         Arena arena = controller.getArena((Player)damager);
-        if (arena != null) {
-            boolean isMelee = event.getCause() == EntityDamageEvent.DamageCause.ENTITY_ATTACK && !CompatibilityUtils.isDamaging();
+        if (arena != null && !CompatibilityUtils.isDamaging()) {
+            boolean isMelee = event.getCause() == EntityDamageEvent.DamageCause.ENTITY_ATTACK;
             if (isProjectile && !arena.isAllowProjectiles()) {
                 event.setCancelled(true);
             } else if (isMelee && !arena.isAllowMelee()) {
