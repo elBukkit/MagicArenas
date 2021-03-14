@@ -110,11 +110,11 @@ public class ArenaListener implements Listener {
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
         Entity damager = event.getDamager();
-        boolean isProjectile = damager instanceof Projectile;
         damager = CompatibilityUtils.getSource(damager);
         if (!(damager instanceof Player)) return;
         Arena arena = controller.getArena((Player)damager);
         if (arena != null && !CompatibilityUtils.isDamaging()) {
+            boolean isProjectile = event.getCause() == EntityDamageEvent.DamageCause.PROJECTILE;
             boolean isMelee = event.getCause() == EntityDamageEvent.DamageCause.ENTITY_ATTACK;
             if (isProjectile && !arena.isAllowProjectiles()) {
                 event.setCancelled(true);
