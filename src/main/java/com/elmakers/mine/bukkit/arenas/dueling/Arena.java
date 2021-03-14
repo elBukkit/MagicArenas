@@ -416,6 +416,7 @@ public class Arena {
             return;
         }
         List<Location> spawns = getSpawns();
+        Collections.shuffle(spawns);
         List<ArenaPlayer> players = new ArrayList<>(this.players);
         for (ArenaPlayer arenaPlayer : players) {
             Player player = arenaPlayer.getPlayer();
