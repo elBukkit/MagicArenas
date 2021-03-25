@@ -340,6 +340,8 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
             double maxHealth = player.getMaxHealth();
             player.setHealth(maxHealth);
             player.setFoodLevel(20);
+            player.setSaturation(20);
+            player.setExhaustion(0);
             player.setFireTicks(0);
             for (PotionEffect pt : player.getActivePotionEffects()) {
                 if (pt.getDuration() < Integer.MAX_VALUE / 4)
