@@ -12,8 +12,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -160,7 +158,6 @@ public class ArenaStage {
             MageController magic = arena.getController().getMagic();
             magic.setForceSpawn(true);
             try {
-                Plugin plugin = arena.getController().getPlugin();
                 List<Location> spawns = getMobSpawns();
                 int num = 0;
                 for (ArenaMobSpawner mobSpawner : mobs) {
@@ -171,7 +168,7 @@ public class ArenaStage {
                         num = (num + 1) % spawns.size();
                         Entity spawnedEntity = mobType.spawn(magic, spawn);
                         if (spawnedEntity != null) {
-                            spawnedEntity.setMetadata("arena", new FixedMetadataValue(plugin, arena));
+                            arena.getController().register(spawnedEntity, arena);
                             spawned.add(spawnedEntity);
                         }
                     }
@@ -193,8 +190,7 @@ public class ArenaStage {
     }
 
     public void mobDied(LivingEntity entity) {
-        Plugin plugin = arena.getController().getPlugin();
-        entity.removeMetadata("arena", plugin);
+        arena.getController().unregister(entity);
         spawned.remove(entity);
     }
 
@@ -208,10 +204,9 @@ public class ArenaStage {
             }
         }
 
-        Plugin plugin = arena.getController().getPlugin();
         for (Entity entity : spawned) {
             if (entity.isValid()) {
-                entity.removeMetadata("arena", plugin);
+                arena.getController().unregister(entity);;
                 entity.remove();
             }
         }

@@ -476,7 +476,7 @@ public class Arena {
         ArenaPlayer removePlayer = new ArenaPlayer(this, player);
         players.remove(removePlayer);
         queue.remove(removePlayer);
-        removePlayer.clearMetadata();
+        controller.unregister(player);
     }
 
     public ArenaPlayer getWinner() {
@@ -616,7 +616,7 @@ public class Arena {
         for (ArenaPlayer arenaPlayer : players) {
             Player player = arenaPlayer.getPlayer();
             if (player != null) {
-                player.removeMetadata("arena", controller.getPlugin());
+                controller.unregister(player);
             }
         }
         players.clear();
@@ -628,7 +628,7 @@ public class Arena {
             Player player = arenaPlayer.getPlayer();
             if (player != null) {
                 arenaPlayer.teleport(getExit());
-                player.removeMetadata("arena", controller.getPlugin());
+                controller.unregister(player);
             }
         }
         queue.clear();
@@ -646,7 +646,7 @@ public class Arena {
         ArenaPlayer arenaPlayer = new ArenaPlayer(this, player);
         queue.add(arenaPlayer);
         arenaPlayer.teleport(getLobby());
-        player.setMetadata("arena", new FixedMetadataValue(controller.getPlugin(), arenaPlayer));
+        controller.register(player, arenaPlayer);
         return arenaPlayer;
     }
 
@@ -1207,7 +1207,7 @@ public class Arena {
             }
             queue.remove(arenaPlayer);
         }
-        player.removeMetadata("arena", controller.getPlugin());
+        controller.unregister(player);
         check();
     }
 

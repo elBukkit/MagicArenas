@@ -6,9 +6,9 @@ import org.bukkit.Location;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Entity;
+
 import org.bukkit.entity.Player;
-import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
@@ -17,9 +17,12 @@ import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 public class ArenaController implements Runnable {
     private final Map<String, Arena> arenas = new HashMap<String, Arena>();
+    private final Map<Player, ArenaPlayer> arenaPlayers = new WeakHashMap<>();
+    private final Map<Entity, Arena> arenaMobs = new WeakHashMap<>();
     private final Plugin plugin;
     private final MageController magic;
     private final Object saveLock = new Object();
@@ -200,19 +203,8 @@ public class ArenaController implements Runnable {
         return arenas.get(arenaName.toLowerCase());
     }
 
-    public Arena getMobArena(LivingEntity entity) {
-        if (entity.hasMetadata("arena")) {
-            for (MetadataValue value : entity.getMetadata("arena")) {
-                if (value.getOwningPlugin().equals(getPlugin())) {
-                    Object arena = value.value();
-                    if (arena instanceof Arena) {
-                        return (Arena)value.value();
-                    }
-                }
-            }
-        }
-
-        return null;
+    public Arena getMobArena(Entity entity) {
+        return arenaMobs.get(entity);
     }
 
     public Arena getArena(Player player) {
@@ -226,18 +218,23 @@ public class ArenaController implements Runnable {
     }
 
     public ArenaPlayer getArenaPlayer(Player player) {
-        if (player.hasMetadata("arena")) {
-            for (MetadataValue value : player.getMetadata("arena")) {
-                if (value.getOwningPlugin().equals(getPlugin())) {
-                    Object arena = value.value();
-                    if (arena instanceof ArenaPlayer) {
-                        return (ArenaPlayer)value.value();
-                    }
-                }
-            }
-        }
+        return arenaPlayers.get(player);
+    }
 
-        return null;
+    public void unregister(Player player) {
+        arenaPlayers.remove(player);
+    }
+
+    public void register(Player player, ArenaPlayer arenaPlayer) {
+        arenaPlayers.put(player, arenaPlayer);
+    }
+
+    public void unregister(Entity entity) {
+        arenaMobs.remove(entity);
+    }
+
+    public void register(Entity entity, Arena arena) {
+        arenaMobs.put(entity, arena);
     }
 
     protected ConfigurationSection loadDataFile(String fileName) {
@@ -288,10 +285,6 @@ public class ArenaController implements Runnable {
         for (Arena arena : arenas.values()) {
             arena.reset();
         }
-    }
-
-    public boolean isInArena(Player player) {
-        return player.hasMetadata("arena");
     }
 
     public MageController getMagic() {
