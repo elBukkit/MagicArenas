@@ -56,7 +56,7 @@ public class ArenaListener implements Listener {
             return;
         }
         ArenaPlayer arenaPlayer = controller.getArenaPlayer(player);
-        if (arenaPlayer == null) {
+        if (arenaPlayer == null || !arenaPlayer.isBattling()) {
             return;
         }
         Arena arena = arenaPlayer.getArena();

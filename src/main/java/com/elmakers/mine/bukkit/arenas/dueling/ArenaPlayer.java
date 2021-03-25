@@ -374,4 +374,8 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
     public Mage getMage() {
         return mage;
     }
+
+    public boolean isBattling() {
+        return arena != null && arena.isBattling(this);
+    }
 }

@@ -916,7 +916,7 @@ public class Arena {
     }
 
     public void join(Player player) {
-        Arena currentArena = controller.getArena(player);
+        Arena currentArena = controller.getQueuedArena(player);
         if (currentArena != null) {
             if (currentArena == this) {
                 player.sendMessage(ChatColor.RED + "You are already in " + ChatColor.AQUA + currentArena.getName());
@@ -1434,7 +1434,7 @@ public class Arena {
                     " is not on the leaderboard for " + ChatColor.GOLD + getName());
         }
 
-        Arena currentArena = controller.getArena(player);
+        Arena currentArena = controller.getQueuedArena(player);
         if (currentArena != null) {
             sender.sendMessage(ChatColor.DARK_PURPLE + player.getDisplayName() + ChatColor.LIGHT_PURPLE + " is currently in " + ChatColor.GOLD + currentArena.getName());
         }
@@ -1822,5 +1822,9 @@ public class Arena {
 
     public void setLeaderboardSignType(Material material) {
         this.signMaterial = material;
+    }
+
+    public boolean isBattling(ArenaPlayer player) {
+        return players.contains(player);
     }
 }

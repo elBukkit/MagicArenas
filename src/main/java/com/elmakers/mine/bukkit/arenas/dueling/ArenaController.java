@@ -217,6 +217,11 @@ public class ArenaController implements Runnable {
 
     public Arena getArena(Player player) {
         ArenaPlayer arenaPlayer = getArenaPlayer(player);
+        return arenaPlayer == null || !arenaPlayer.isBattling() ? null : arenaPlayer.getArena();
+    }
+
+    public Arena getQueuedArena(Player player) {
+        ArenaPlayer arenaPlayer = getArenaPlayer(player);
         return arenaPlayer == null ? null : arenaPlayer.getArena();
     }
 
