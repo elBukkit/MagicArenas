@@ -38,6 +38,8 @@ public class ArenaStage {
     private int winSP = 0;
     private int winMoney = 0;
 
+    private boolean defaultDrops = false;
+
     public ArenaStage(Arena arena, int index) {
         this.arena = arena;
         this.index = index;
@@ -62,6 +64,7 @@ public class ArenaStage {
         winXP = configuration.getInt("win_xp");
         winSP = configuration.getInt("win_sp");
         winMoney = configuration.getInt("win_money");
+        defaultDrops = configuration.getBoolean("drops");
 
         if (configuration.contains("randomize_mob_spawn")) {
             randomizeMobSpawn = ConfigurationUtils.toVector(configuration.getString("randomize_mob_spawn"));
@@ -88,6 +91,7 @@ public class ArenaStage {
         configuration.set("win_xp", winXP);
         configuration.set("win_sp", winSP);
         configuration.set("win_money", winMoney);
+        configuration.set("drops", defaultDrops);
 
         if (randomizeMobSpawn != null) {
             configuration.set("randomize_mob_spawn", ConfigurationUtils.fromVector(randomizeMobSpawn));
@@ -219,10 +223,13 @@ public class ArenaStage {
                             );
                         }
                         num = (num + 1) % spawns.size();
-                        Entity spawnedEntity = mobType.spawn(magic, spawn);
+                        Entity spawnedEntity = mobType.spawn(spawn);
                         if (spawnedEntity != null) {
                             arena.getController().register(spawnedEntity, arena);
                             spawned.add(spawnedEntity);
+                            if (!defaultDrops) {
+                                magic.disableDrops(spawnedEntity);
+                            }
                         }
                     }
                 }
