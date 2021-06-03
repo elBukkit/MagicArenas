@@ -833,6 +833,10 @@ public class Arena {
         randomizeSpawn = vector;
     }
 
+    public void setRandomizeMobSpawn(Vector vector) {
+        getEditingStage().setRandomizeMobSpawn(vector);
+    }
+
     public void check() {
         if (state == ArenaState.COUNTDOWN) {
             if (!isReady()) {
@@ -862,7 +866,7 @@ public class Arena {
         if (state != ArenaState.WON && isMobArena()) {
             ArenaStage currentStage = getCurrentStage();
             if (currentStage.isFinished()) {
-                currentStage.finish();
+                currentStage.completed();
                 if (!nextStage()) {
                     state = ArenaState.WON;
                     server.getScheduler().runTaskLater(controller.getPlugin(), new Runnable() {
@@ -1190,6 +1194,10 @@ public class Arena {
 
     public int getInGamePlayers() {
         return players.size();
+    }
+
+    public Set<ArenaPlayer> getAllInGamePlayers() {
+        return players;
     }
 
     public void setName(String name) {

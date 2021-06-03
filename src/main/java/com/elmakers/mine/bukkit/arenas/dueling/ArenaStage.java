@@ -12,14 +12,17 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 public class ArenaStage {
+    private static Random random = new Random();
     private final Arena arena;
     private final int index;
     private List<ArenaMobSpawner> mobs = new ArrayList<ArenaMobSpawner>();
@@ -28,6 +31,12 @@ public class ArenaStage {
     private String startSpell;
     private String endSpell;
     private String name;
+
+    private Vector randomizeMobSpawn;
+
+    private int winXP = 0;
+    private int winSP = 0;
+    private int winMoney = 0;
 
     public ArenaStage(Arena arena, int index) {
         this.arena = arena;
@@ -49,6 +58,14 @@ public class ArenaStage {
         for (String s : configuration.getStringList("mob_spawns")){
             mobSpawns.add(ConfigurationUtils.toLocation(s));
         }
+        name = configuration.getString("name");
+        winXP = configuration.getInt("win_xp");
+        winSP = configuration.getInt("win_sp");
+        winMoney = configuration.getInt("win_money");
+
+        if (configuration.contains("randomize_mob_spawn")) {
+            randomizeMobSpawn = ConfigurationUtils.toVector(configuration.getString("randomize_mob_spawn"));
+        }
     }
 
     public void save(ConfigurationSection configuration) {
@@ -67,6 +84,14 @@ public class ArenaStage {
             mobSpawnList.add(ConfigurationUtils.fromLocation(spawn));
         }
         configuration.set("mob_spawns", mobSpawnList);
+        configuration.set("name", name);
+        configuration.set("win_xp", winXP);
+        configuration.set("win_sp", winSP);
+        configuration.set("win_money", winMoney);
+
+        if (randomizeMobSpawn != null) {
+            configuration.set("randomize_mob_spawn", ConfigurationUtils.fromVector(randomizeMobSpawn));
+        }
     }
 
     public void addMob(EntityData entityType, int count) {
@@ -74,6 +99,7 @@ public class ArenaStage {
     }
 
     public void describe(CommandSender sender, String prefix) {
+        sender.sendMessage(prefix + ChatColor.AQUA + getName());
         int mobSpawnSize = mobSpawns.size();
         if (mobSpawnSize == 1) {
             sender.sendMessage(prefix + ChatColor.BLUE + "Spawn Mobs: " + arena.printLocation(mobSpawns.get(0)));
@@ -95,6 +121,9 @@ public class ArenaStage {
                 sender.sendMessage(prefix + " " + describeMob(mob));
             }
         }
+        if (randomizeMobSpawn != null) {
+            sender.sendMessage(ChatColor.DARK_BLUE + " Randomize Spawning: " + ChatColor.BLUE + randomizeMobSpawn);
+        }
 
         if (startSpell != null) {
             sender.sendMessage(prefix + ChatColor.DARK_AQUA + "Cast at Start: " + ChatColor.AQUA + startSpell);
@@ -102,6 +131,16 @@ public class ArenaStage {
 
         if (endSpell != null) {
             sender.sendMessage(prefix + ChatColor.DARK_AQUA + "Cast at End: " + ChatColor.AQUA + endSpell);
+        }
+
+        if (winXP > 0) {
+            sender.sendMessage(ChatColor.AQUA + "Winning Reward: " + ChatColor.LIGHT_PURPLE + winXP + ChatColor.AQUA + " xp");
+        }
+        if (winSP > 0) {
+            sender.sendMessage(ChatColor.AQUA + "Winning Reward: " + ChatColor.LIGHT_PURPLE + winSP + ChatColor.AQUA + " sp");
+        }
+        if (winMoney > 0) {
+            sender.sendMessage(ChatColor.AQUA + "Winning Reward: $" + ChatColor.LIGHT_PURPLE + winMoney);
         }
     }
 
@@ -158,6 +197,7 @@ public class ArenaStage {
     }
 
     public void start() {
+        arena.messageInGamePlayers(getName());
         if (!mobs.isEmpty()) {
             MageController magic = arena.getController().getMagic();
             magic.setForceSpawn(true);
@@ -169,6 +209,15 @@ public class ArenaStage {
                     if (mobType == null) continue;
                     for (int i = 0; i < mobSpawner.getCount(); i++) {
                         Location spawn = spawns.get(num);
+                        if (randomizeMobSpawn != null) {
+                            spawn = spawn.clone();
+                            spawn.add
+                            (
+                                (2 * random.nextDouble() - 1) * randomizeMobSpawn.getX(),
+                                (2 * random.nextDouble() - 1) * randomizeMobSpawn.getY(),
+                                (2 * random.nextDouble() - 1) * randomizeMobSpawn.getZ()
+                            );
+                        }
                         num = (num + 1) % spawns.size();
                         Entity spawnedEntity = mobType.spawn(magic, spawn);
                         if (spawnedEntity != null) {
@@ -196,6 +245,29 @@ public class ArenaStage {
     public void mobDied(LivingEntity entity) {
         arena.getController().unregister(entity);
         spawned.remove(entity);
+    }
+
+    public void completed() {
+        arena.messageInGamePlayers(ChatColor.GREEN + "Congratulations!" + ChatColor.AQUA + "  You have passed " + ChatColor.DARK_AQUA + getName());
+
+        Set<ArenaPlayer> players = arena.getAllInGamePlayers();
+        for (ArenaPlayer player : players) {
+            Mage mage = player.getMage();
+            if (winXP > 0) {
+                mage.sendMessage(ChatColor.AQUA + "You have been awarded " + ChatColor.DARK_AQUA + Integer.toString(winXP) + ChatColor.AQUA + " experience!");
+                mage.giveExperience(winXP);
+            }
+            if (winSP > 0) {
+                mage.sendMessage(ChatColor.AQUA + "You have been awarded " + ChatColor.DARK_AQUA + Integer.toString(winSP) + ChatColor.AQUA + " spell points!");
+                mage.addSkillPoints(winSP);
+            }
+            if (winMoney > 0) {
+                mage.sendMessage(ChatColor.AQUA + "You have been awarded $" + ChatColor.DARK_AQUA + Integer.toString(winMoney) + ChatColor.AQUA + "!");
+                mage.addVaultCurrency(winMoney);
+            }
+        }
+
+        finish();
     }
 
     public void finish() {
@@ -233,7 +305,7 @@ public class ArenaStage {
 
     public String getName() {
         if (name != null) {
-            return name;
+            return ChatColor.translateAlternateColorCodes('&', name);
         }
         return "Stage " + getNumber();
     }
@@ -251,5 +323,21 @@ public class ArenaStage {
             entity.remove();
         }
         spawned.clear();;
+    }
+
+    public void setRandomizeMobSpawn(Vector vector) {
+        randomizeMobSpawn = vector;
+    }
+
+    public void setWinXP(int xp) {
+        winXP = Math.max(xp, 0);
+    }
+
+    public void setWinSP(int sp) {
+        winSP = Math.max(sp, 0);
+    }
+
+    public void setWinMoney(int money) {
+        winMoney = Math.max(money, 0);
     }
 }

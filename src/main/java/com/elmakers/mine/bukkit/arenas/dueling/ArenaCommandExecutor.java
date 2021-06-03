@@ -43,7 +43,8 @@ public class ArenaCommandExecutor implements TabExecutor {
         "announcer_range", "sp_win", "sp_lose", "sp_draw", "duration", "sudden_death",
         "sudden_death_effect", "start_commands", "border", "keep_inventory", "keep_level",
         "spell_start", "spell_end", "money_win", "money_lose", "money_draw", "item_wear",
-        "allow_consuming", "leaderboard_sign_type", "allow_melee", "allow_projectiles"
+        "allow_consuming", "leaderboard_sign_type", "allow_melee", "allow_projectiles",
+        "stage_xp_win", "stage_sp_win", "stage_money_win"
     };
 
     private final static String[] ARENA_LISTS = {
@@ -51,7 +52,7 @@ public class ArenaCommandExecutor implements TabExecutor {
     };
 
     private final static String[] ARENA_RANDOMIZE = {
-        "spawn"
+        "spawn", "mob_spawn"
     };
 
     private final static String[] BOOLEAN_PROPERTIES = {
@@ -445,6 +446,7 @@ public class ArenaCommandExecutor implements TabExecutor {
     protected void onAddArenaStage(CommandSender sender, Arena arena) {
         arena.addStage();
         showCurrentStage(sender, arena);
+        controller.save();
     }
 
     protected void onRemoveArenaStage(CommandSender sender, Arena arena) {
@@ -457,6 +459,7 @@ public class ArenaCommandExecutor implements TabExecutor {
         arena.removeStage();
         sender.sendMessage(ChatColor.AQUA + "Removed stage: " + ChatColor.DARK_AQUA + stage.getName());
         showCurrentStage(sender, arena);
+        controller.save();
     }
 
     protected void showCurrentStage(CommandSender sender, Arena arena) {
@@ -520,11 +523,21 @@ public class ArenaCommandExecutor implements TabExecutor {
     }
 
     protected void onDescribeArenaStage(CommandSender sender, Arena arena) {
-        sender.sendMessage("TODO");
+        ArenaStage stage = arena.getEditingStage();
+        stage.describe(sender, "");
     }
 
     protected void onNameArenaStage(CommandSender sender, Arena arena, String[] args) {
-        sender.sendMessage("TODO");
+        ArenaStage stage = arena.getEditingStage();
+        if (args.length == 0) {
+            stage.setName(null);
+            sender.sendMessage("Cleared name of " + ChatColor.YELLOW + stage.getName());
+            return;
+        }
+        String name = StringUtils.join(args, " ");
+        stage.setName(name);
+        sender.sendMessage("Set name to " + ChatColor.YELLOW + stage.getName());
+        controller.save();
     }
 
     protected void onConfigureArena(CommandSender sender, Arena arena, String propertyName, String[] args)
@@ -548,6 +561,19 @@ public class ArenaCommandExecutor implements TabExecutor {
                     Vector vector = ConfigurationUtils.toVector(vectorParameter);
                     sender.sendMessage(ChatColor.AQUA + "Set randomized spawn of " + arena.getName() + " to " + vector);
                     arena.setRandomizeSpawn(vector);
+                }
+                controller.save();
+                return;
+            }
+
+            if (randomizeType.equalsIgnoreCase("mob_spawn")) {
+                if (vectorParameter == null || vectorParameter.isEmpty()) {
+                    sender.sendMessage(ChatColor.RED + "Cleared randomized mob_spawn of " + arena.getName());
+                    arena.setRandomizeMobSpawn(null);
+                } else {
+                    Vector vector = ConfigurationUtils.toVector(vectorParameter);
+                    sender.sendMessage(ChatColor.AQUA + "Set randomized mob_spawn of " + arena.getName() + " to " + vector);
+                    arena.setRandomizeMobSpawn(vector);
                 }
                 controller.save();
                 return;
@@ -903,7 +929,8 @@ public class ArenaCommandExecutor implements TabExecutor {
             propertyName.equalsIgnoreCase("sp_win") || propertyName.equalsIgnoreCase("sp_lose") || propertyName.equalsIgnoreCase("sp_draw") ||
             propertyName.equalsIgnoreCase("money_win") || propertyName.equalsIgnoreCase("money_lose") || propertyName.equalsIgnoreCase("money_draw") ||
             propertyName.equalsIgnoreCase("countdown") || propertyName.equalsIgnoreCase("countdown_max") || propertyName.equalsIgnoreCase("announcer_range") ||
-            propertyName.equalsIgnoreCase("duration") || propertyName.equalsIgnoreCase("sudden_death")
+            propertyName.equalsIgnoreCase("duration") || propertyName.equalsIgnoreCase("sudden_death") ||
+            propertyName.equalsIgnoreCase("stage_money_win") || propertyName.equalsIgnoreCase("stage_xp_win")|| propertyName.equalsIgnoreCase("stage_sp_win")
         ) {
             Integer intValue;
             try {
@@ -1053,6 +1080,30 @@ public class ArenaCommandExecutor implements TabExecutor {
             if (propertyName.equalsIgnoreCase("money_draw")) {
                 arena.setDrawMoney(intValue);
                 sender.sendMessage(ChatColor.AQUA + "Set draw money of " + arena.getName() + " to " + intValue);
+                controller.save();
+                return;
+            }
+
+            if (propertyName.equalsIgnoreCase("stage_sp_win")) {
+                ArenaStage stage = arena.getEditingStage();
+                stage.setWinSP(intValue);
+                sender.sendMessage(ChatColor.AQUA + "Set winning SP of " + stage.getName() + " to " + intValue);
+                controller.save();
+                return;
+            }
+
+            if (propertyName.equalsIgnoreCase("stage_xp_win")) {
+                ArenaStage stage = arena.getEditingStage();
+                stage.setWinXP(intValue);
+                sender.sendMessage(ChatColor.AQUA + "Set winning XP of " + stage.getName() + " to " + intValue);
+                controller.save();
+                return;
+            }
+
+            if (propertyName.equalsIgnoreCase("stage_money_win")) {
+                ArenaStage stage = arena.getEditingStage();
+                stage.setWinMoney(intValue);
+                sender.sendMessage(ChatColor.AQUA + "Set winning money of " + stage.getName() + " to " + intValue);
                 controller.save();
                 return;
             }

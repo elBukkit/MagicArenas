@@ -3,6 +3,7 @@
 ## 4.0
 
  - TODO: Prevent teleporting into an arena
+ - TODO: Teleporting out of a mob arena broke it
 
  - Updated to Spigot API 1.14, will no longer work on previous versions. May also require Magic 8.1 or higher.
  - Add item_wear arena property, to turn off items and armor getting worn in a battle
