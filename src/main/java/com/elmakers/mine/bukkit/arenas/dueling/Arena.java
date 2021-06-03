@@ -57,6 +57,7 @@ public class Arena {
     private List<Location> spawns = new ArrayList<Location>();
     private List<ArenaStage> stages = new ArrayList<ArenaStage>();
     private int currentStage = 0;
+    private int editingStage = 0;
     private final ArenaController controller;
 
     private Location center;
@@ -215,7 +216,7 @@ public class Arena {
         if (configuration.contains("stages")) {
             Collection<ConfigurationSection> stageConfigurations = ConfigurationUtils.getNodeList(configuration, "stages");
             for (ConfigurationSection stageConfiguration : stageConfigurations) {
-                stages.add(new ArenaStage(this, controller.getMagic(), stageConfiguration));
+                stages.add(new ArenaStage(this, stages.size(), controller.getMagic(), stageConfiguration));
             }
         }
 
@@ -384,6 +385,10 @@ public class Arena {
         state = ArenaState.ACTIVE;
         started = System.currentTimeMillis();
         lastTick = started;
+        currentStage = 0;
+        for (ArenaStage stage : stages) {
+            stage.reset();
+        }
 
         if (startCommands != null && !startCommands.isEmpty()) {
             String[] commands = StringUtils.split(startCommands, ',');
@@ -704,25 +709,25 @@ public class Arena {
     }
 
     public void addMobSpawn(Location location) {
-        getOrCreateCurrentStage().addMobSpawn(location);
+        getEditingStage().addMobSpawn(location);
     }
 
     public Location removeMobSpawn(Location location) {
-        return getOrCreateCurrentStage().removeMobSpawn(location);
+        return getEditingStage().removeMobSpawn(location);
     }
 
     public void setStartSpell(String startSpell) {
-        ArenaStage stage = getOrCreateCurrentStage();
+        ArenaStage stage = getEditingStage();
         stage.setStartSpell(startSpell);
     }
 
     public void setEndSpell(String endSpell) {
-        ArenaStage stage = getOrCreateCurrentStage();
+        ArenaStage stage = getEditingStage();
         stage.setEndSpell(endSpell);
     }
 
     public void addMob(EntityData mobType, int count) {
-        ArenaStage stage = getOrCreateCurrentStage();
+        ArenaStage stage = getEditingStage();
         stage.addMob(mobType, count);
     }
 
@@ -733,13 +738,48 @@ public class Arena {
         return null;
     }
 
-    public ArenaStage getOrCreateCurrentStage() {
-        if (stages.isEmpty()) {
-            stages.add(new ArenaStage(this));
-            currentStage = 0;
+    public boolean nextStage() {
+        currentStage++;
+        ArenaStage currentStage = getCurrentStage();
+        if (currentStage != null) {
+            currentStage.start();
         }
+        return currentStage != null;
+    }
 
-        return stages.get(currentStage);
+    public void addStage() {
+        stages.add(new ArenaStage(this, stages.size()));
+        editingStage = stages.size() - 1;
+    }
+
+    public void removeStage() {
+        if (stages.size() <= 1) return;
+        if (editingStage < 0 || editingStage >= stages.size()) return;
+        stages.remove(editingStage);
+        editingStage = 0;
+    }
+
+    public ArenaStage getEditingStage() {
+        return stages.get(getEditingStageIndex());
+    }
+
+    public void setEditingStage(int stage) {
+        editingStage = stage;
+    }
+
+    public int getEditingStageIndex() {
+        if (stages.isEmpty()) {
+            stages.add(new ArenaStage(this, 0));
+            editingStage = 0;
+        }
+        if (editingStage < 0 || editingStage >= stages.size()) {
+            editingStage = 0;
+        }
+        return editingStage;
+    }
+
+    public int getStageCount() {
+        return stages.size();
     }
 
     public void setMinPlayers(int players) {
@@ -822,20 +862,23 @@ public class Arena {
         if (state != ArenaState.WON && isMobArena()) {
             ArenaStage currentStage = getCurrentStage();
             if (currentStage.isFinished()) {
-                state = ArenaState.WON;
-                server.getScheduler().runTaskLater(controller.getPlugin(), new Runnable() {
-                    @Override
-                    public void run() {
-                        for (final ArenaPlayer winner : players) {
-                            if (winner != null)
-                            {
-                                playerWon(winner);
-                                winner.heal();
+                currentStage.finish();
+                if (!nextStage()) {
+                    state = ArenaState.WON;
+                    server.getScheduler().runTaskLater(controller.getPlugin(), new Runnable() {
+                        @Override
+                        public void run() {
+                            for (final ArenaPlayer winner : players) {
+                                if (winner != null)
+                                {
+                                    playerWon(winner);
+                                    winner.heal();
+                                }
                             }
+                            finish();
                         }
-                        finish();
-                    }
-                }, 5 * 20);
+                    }, 5 * 20);
+                }
             }
         } else if (players.size() == 1 && state != ArenaState.WON) {
             state = ArenaState.WON;

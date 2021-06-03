@@ -12,6 +12,7 @@ import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
@@ -20,11 +21,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 public class ArenaCommandExecutor implements TabExecutor {
     private final static String[] SUB_COMMANDS = {
         "start", "stop", "add", "remove", "configure", "describe", "join", "leave", "load",
-        "save", "stats", "reset"
+        "save", "stats", "reset", "stage"
+    };
+
+
+    private final static String[] STAGE_COMMANDS = {
+        "add", "remove", "name", "next", "previous", "go", "describe"
     };
 
     private final static String[] ARENA_PROPERTIES = {
@@ -72,6 +79,8 @@ public class ArenaCommandExecutor implements TabExecutor {
             if (args[0].equalsIgnoreCase("reset")) {
                 allOptions.add("ALL");
             }
+        } else if (args.length == 3 && args[0].equalsIgnoreCase("stage")) {
+            allOptions.addAll(Arrays.asList(STAGE_COMMANDS));
         } else if (args.length == 3 && args[0].equalsIgnoreCase("configure")) {
             allOptions.addAll(Arrays.asList(ARENA_PROPERTIES));
         } else if (args.length == 4 && args[0].equalsIgnoreCase("configure") && (args[2].equalsIgnoreCase("add") || args[2].equalsIgnoreCase("remove"))) {
@@ -101,6 +110,11 @@ public class ArenaCommandExecutor implements TabExecutor {
             allOptions.addAll(controller.getMagic().getPlayerNames());
         } else if (args.length == 5 && args[0].equalsIgnoreCase("configure") && args[2].equalsIgnoreCase("add") && args[3].equalsIgnoreCase("mob")) {
             allOptions.addAll(controller.getMagic().getMobKeys());
+            for (EntityType entityType : EntityType.values()) {
+                if (entityType.isAlive() && entityType.isSpawnable()) {
+                    allOptions.add(entityType.name().toLowerCase());
+                }
+            }
         } else if (args.length == 4 && args[0].equalsIgnoreCase("configure") && args[2].equalsIgnoreCase("leaderboard_sign_type")) {
             for (Material sign : controller.getMagic().getMaterialSetManager().getMaterialSet("signs").getMaterials()) {
                 allOptions.add(sign.name().toLowerCase());
@@ -145,6 +159,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             sender.sendMessage("/arena join [name] <player> : Force a player to join an arena");
             sender.sendMessage("/arena leave [name] <player> : Force a player to leave an arena");
             sender.sendMessage("/arena configure [name] [property] <value> : Reconfigure an arena");
+            sender.sendMessage("/arena stage [name] [command] <value> : Display or configure mob arena stages");
             sender.sendMessage(ChatColor.YELLOW + "-----------------------------------------------");
             return true;
         }
@@ -382,9 +397,134 @@ public class ArenaCommandExecutor implements TabExecutor {
             return true;
         }
 
+        if (subCommand.equalsIgnoreCase("stage")) {
+            if (args.length < 3) {
+                sender.sendMessage("TODO: Stage overview for arena");
+                return true;
+            }
+            String stageCommand = args[2];
+            args = Arrays.copyOfRange(args, 3, args.length);
+            onArenaStage(sender, arena, stageCommand, args);
+            return true;
+        }
+
         sender.sendMessage(ChatColor.RED + "Not a valid option: " + subCommand);
         sender.sendMessage(ChatColor.AQUA + "Options: " + StringUtils.join(SUB_COMMANDS, ", "));
         return true;
+    }
+
+    protected void onArenaStage(CommandSender sender, Arena arena, String stageCommand, String[] args) {
+        switch (stageCommand) {
+            case "name":
+                onNameArenaStage(sender, arena, args);
+                break;
+            case "go":
+                onGoArenaStage(sender, arena, args);
+                break;
+            case "add":
+                onAddArenaStage(sender, arena);
+                break;
+            case "remove":
+                onRemoveArenaStage(sender, arena);
+                break;
+            case "describe":
+                onDescribeArenaStage(sender, arena);
+                break;
+            case "next":
+                onNextArenaStage(sender, arena);
+                break;
+            case "previous":
+                onPreviousArenaStage(sender, arena);
+                break;
+            default:
+                sender.sendMessage(ChatColor.RED + "Not a valid stage command: " + stageCommand);
+                sender.sendMessage(ChatColor.AQUA + "Options: " + StringUtils.join(STAGE_COMMANDS, ", "));
+        }
+    }
+
+    protected void onAddArenaStage(CommandSender sender, Arena arena) {
+        arena.addStage();
+        showCurrentStage(sender, arena);
+    }
+
+    protected void onRemoveArenaStage(CommandSender sender, Arena arena) {
+        int stageCount = arena.getStageCount();
+        if (stageCount <= 1) {
+            sender.sendMessage(ChatColor.RED + "Can't remove the last stage");
+            return;
+        }
+        ArenaStage stage = arena.getEditingStage();
+        arena.removeStage();
+        sender.sendMessage(ChatColor.AQUA + "Removed stage: " + ChatColor.DARK_AQUA + stage.getName());
+        showCurrentStage(sender, arena);
+    }
+
+    protected void showCurrentStage(CommandSender sender, Arena arena) {
+        ArenaStage stage = arena.getEditingStage();
+        int stageNumber = arena.getEditingStageIndex() + 1;
+        sender.sendMessage(ChatColor.AQUA + "Current stage is now " + ChatColor.GOLD +
+                stage.getName() + ChatColor.GRAY + " (" + ChatColor.YELLOW + stageNumber + ChatColor.GRAY + ")");
+    }
+
+    protected void onNextArenaStage(CommandSender sender, Arena arena) {
+        int currentStage = arena.getEditingStageIndex();
+        int stageCount = arena.getStageCount();
+        if (currentStage >= stageCount - 1) {
+            sender.sendMessage(ChatColor.YELLOW + "At end of list, wrapped to beginning");
+            currentStage = 0;
+        } else {
+            currentStage++;
+        }
+        arena.setEditingStage(currentStage);
+        showCurrentStage(sender, arena);
+    }
+
+    protected void onPreviousArenaStage(CommandSender sender, Arena arena) {
+        int currentStage = arena.getEditingStageIndex();
+        int stageCount = arena.getStageCount();
+        if (currentStage <= 0) {
+            sender.sendMessage(ChatColor.YELLOW + "At beginning of list, wrapped to end");
+            currentStage = stageCount - 1;
+        } else {
+            currentStage--;
+        }
+        arena.setEditingStage(currentStage);
+        showCurrentStage(sender, arena);
+    }
+
+    protected void onGoArenaStage(CommandSender sender, Arena arena, String[] args) {
+        int stageCount = arena.getStageCount();
+        int stageNumber = 0;
+        if (args.length > 0) {
+            try {
+                stageNumber = Integer.parseInt(args[0]);
+            } catch (Exception ex) {
+
+            }
+        }
+        String validStages = "1";
+        if (stageCount > 1) {
+            validStages += " - " + stageCount;
+        }
+        if (stageNumber <= 0) {
+            sender.sendMessage(ChatColor.RED + "Usage: " + ChatColor.YELLOW + "/arena stage go [" + validStages + "}");
+            return;
+        }
+        int stageIndex = stageNumber - 1;
+        if (stageIndex < 0 || stageIndex >= stageCount) {
+            sender.sendMessage(ChatColor.RED + "Invalid stage number, expecting: " + ChatColor.YELLOW + validStages);
+            return;
+        }
+        arena.setEditingStage(stageIndex);
+        showCurrentStage(sender, arena);
+    }
+
+    protected void onDescribeArenaStage(CommandSender sender, Arena arena) {
+        sender.sendMessage("TODO");
+    }
+
+    protected void onNameArenaStage(CommandSender sender, Arena arena, String[] args) {
+        sender.sendMessage("TODO");
     }
 
     protected void onConfigureArena(CommandSender sender, Arena arena, String propertyName, String[] args)
@@ -495,8 +635,10 @@ public class ArenaCommandExecutor implements TabExecutor {
                         return;
                     }
                     arena.addMob(mobType, count);
+                    ArenaStage stage = arena.getEditingStage();
                     controller.save();
-                    sender.sendMessage(ChatColor.AQUA + "Added " + ChatColor.YELLOW + count + ChatColor.BLUE + " " + mobType.describe());
+                    sender.sendMessage(ChatColor.AQUA + "Added " + ChatColor.YELLOW + count + ChatColor.BLUE
+                            + " " + mobType.describe() + ChatColor.AQUA + " to " + ChatColor.GOLD + stage.getName());
                     return;
                 }
 

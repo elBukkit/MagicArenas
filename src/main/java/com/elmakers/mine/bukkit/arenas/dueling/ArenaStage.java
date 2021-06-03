@@ -21,18 +21,22 @@ import java.util.Set;
 
 public class ArenaStage {
     private final Arena arena;
+    private final int index;
     private List<ArenaMobSpawner> mobs = new ArrayList<ArenaMobSpawner>();
     private List<Location> mobSpawns = new ArrayList<Location>();
     private Set<Entity> spawned = new HashSet<Entity>();
     private String startSpell;
     private String endSpell;
+    private String name;
 
-    public ArenaStage(Arena arena) {
+    public ArenaStage(Arena arena, int index) {
         this.arena = arena;
+        this.index = index;
     }
 
-    public ArenaStage(Arena arena, MageController controller, ConfigurationSection configuration) {
+    public ArenaStage(Arena arena, int index, MageController controller, ConfigurationSection configuration) {
         this.arena = arena;
+        this.index = index;
         if (configuration.contains("mobs")) {
             Collection<ConfigurationSection> mobConfigurations = ConfigurationUtils.getNodeList(configuration, "mobs");
             for (ConfigurationSection mobConfiguration : mobConfigurations) {
@@ -225,5 +229,27 @@ public class ArenaStage {
         }
 
         return true;
+    }
+
+    public String getName() {
+        if (name != null) {
+            return name;
+        }
+        return "Stage " + getNumber();
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getNumber() {
+        return index + 1;
+    }
+
+    public void reset() {
+        for (Entity entity : spawned) {
+            entity.remove();
+        }
+        spawned.clear();;
     }
 }

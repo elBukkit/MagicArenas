@@ -7,7 +7,7 @@ depend: [Magic]
 commands:
    arena:
      description: Admin commands for managing arenas
-     usage: /arena [load, add, remove, describe, configure, start, stop, join, leave]
+     usage: /arena [load, add, remove, describe, configure, stage, start, stop, join, leave]
      permission: MagicArenas.commands.arena
 
 permissions:
@@ -45,6 +45,14 @@ permissions:
     default: op
   MagicArenas.commands.arena.reset:
     description: Player may use the /arena reset command
+    type: boolean
+    default: op
+  MagicArenas.commands.arena.configure:
+    description: Player may use the /arena configure command
+    type: boolean
+    default: op
+  MagicArenas.commands.arena.stage:
+    description: Player may use the /arena stage command
     type: boolean
     default: op
   MagicArenas.commands.arena.join.other:
