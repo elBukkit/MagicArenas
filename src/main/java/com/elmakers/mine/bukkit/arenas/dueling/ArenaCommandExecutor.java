@@ -653,13 +653,6 @@ public class ArenaCommandExecutor implements TabExecutor {
         ||  propertyName.equalsIgnoreCase("center") || propertyName.equalsIgnoreCase("exit")
         ||  propertyName.equalsIgnoreCase("add") || propertyName.equalsIgnoreCase("remove")
         ) {
-            if (!(sender instanceof Player)) {
-                sender.sendMessage(ChatColor.RED + "Must be used in-game");
-                return;
-            }
-            Player player = (Player) sender;
-            Location location = player.getLocation();
-
             boolean isAdd = propertyName.equalsIgnoreCase("add");
             boolean isRemove = propertyName.equalsIgnoreCase("remove");
             if (isAdd || isRemove)
@@ -670,6 +663,13 @@ public class ArenaCommandExecutor implements TabExecutor {
                 }
 
                 if (subItem.equalsIgnoreCase("spawn")) {
+                    if (!(sender instanceof Player)) {
+                        sender.sendMessage(ChatColor.RED + "Must be used in-game");
+                        return;
+                    }
+                    Player player = (Player) sender;
+                    Location location = player.getLocation();
+
                     if (isAdd) {
                         arena.addSpawn(location);
                         controller.save();
@@ -686,6 +686,13 @@ public class ArenaCommandExecutor implements TabExecutor {
 
                     return;
                 } else if (subItem.equalsIgnoreCase("mob_spawn")) {
+                    if (!(sender instanceof Player)) {
+                        sender.sendMessage(ChatColor.RED + "Must be used in-game");
+                        return;
+                    }
+                    Player player = (Player) sender;
+                    Location location = player.getLocation();
+
                     if (isAdd) {
                         arena.addMobSpawn(location);
                         controller.save();
@@ -752,6 +759,13 @@ public class ArenaCommandExecutor implements TabExecutor {
                 sender.sendMessage(ChatColor.AQUA + "Options: " + StringUtils.join(ARENA_LISTS, ", "));
                 return;
             }
+
+            if (!(sender instanceof Player)) {
+                sender.sendMessage(ChatColor.RED + "Must be used in-game");
+                return;
+            }
+            Player player = (Player) sender;
+            Location location = player.getLocation();
 
             if (propertyName.equalsIgnoreCase("lobby")) {
                 arena.setLobby(location);
