@@ -321,9 +321,9 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
     }
 
     public void sendMessage(String message) {
-        Player player = getPlayer();
-        if (player != null) {
-            player.sendMessage(message);
+        Mage mage = getMage();
+        if (mage != null) {
+            mage.sendMessage(message);
         }
     }
 

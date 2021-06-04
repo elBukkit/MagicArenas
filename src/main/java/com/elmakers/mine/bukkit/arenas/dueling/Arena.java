@@ -528,10 +528,7 @@ public class Arena {
 
     protected void messagePlayers(String message, Collection<ArenaPlayer> players) {
         for (ArenaPlayer arenaPlayer : players) {
-            Player player = arenaPlayer.getPlayer();
-            if (player != null) {
-                player.sendMessage(message);
-            }
+            arenaPlayer.sendMessage(message);
         }
     }
 
@@ -939,6 +936,7 @@ public class Arena {
             updateLeaderboard(loser);
         }
         updateLeaderboard();
+        winner.sendMessage("t:" + ChatColor.AQUA + "WINNER!");
         winner.sendMessage(ChatColor.AQUA + "You have won! Congratulations!");
         int winCount = winner.getWins();
         int lostCount = winner.getLosses();

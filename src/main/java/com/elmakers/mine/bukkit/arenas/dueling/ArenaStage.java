@@ -222,8 +222,8 @@ public class ArenaStage {
     }
 
     public void start() {
-        arena.messageInGamePlayers(getName());
         if (!mobs.isEmpty()) {
+            arena.messageInGamePlayers("t:" + getName());
             MageController magic = arena.getController().getMagic();
             magic.setForceSpawn(true);
             List<ArenaPlayer> players = new ArrayList<>(arena.getAllInGamePlayers());
