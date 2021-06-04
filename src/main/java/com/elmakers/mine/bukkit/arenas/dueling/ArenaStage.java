@@ -312,14 +312,7 @@ public class ArenaStage {
                 spell.cast();
             }
         }
-
-        for (Entity entity : spawned) {
-            if (entity.isValid()) {
-                arena.getController().unregister(entity);;
-                entity.remove();
-            }
-        }
-        spawned.clear();
+        reset();
     }
 
     public boolean hasMobs() {
@@ -327,13 +320,19 @@ public class ArenaStage {
     }
 
     public boolean isFinished() {
-        for (Entity entity : spawned) {
-            if (entity.isValid()) {
-                return false;
+        checkSpawns();
+        return spawned.isEmpty();
+    }
+
+    public void checkSpawns() {
+        Iterator<Entity> it = spawned.iterator();
+        while (it.hasNext()) {
+            Entity entity = it.next();
+            if (entity.isDead() || !entity.isValid()) {
+                arena.getController().unregister(entity);
+                it.remove();
             }
         }
-
-        return true;
     }
 
     public String getName() {
@@ -353,9 +352,12 @@ public class ArenaStage {
 
     public void reset() {
         for (Entity entity : spawned) {
-            entity.remove();
+            if (entity.isValid()) {
+                arena.getController().unregister(entity);
+                entity.remove();
+            }
         }
-        spawned.clear();;
+        spawned.clear();
     }
 
     public void setRandomizeMobSpawn(Vector vector) {
@@ -376,5 +378,10 @@ public class ArenaStage {
 
     public List<ArenaMobSpawner> getMobSpawners() {
         return mobs;
+    }
+
+    public int getActiveMobs() {
+        checkSpawns();
+        return spawned.size();
     }
 }

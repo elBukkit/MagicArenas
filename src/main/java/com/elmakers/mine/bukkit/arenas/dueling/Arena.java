@@ -1150,6 +1150,10 @@ public class Arena {
             } else {
                 sender.sendMessage(ChatColor.BLUE + "Stages: " + ChatColor.GRAY + numStages);
             }
+            if (state == ArenaState.ACTIVE) {
+                ArenaStage currentStage = getCurrentStage();
+                sender.sendMessage(ChatColor.BLUE + "Active mobs: " + ChatColor.GRAY + currentStage.getActiveMobs());
+            }
         }
 
         if (portalDamage > 0 || portalEnterDamage > 0) {
