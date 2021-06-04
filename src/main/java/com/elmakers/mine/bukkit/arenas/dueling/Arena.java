@@ -117,9 +117,9 @@ public class Arena {
     private boolean itemWear;
     private boolean keepInventory;
     private boolean keepLevel;
-    private boolean allowConsuming;
-    private boolean allowMelee;
-    private boolean allowProjectiles;
+    private boolean allowConsuming = true;
+    private boolean allowMelee = true;
+    private boolean allowProjectiles = true;
 
     public Arena(final String key, final ArenaController controller) {
         this.key = key;

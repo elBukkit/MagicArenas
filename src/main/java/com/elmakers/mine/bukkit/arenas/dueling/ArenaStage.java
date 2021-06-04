@@ -43,7 +43,7 @@ public class ArenaStage {
     private int winMoney = 0;
 
     private boolean defaultDrops = false;
-    private boolean forceTarget = false;
+    private boolean forceTarget = true;
 
     public ArenaStage(Arena arena, int index) {
         this.arena = arena;
