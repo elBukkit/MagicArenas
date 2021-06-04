@@ -31,7 +31,7 @@ public class ArenaCommandExecutor implements TabExecutor {
 
 
     private final static String[] STAGE_COMMANDS = {
-        "add", "remove", "name", "next", "previous", "go", "describe"
+        "add", "remove", "name", "next", "previous", "go", "describe", "addbefore", "addafter", "move"
     };
 
     private final static String[] ARENA_PROPERTIES = {
@@ -436,6 +436,15 @@ public class ArenaCommandExecutor implements TabExecutor {
             case "go":
                 onGoArenaStage(sender, arena, args);
                 break;
+            case "move":
+                onMoveArenaStage(sender, arena, args);
+                break;
+            case "addafter":
+                onAddAfterArenaStage(sender, arena);
+                break;
+            case "addbefore":
+                onAddBeforeArenaStage(sender, arena);
+                break;
             case "add":
                 onAddArenaStage(sender, arena);
                 break;
@@ -455,6 +464,18 @@ public class ArenaCommandExecutor implements TabExecutor {
                 sender.sendMessage(ChatColor.RED + "Not a valid stage command: " + stageCommand);
                 sender.sendMessage(ChatColor.AQUA + "Options: " + StringUtils.join(STAGE_COMMANDS, ", "));
         }
+    }
+
+    protected void onAddAfterArenaStage(CommandSender sender, Arena arena) {
+        arena.addStageAfterCurrent();
+        showCurrentStage(sender, arena);
+        controller.save();
+    }
+
+    protected void onAddBeforeArenaStage(CommandSender sender, Arena arena) {
+        arena.addStageBeforeCurrent();
+        showCurrentStage(sender, arena);
+        controller.save();
     }
 
     protected void onAddArenaStage(CommandSender sender, Arena arena) {
@@ -509,6 +530,33 @@ public class ArenaCommandExecutor implements TabExecutor {
         showCurrentStage(sender, arena);
     }
 
+    protected void onMoveArenaStage(CommandSender sender, Arena arena, String[] args) {
+        String validStages = "1";
+        int stageCount = arena.getStageCount();
+        if (stageCount > 1) {
+            validStages += " - " + stageCount;
+        }
+        if (args.length == 0) {
+            sender.sendMessage(ChatColor.RED + "Usage: " + ChatColor.YELLOW + "/arena stage move [" + validStages + "]");
+            return;
+        }
+
+        int stageNumber = 0;
+        if (args.length > 0) {
+            try {
+                stageNumber = Integer.parseInt(args[0]);
+            } catch (Exception ex) {
+
+            }
+        }
+        if (stageNumber < 1 || stageNumber > stageCount) {
+            sender.sendMessage(ChatColor.RED + "Not a valid stage number: " + stageNumber + ", use: " + validStages);
+            return;
+        }
+        arena.moveCurrentStage(stageNumber);
+        showCurrentStage(sender, arena);
+    }
+
     protected void onGoArenaStage(CommandSender sender, Arena arena, String[] args) {
         int stageCount = arena.getStageCount();
         int stageNumber = 0;
@@ -524,7 +572,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             validStages += " - " + stageCount;
         }
         if (stageNumber <= 0) {
-            sender.sendMessage(ChatColor.RED + "Usage: " + ChatColor.YELLOW + "/arena stage go [" + validStages + "}");
+            sender.sendMessage(ChatColor.RED + "Usage: " + ChatColor.YELLOW + "/arena stage go [" + validStages + "]");
             return;
         }
         int stageIndex = stageNumber - 1;

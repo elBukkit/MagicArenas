@@ -754,11 +754,36 @@ public class Arena {
         editingStage = stages.size() - 1;
     }
 
+    public void addStageBeforeCurrent() {
+        stages.add(editingStage, new ArenaStage(this, stages.size()));
+        reindexStages();
+    }
+
+    public void addStageAfterCurrent() {
+        editingStage++;
+        stages.add(editingStage, new ArenaStage(this, stages.size()));
+        reindexStages();
+    }
+
+    public void moveCurrentStage(int newIndex) {
+        ArenaStage moveStage = stages.remove(editingStage);
+        editingStage = newIndex;
+        stages.add(editingStage, moveStage);
+        reindexStages();
+    }
+
     public void removeStage() {
         if (stages.size() <= 1) return;
         if (editingStage < 0 || editingStage >= stages.size()) return;
         stages.remove(editingStage);
         editingStage = 0;
+        reindexStages();
+    }
+
+    public void reindexStages() {
+        for (int i = 0; i < stages.size(); i++) {
+            stages.get(i).setIndex(i);
+        }
     }
 
     public ArenaStage getEditingStage() {
@@ -1147,6 +1172,9 @@ public class Arena {
                 stages.get(0).describe(sender, " ");
             } else {
                 sender.sendMessage(ChatColor.BLUE + "Stages: " + ChatColor.GRAY + numStages);
+                for (ArenaStage stage : stages) {
+                    sender.sendMessage(" " + ChatColor.GRAY + stage.getName() + ": " + ChatColor.AQUA + stage.getName());
+                }
             }
             if (state == ArenaState.ACTIVE) {
                 ArenaStage currentStage = getCurrentStage();

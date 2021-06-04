@@ -28,7 +28,7 @@ import java.util.Set;
 public class ArenaStage {
     private static Random random = new Random();
     private final Arena arena;
-    private final int index;
+    private int index;
     private List<ArenaMobSpawner> mobs = new ArrayList<ArenaMobSpawner>();
     private List<Location> mobSpawns = new ArrayList<Location>();
     private Set<Entity> spawned = new HashSet<Entity>();
@@ -383,5 +383,9 @@ public class ArenaStage {
     public int getActiveMobs() {
         checkSpawns();
         return spawned.size();
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
     }
 }
