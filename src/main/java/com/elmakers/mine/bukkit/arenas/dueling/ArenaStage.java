@@ -5,11 +5,14 @@ import com.elmakers.mine.bukkit.api.magic.MageController;
 import com.elmakers.mine.bukkit.api.entity.EntityData;
 import com.elmakers.mine.bukkit.api.spell.Spell;
 import com.elmakers.mine.bukkit.utility.ConfigurationUtils;
+import com.elmakers.mine.bukkit.utility.RandomUtils;
+
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
+import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.util.Vector;
@@ -17,6 +20,7 @@ import org.bukkit.util.Vector;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -39,6 +43,7 @@ public class ArenaStage {
     private int winMoney = 0;
 
     private boolean defaultDrops = false;
+    private boolean forceTarget = false;
 
     public ArenaStage(Arena arena, int index) {
         this.arena = arena;
@@ -51,7 +56,10 @@ public class ArenaStage {
         if (configuration.contains("mobs")) {
             Collection<ConfigurationSection> mobConfigurations = ConfigurationUtils.getNodeList(configuration, "mobs");
             for (ConfigurationSection mobConfiguration : mobConfigurations) {
-                mobs.add(new ArenaMobSpawner(controller, mobConfiguration));
+                ArenaMobSpawner mob = new ArenaMobSpawner(controller, mobConfiguration);
+                if (mob.isValid()) {
+                    mobs.add(mob);
+                }
             }
         }
         startSpell = configuration.getString("spell_start");
@@ -65,6 +73,7 @@ public class ArenaStage {
         winSP = configuration.getInt("win_sp");
         winMoney = configuration.getInt("win_money");
         defaultDrops = configuration.getBoolean("drops");
+        forceTarget = configuration.getBoolean("aggro", true);
 
         if (configuration.contains("randomize_mob_spawn")) {
             randomizeMobSpawn = ConfigurationUtils.toVector(configuration.getString("randomize_mob_spawn"));
@@ -74,6 +83,7 @@ public class ArenaStage {
     public void save(ConfigurationSection configuration) {
         List<ConfigurationSection> mobsConfigurations = new ArrayList<ConfigurationSection>();
         for (ArenaMobSpawner mob : mobs) {
+            if (!mob.isValid()) continue;
             ConfigurationSection section = new MemoryConfiguration();
             mob.save(section);
             mobsConfigurations.add(section);
@@ -92,6 +102,7 @@ public class ArenaStage {
         configuration.set("win_sp", winSP);
         configuration.set("win_money", winMoney);
         configuration.set("drops", defaultDrops);
+        configuration.set("aggro", forceTarget);
 
         if (randomizeMobSpawn != null) {
             configuration.set("randomize_mob_spawn", ConfigurationUtils.fromVector(randomizeMobSpawn));
@@ -100,6 +111,16 @@ public class ArenaStage {
 
     public void addMob(EntityData entityType, int count) {
         mobs.add(new ArenaMobSpawner(entityType, count));
+    }
+
+    public void removeMob(EntityData entityType) {
+        Iterator<ArenaMobSpawner> it = mobs.iterator();
+        while (it.hasNext()) {
+            ArenaMobSpawner spawner = it.next();
+            if (spawner.getEntity().getKey().equalsIgnoreCase(entityType.getKey())) {
+                it.remove();
+            }
+        }
     }
 
     public void describe(CommandSender sender, String prefix) {
@@ -205,6 +226,7 @@ public class ArenaStage {
         if (!mobs.isEmpty()) {
             MageController magic = arena.getController().getMagic();
             magic.setForceSpawn(true);
+            List<ArenaPlayer> players = new ArrayList<>(arena.getAllInGamePlayers());
             try {
                 List<Location> spawns = getMobSpawns();
                 int num = 0;
@@ -229,6 +251,10 @@ public class ArenaStage {
                             spawned.add(spawnedEntity);
                             if (!defaultDrops) {
                                 magic.disableDrops(spawnedEntity);
+                            }
+                            if (forceTarget && spawnedEntity instanceof Creature) {
+                                ArenaPlayer player = RandomUtils.getRandom(players);
+                                ((Creature)spawnedEntity).setTarget(player.getPlayer());
                             }
                         }
                     }
@@ -346,5 +372,9 @@ public class ArenaStage {
 
     public void setWinMoney(int money) {
         winMoney = Math.max(money, 0);
+    }
+
+    public List<ArenaMobSpawner> getMobSpawners() {
+        return mobs;
     }
 }

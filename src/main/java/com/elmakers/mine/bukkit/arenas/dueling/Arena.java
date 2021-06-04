@@ -731,6 +731,11 @@ public class Arena {
         stage.addMob(mobType, count);
     }
 
+    public void removeMob(EntityData mobType) {
+        ArenaStage stage = getEditingStage();
+        stage.removeMob(mobType);
+    }
+
     public ArenaStage getCurrentStage() {
         if (currentStage >= 0 && currentStage < stages.size()) {
             return stages.get(currentStage);
@@ -761,6 +766,13 @@ public class Arena {
 
     public ArenaStage getEditingStage() {
         return stages.get(getEditingStageIndex());
+    }
+
+    public ArenaStage getIfEditingStage() {
+        if (editingStage < 0 || editingStage >= stages.size()) {
+            return null;
+        }
+        return stages.get(editingStage);
     }
 
     public void setEditingStage(int stage) {

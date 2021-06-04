@@ -37,6 +37,10 @@ public class ArenaMobSpawner {
         this.entity = entity;
     }
 
+    public boolean isValid() {
+        return entity != null;
+    }
+
     public int getCount() {
         return count;
     }

@@ -116,6 +116,20 @@ public class ArenaCommandExecutor implements TabExecutor {
                     allOptions.add(entityType.name().toLowerCase());
                 }
             }
+        } else if (args.length == 5 && args[0].equalsIgnoreCase("configure") && args[2].equalsIgnoreCase("remove") && args[3].equalsIgnoreCase("mob")) {
+            Arena arena = controller.getArena(args[1]);
+            if (arena != null) {
+                ArenaStage stage = arena.getIfEditingStage();
+                if (stage != null) {
+                    List<ArenaMobSpawner> spawners = stage.getMobSpawners();
+                    for (ArenaMobSpawner spawner : spawners) {
+                        String key = spawner.isValid() ? spawner.getEntity().getKey() : null;
+                        if (key != null && !key.isEmpty()) {
+                            allOptions.add(key);
+                        }
+                    }
+                }
+            }
         } else if (args.length == 4 && args[0].equalsIgnoreCase("configure") && args[2].equalsIgnoreCase("leaderboard_sign_type")) {
             for (Material sign : controller.getMagic().getMaterialSetManager().getMaterialSet("signs").getMaterials()) {
                 allOptions.add(sign.name().toLowerCase());
@@ -639,7 +653,7 @@ public class ArenaCommandExecutor implements TabExecutor {
                     }
 
                     return;
-                } else if (subItem.equalsIgnoreCase("mob")) {
+                } else if (subItem.equalsIgnoreCase("mob") && isAdd) {
                     if (args.length <= 1) {
                         sender.sendMessage(ChatColor.RED + "Missing mob type specifier");
                         return;
@@ -665,6 +679,24 @@ public class ArenaCommandExecutor implements TabExecutor {
                     controller.save();
                     sender.sendMessage(ChatColor.AQUA + "Added " + ChatColor.YELLOW + count + ChatColor.BLUE
                             + " " + mobType.describe() + ChatColor.AQUA + " to " + ChatColor.GOLD + stage.getName());
+                    return;
+                } else if (subItem.equalsIgnoreCase("mob") && !isAdd) {
+                    if (args.length <= 1) {
+                        sender.sendMessage(ChatColor.RED + "Missing mob type specifier");
+                        return;
+                    }
+
+                    String entityType = args[1];
+                    EntityData mobType = controller.getMagic().getMob(entityType);
+                    if (mobType == null) {
+                        sender.sendMessage(ChatColor.RED + "Not a valid mob type: " + entityType);
+                        return;
+                    }
+                    arena.removeMob(mobType);
+                    ArenaStage stage = arena.getEditingStage();
+                    controller.save();
+                    sender.sendMessage(ChatColor.AQUA + "Removed " + ChatColor.BLUE
+                            + mobType.describe() + ChatColor.AQUA + " from " + ChatColor.GOLD + stage.getName());
                     return;
                 }
 
