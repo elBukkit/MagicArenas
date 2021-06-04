@@ -1149,9 +1149,6 @@ public class Arena {
                 stages.get(0).describe(sender, " ");
             } else {
                 sender.sendMessage(ChatColor.BLUE + "Stages: " + ChatColor.GRAY + numStages);
-                for (ArenaStage stage : stages) {
-                    stage.describe(sender, " ");
-                }
             }
         }
 
