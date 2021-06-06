@@ -618,8 +618,10 @@ public class Arena {
             return;
         }
 
-        if (time % 10 == 0 || time <= 5) {
-            messageNextRoundPlayers("a:" + ChatColor.DARK_AQUA + "Starting in " + ChatColor.AQUA + Integer.toString(time) + ChatColor.DARK_AQUA + " seconds");
+        if (time % 10 == 0) {
+            messageNextRoundPlayers("t:" + ChatColor.DARK_AQUA + "Starting In\n " + ChatColor.AQUA + Integer.toString(time) + ChatColor.DARK_AQUA + " seconds");
+        } else if (time <= 5) {
+            messageNextRoundPlayers("t:" + ChatColor.AQUA + Integer.toString(time));
         }
         BukkitScheduler scheduler = controller.getPlugin().getServer().getScheduler();
         scheduler.runTaskLater(controller.getPlugin(), new Runnable() {
