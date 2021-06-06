@@ -30,4 +30,5 @@ public interface EditingStage {
     void removeMob(EntityData entityType);
     void describe(CommandSender sender);
     Collection<EntityData> getSpawns();
+    void setDuration(int duration);
 }

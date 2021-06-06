@@ -28,7 +28,6 @@ public class ArenaController implements Runnable {
     private final Object saveLock = new Object();
 
     private BukkitTask task = null;
-    private int tickInterval = 20;
     private String pathTemplate = "beginner";
 
     public ArenaController(Plugin plugin, MageController magic) {
@@ -137,9 +136,8 @@ public class ArenaController implements Runnable {
         plugin.reloadConfig();
         Configuration config = plugin.getConfig();
         pathTemplate = config.getString("path_template", pathTemplate);
-        tickInterval = config.getInt("tick_interval", 40);
 
-        task = scheduler.runTaskTimer(plugin, this, 1, tickInterval);
+        task = scheduler.runTaskTimer(plugin, this, 1, 10);
     }
 
     private void save(ConfigurationSection configuration) {

@@ -41,9 +41,13 @@ public class ArenaStage implements EditingStage {
     private int winXP = 0;
     private int winSP = 0;
     private int winMoney = 0;
+    private int duration = 0;
 
     private boolean defaultDrops = false;
     private boolean forceTarget = true;
+
+    private long started;
+    private long lastTick;
 
     public ArenaStage(Arena arena, int index) {
         this.arena = arena;
@@ -74,6 +78,7 @@ public class ArenaStage implements EditingStage {
         winMoney = configuration.getInt("win_money");
         defaultDrops = configuration.getBoolean("drops");
         forceTarget = configuration.getBoolean("aggro", true);
+        duration = configuration.getInt("duration", 0);
 
         if (configuration.contains("randomize_mob_spawn")) {
             randomizeMobSpawn = ConfigurationUtils.toVector(configuration.getString("randomize_mob_spawn"));
@@ -103,6 +108,7 @@ public class ArenaStage implements EditingStage {
         configuration.set("win_money", winMoney);
         configuration.set("drops", defaultDrops);
         configuration.set("aggro", forceTarget);
+        configuration.set("duration", duration);
 
         if (randomizeMobSpawn != null) {
             configuration.set("randomize_mob_spawn", ConfigurationUtils.fromVector(randomizeMobSpawn));
@@ -148,6 +154,11 @@ public class ArenaStage implements EditingStage {
         }
         if (randomizeMobSpawn != null) {
             sender.sendMessage(ChatColor.DARK_GREEN + " Randomize Spawning: " + ChatColor.BLUE + randomizeMobSpawn);
+        }
+
+        if (duration > 0) {
+            int minutes = (int)Math.ceil((double)duration / 60 / 1000);
+            sender.sendMessage(ChatColor.AQUA + "Duration: " + ChatColor.DARK_AQUA + minutes + ChatColor.WHITE + " minutes");
         }
 
         if (startSpell != null) {
@@ -226,6 +237,8 @@ public class ArenaStage implements EditingStage {
     }
 
     public void start() {
+        started = System.currentTimeMillis();
+        lastTick = started;
         if (!mobs.isEmpty()) {
             arena.messageInGamePlayers("t:" + getName());
             MageController magic = arena.getController().getMagic();
@@ -414,5 +427,35 @@ public class ArenaStage implements EditingStage {
             }
         }
         return spawns;
+    }
+
+    @Override
+    public void setDuration(int duration) {
+        this.duration = duration;
+    }
+
+    public void tick() {
+        if (duration <= 0) {
+            return;
+        }
+
+        long now = System.currentTimeMillis();
+        long previousTime = lastTick - started;
+        long currentTime = now - started;
+        lastTick = now;
+
+        long previousSecondsRemaining = (duration - previousTime) / 1000;
+        long secondsRemaining = (duration - currentTime) / 1000;
+        if (secondsRemaining > 0 && secondsRemaining < previousSecondsRemaining) {
+            if (secondsRemaining == 10) {
+                arena.messageInGamePlayers("t:" + ChatColor.RED + "10 Seconds!");
+            } else if (secondsRemaining <= 5) {
+                arena.messageInGamePlayers("t:" + ChatColor.RED + secondsRemaining);
+            }
+        }
+
+        if (currentTime > duration) {
+            arena.draw();
+        }
     }
 }

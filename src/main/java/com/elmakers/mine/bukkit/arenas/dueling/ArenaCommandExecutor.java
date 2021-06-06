@@ -30,7 +30,7 @@ public class ArenaCommandExecutor implements TabExecutor {
     };
 
     private final static String[] STAGE_PROPERTIES = {
-        "sp_win", "xp_win", "money_win", "randomize", "spell_start", "spell_end", "add", "remove"
+        "sp_win", "xp_win", "money_win", "randomize", "spell_start", "spell_end", "add", "remove", "duration"
     };
 
     private final static String[] STAGE_COMMANDS = {
@@ -800,6 +800,13 @@ public class ArenaCommandExecutor implements TabExecutor {
 
         if (intValue == null) {
             sender.sendMessage(ChatColor.RED + "Not a valid integer: " + propertyValue);
+            return;
+        }
+
+        if (propertyName.equalsIgnoreCase("duration")) {
+            stage.setDuration(intValue * 1000);
+            sender.sendMessage(ChatColor.AQUA + "Set duration of " + stage.getFullName() + " to " + intValue + " seconds");
+            controller.save();
             return;
         }
 

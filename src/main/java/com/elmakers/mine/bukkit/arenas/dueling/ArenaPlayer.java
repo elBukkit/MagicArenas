@@ -170,6 +170,8 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
     }
 
     public void draw() {
+        heal();
+        teleport(arena.getLoseLocation());
         Player player = getPlayer();
         if (player != null) {
             int xp = arena.getDrawXP();

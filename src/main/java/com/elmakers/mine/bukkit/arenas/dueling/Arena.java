@@ -600,7 +600,7 @@ public class Arena {
         }
 
         if (time % 10 == 0 || time <= 5) {
-            messageNextRoundPlayers(ChatColor.DARK_AQUA + "Match is starting in " + ChatColor.AQUA + Integer.toString(time) + ChatColor.DARK_AQUA + " seconds");
+            messageNextRoundPlayers("a:" + ChatColor.DARK_AQUA + "Match is starting in " + ChatColor.AQUA + Integer.toString(time) + ChatColor.DARK_AQUA + " seconds");
         }
         BukkitScheduler scheduler = controller.getPlugin().getServer().getScheduler();
         scheduler.runTaskLater(controller.getPlugin(), new Runnable() {
@@ -954,7 +954,6 @@ public class Arena {
                     } else {
                         if (winner != null) {
                             winner.draw();
-                            winner.teleport(getLoseLocation());
                         }
                         for (ArenaPlayer loser : deadPlayers) {
                             loser.draw();
@@ -1856,7 +1855,20 @@ public class Arena {
         borderMax = max;
     }
 
+    public void draw() {
+        messageInGamePlayers("t:" + ChatColor.RED + "Out of Time!");
+        announce(ChatColor.GRAY + "The " + ChatColor.YELLOW + getName() + ChatColor.GRAY + " match timed out in a draw");
+        for (ArenaPlayer player : players) {
+            player.draw();
+        }
+        for (ArenaPlayer loser : deadPlayers) {
+            loser.draw();
+        }
+        finish();
+    }
+
     public void tick() {
+        getCurrentStage().tick();
         if (duration <= 0) {
             return;
         }
@@ -1866,16 +1878,7 @@ public class Arena {
         lastTick = now;
 
         if (currentTime > duration) {
-            announce(ChatColor.GRAY + "The " + ChatColor.YELLOW + getName() + ChatColor.GRAY + " match timed out in a draw");
-            for (ArenaPlayer player : players) {
-                player.draw();
-                player.heal();
-            }
-            for (ArenaPlayer loser : deadPlayers) {
-                loser.draw();
-                loser.heal();
-            }
-            finish();
+            draw();
             return;
         }
 
