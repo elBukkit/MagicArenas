@@ -29,9 +29,21 @@ public class ArenaCommandExecutor implements TabExecutor {
         "save", "stats", "reset", "stage"
     };
 
+    private final static String[] STAGE_PROPERTIES = {
+        "sp_win", "xp_win", "money_win", "randomize", "spell_start", "spell_end",
+    };
 
     private final static String[] STAGE_COMMANDS = {
-        "add", "remove", "name", "next", "previous", "go", "describe", "addbefore", "addafter", "move"
+        "add", "remove", "name", "next", "previous", "go", "describe", "addbefore", "addafter", "move",
+        "configure"
+    };
+
+    private final static String[] STAGE_RANDOMIZE = {
+        "mob_spawn"
+    };
+
+    private final static String[] STAGE_LISTS = {
+        "mob_spawn", "mob"
     };
 
     private final static String[] ARENA_PROPERTIES = {
@@ -42,17 +54,16 @@ public class ArenaCommandExecutor implements TabExecutor {
         "xp_win", "xp_lose", "xp_draw", "countdown", "countdown_max", "op_check",
         "announcer_range", "sp_win", "sp_lose", "sp_draw", "duration", "sudden_death",
         "sudden_death_effect", "start_commands", "border", "keep_inventory", "keep_level",
-        "spell_start", "spell_end", "money_win", "money_lose", "money_draw", "item_wear",
-        "allow_consuming", "leaderboard_sign_type", "allow_melee", "allow_projectiles",
-        "stage_xp_win", "stage_sp_win", "stage_money_win"
+        "money_win", "money_lose", "money_draw", "item_wear",
+        "allow_consuming", "leaderboard_sign_type", "allow_melee", "allow_projectiles"
     };
 
     private final static String[] ARENA_LISTS = {
-        "spawn", "mob_spawn", "mob"
+        "spawn"
     };
 
     private final static String[] ARENA_RANDOMIZE = {
-        "spawn", "mob_spawn"
+        "spawn"
     };
 
     private final static String[] BOOLEAN_PROPERTIES = {
@@ -88,6 +99,12 @@ public class ArenaCommandExecutor implements TabExecutor {
             allOptions.addAll(Arrays.asList(ARENA_LISTS));
         } else if (args.length == 4 && args[0].equalsIgnoreCase("configure") && args[2].equalsIgnoreCase("randomize")) {
             allOptions.addAll(Arrays.asList(ARENA_RANDOMIZE));
+        } else if (args.length == 4 && args[0].equalsIgnoreCase("stage") && args[2].equalsIgnoreCase("configure")) {
+            allOptions.addAll(Arrays.asList(STAGE_PROPERTIES));
+        } else if (args.length == 5 && args[0].equalsIgnoreCase("stage") && args[2].equalsIgnoreCase("configure") && (args[3].equalsIgnoreCase("add") || args[3].equalsIgnoreCase("remove"))) {
+            allOptions.addAll(Arrays.asList(STAGE_LISTS));
+        } else if (args.length == 5 && args[0].equalsIgnoreCase("stage") && args[2].equalsIgnoreCase("configure") && args[3].equalsIgnoreCase("randomize")) {
+            allOptions.addAll(Arrays.asList(STAGE_RANDOMIZE));
         } else if (args.length == 4 && args[0].equalsIgnoreCase("configure") && (
                 args[2].equalsIgnoreCase("keep_inventory")
                 || args[2].equalsIgnoreCase("keep_level")
@@ -442,6 +459,9 @@ public class ArenaCommandExecutor implements TabExecutor {
             case "addafter":
                 onAddAfterArenaStage(sender, arena);
                 break;
+            case "configure":
+                onConfigureArenaStage(sender, arena.getEditingStage(), args);
+                break;
             case "addbefore":
                 onAddBeforeArenaStage(sender, arena);
                 break;
@@ -492,7 +512,7 @@ public class ArenaCommandExecutor implements TabExecutor {
         }
         ArenaStage stage = arena.getEditingStage();
         arena.removeStage();
-        sender.sendMessage(ChatColor.AQUA + "Removed stage: " + ChatColor.DARK_AQUA + stage.getName());
+        sender.sendMessage(ChatColor.AQUA + "Removed stage: " + ChatColor.DARK_AQUA + stage.getFullName());
         showCurrentStage(sender, arena);
         controller.save();
     }
@@ -501,7 +521,7 @@ public class ArenaCommandExecutor implements TabExecutor {
         ArenaStage stage = arena.getEditingStage();
         int stageNumber = arena.getEditingStageIndex() + 1;
         sender.sendMessage(ChatColor.AQUA + "Current stage is now " + ChatColor.GOLD +
-                stage.getName() + ChatColor.GRAY + " (" + ChatColor.YELLOW + stageNumber + ChatColor.GRAY + ")");
+                stage.getFullName() + ChatColor.GRAY + " (" + ChatColor.YELLOW + stageNumber + ChatColor.GRAY + ")");
     }
 
     protected void onNextArenaStage(CommandSender sender, Arena arena) {
@@ -602,6 +622,203 @@ public class ArenaCommandExecutor implements TabExecutor {
         controller.save();
     }
 
+    protected void onConfigureArenaStage(CommandSender sender, ArenaStage stage, String[] args) {
+        if (args.length == 0) {
+            sender.sendMessage(ChatColor.RED + "Usage: " + ChatColor.WHITE + "/area stage <arena> configure <property> [value]");
+            return;
+        }
+
+        String propertyName = args[0];
+        args = Arrays.copyOfRange(args, 1, args.length);
+        if (propertyName.equalsIgnoreCase("randomize")) {
+            String randomizeType = "mob_spawn";
+            if (args.length > 0) {
+                randomizeType = args[0];
+            }
+            String vectorParameter = null;
+            if (args.length > 1) {
+                vectorParameter = args[1];
+            }
+
+            if (randomizeType.equalsIgnoreCase("mob_spawn")) {
+                if (vectorParameter == null || vectorParameter.isEmpty()) {
+                    sender.sendMessage(ChatColor.RED + "Cleared randomized mob_spawn of " + stage.getFullName());
+                    stage.setRandomizeMobSpawn(null);
+                } else {
+                    Vector vector = ConfigurationUtils.toVector(vectorParameter);
+                    sender.sendMessage(ChatColor.AQUA + "Set randomized mob_spawn of " + stage.getFullName() + " to " + vector);
+                    stage.setRandomizeMobSpawn(vector);
+                }
+                controller.save();
+                return;
+            }
+
+            sender.sendMessage(ChatColor.RED + "Not a valid randomization option: " + randomizeType);
+            sender.sendMessage(ChatColor.AQUA + "Options: " + StringUtils.join(STAGE_RANDOMIZE, ", "));
+            return;
+        }
+
+        if (propertyName.equalsIgnoreCase("add") || propertyName.equalsIgnoreCase("remove")) {
+            boolean isAdd = propertyName.equalsIgnoreCase("add");
+            boolean isRemove = propertyName.equalsIgnoreCase("remove");
+            if (isAdd || isRemove)
+            {
+                String subItem = "mob_spawn";
+                if (args.length > 0) {
+                    subItem = args[0];
+                }
+
+                if (subItem.equalsIgnoreCase("mob_spawn")) {
+                    if (!(sender instanceof Player)) {
+                        sender.sendMessage(ChatColor.RED + "Must be used in-game");
+                        return;
+                    }
+                    Player player = (Player) sender;
+                    Location location = player.getLocation();
+
+                    if (isAdd) {
+                        stage.addMobSpawn(location);
+                        controller.save();
+                        sender.sendMessage(ChatColor.AQUA + "You have added a mob spawn location!");
+                    } else {
+                        Location removed = stage.removeMobSpawn(location);
+                        if (removed != null) {
+                            controller.save();
+                            sender.sendMessage(ChatColor.AQUA + "You have removed a mob spawn location at: " + removed.toVector());
+                        } else {
+                            sender.sendMessage(ChatColor.RED + "No nearby mob spawn locations");
+                        }
+                    }
+
+                    return;
+                } else if (subItem.equalsIgnoreCase("mob") && isAdd) {
+                    if (args.length <= 1) {
+                        sender.sendMessage(ChatColor.RED + "Missing mob type specifier");
+                        return;
+                    }
+
+                    String entityType = args[1];
+                    int count = 1;
+                    if (args.length > 2) {
+                        try {
+                            count = Integer.parseInt(args[2]);
+                        } catch (Exception ex) {
+                            sender.sendMessage(ChatColor.RED + "Not a valid count: " + args[2]);
+                            return;
+                        }
+                    }
+                    EntityData mobType = controller.getMagic().getMob(entityType);
+                    if (mobType == null) {
+                        sender.sendMessage(ChatColor.RED + "Not a valid mob type: " + entityType);
+                        return;
+                    }
+                    stage.addMob(mobType, count);
+                    controller.save();
+                    sender.sendMessage(ChatColor.AQUA + "Added " + ChatColor.YELLOW + count + ChatColor.BLUE
+                            + " " + mobType.describe() + ChatColor.AQUA + " to " + ChatColor.GOLD + stage.getFullName());
+                    return;
+                } else if (subItem.equalsIgnoreCase("mob") && !isAdd) {
+                    if (args.length <= 1) {
+                        sender.sendMessage(ChatColor.RED + "Missing mob type specifier");
+                        return;
+                    }
+
+                    String entityType = args[1];
+                    EntityData mobType = controller.getMagic().getMob(entityType);
+                    if (mobType == null) {
+                        sender.sendMessage(ChatColor.RED + "Not a valid mob type: " + entityType);
+                        return;
+                    }
+                    stage.removeMob(mobType);
+                    controller.save();
+                    sender.sendMessage(ChatColor.AQUA + "Removed " + ChatColor.BLUE
+                            + mobType.describe() + ChatColor.AQUA + " from " + ChatColor.GOLD + stage.getFullName());
+                    return;
+                }
+
+                sender.sendMessage(ChatColor.RED + "Not a valid add/remove option: " + subItem);
+                sender.sendMessage(ChatColor.AQUA + "Options: " + StringUtils.join(ARENA_LISTS, ", "));
+                return;
+            }
+
+            return;
+        }
+
+        String propertyValue = null;
+        if (args.length > 0) {
+            propertyValue = StringUtils.join(args, " ");
+        }
+        if (propertyName.equalsIgnoreCase("name")) {
+            if (propertyValue == null || propertyValue.isEmpty()) {
+                sender.sendMessage(ChatColor.RED + "Cleared name of " + stage.getFullName());
+            } else {
+                sender.sendMessage(ChatColor.AQUA + "Changed name of " + stage.getFullName() + " to " + propertyValue);
+            }
+            stage.setName(propertyValue);
+            controller.save();
+            return;
+        }
+
+        if (propertyName.equalsIgnoreCase("spell_start")) {
+            stage.setStartSpell(propertyValue);
+            if (propertyValue == null || propertyValue.isEmpty()) {
+                sender.sendMessage(ChatColor.RED + "Cleared start spell for " + stage.getFullName());
+            } else {
+                sender.sendMessage(ChatColor.AQUA + "Set start spell for " + stage.getFullName());
+            }
+            controller.save();
+            return;
+        }
+
+        if (propertyName.equalsIgnoreCase("spell_end")) {
+            stage.setEndSpell(propertyValue);
+            if (propertyValue == null || propertyValue.isEmpty()) {
+                sender.sendMessage(ChatColor.RED + "Cleared end spell for " + stage.getFullName());
+            } else {
+                sender.sendMessage(ChatColor.AQUA + "Set end spell for " + stage.getFullName());
+            }
+            controller.save();
+            return;
+        }
+
+        // Integers after here
+        Integer intValue;
+        try {
+            intValue = Integer.parseInt(propertyValue);
+        } catch (Exception ex) {
+            intValue = null;
+        }
+
+        if (intValue == null) {
+            sender.sendMessage(ChatColor.RED + "Not a valid integer: " + propertyValue);
+            return;
+        }
+
+        if (propertyName.equalsIgnoreCase("sp_win")) {
+            stage.setWinSP(intValue);
+            sender.sendMessage(ChatColor.AQUA + "Set winning SP of " + stage.getFullName() + " to " + intValue);
+            controller.save();
+            return;
+        }
+
+        if (propertyName.equalsIgnoreCase("xp_win")) {
+            stage.setWinXP(intValue);
+            sender.sendMessage(ChatColor.AQUA + "Set winning XP of " + stage.getFullName() + " to " + intValue);
+            controller.save();
+            return;
+        }
+
+        if (propertyName.equalsIgnoreCase("money_win")) {
+            stage.setWinMoney(intValue);
+            sender.sendMessage(ChatColor.AQUA + "Set winning money of " + stage.getFullName() + " to " + intValue);
+            controller.save();
+            return;
+        }
+
+        sender.sendMessage(ChatColor.RED + "Not a valid property: " + propertyName);
+        sender.sendMessage(ChatColor.AQUA + "Options: " + StringUtils.join(STAGE_PROPERTIES, ", "));
+    }
+
     protected void onConfigureArena(CommandSender sender, Arena arena, String propertyName, String[] args)
     {
         if (propertyName.equalsIgnoreCase("randomize"))
@@ -623,19 +840,6 @@ public class ArenaCommandExecutor implements TabExecutor {
                     Vector vector = ConfigurationUtils.toVector(vectorParameter);
                     sender.sendMessage(ChatColor.AQUA + "Set randomized spawn of " + arena.getName() + " to " + vector);
                     arena.setRandomizeSpawn(vector);
-                }
-                controller.save();
-                return;
-            }
-
-            if (randomizeType.equalsIgnoreCase("mob_spawn")) {
-                if (vectorParameter == null || vectorParameter.isEmpty()) {
-                    sender.sendMessage(ChatColor.RED + "Cleared randomized mob_spawn of " + arena.getName());
-                    arena.setRandomizeMobSpawn(null);
-                } else {
-                    Vector vector = ConfigurationUtils.toVector(vectorParameter);
-                    sender.sendMessage(ChatColor.AQUA + "Set randomized mob_spawn of " + arena.getName() + " to " + vector);
-                    arena.setRandomizeMobSpawn(vector);
                 }
                 controller.save();
                 return;
@@ -684,74 +888,6 @@ public class ArenaCommandExecutor implements TabExecutor {
                         }
                     }
 
-                    return;
-                } else if (subItem.equalsIgnoreCase("mob_spawn")) {
-                    if (!(sender instanceof Player)) {
-                        sender.sendMessage(ChatColor.RED + "Must be used in-game");
-                        return;
-                    }
-                    Player player = (Player) sender;
-                    Location location = player.getLocation();
-
-                    if (isAdd) {
-                        arena.addMobSpawn(location);
-                        controller.save();
-                        sender.sendMessage(ChatColor.AQUA + "You have added a mob spawn location!");
-                    } else {
-                        Location removed = arena.removeMobSpawn(location);
-                        if (removed != null) {
-                            controller.save();
-                            sender.sendMessage(ChatColor.AQUA + "You have removed a mob spawn location at: " + removed.toVector());
-                        } else {
-                            sender.sendMessage(ChatColor.RED + "No nearby mob spawn locations");
-                        }
-                    }
-
-                    return;
-                } else if (subItem.equalsIgnoreCase("mob") && isAdd) {
-                    if (args.length <= 1) {
-                        sender.sendMessage(ChatColor.RED + "Missing mob type specifier");
-                        return;
-                    }
-
-                    String entityType = args[1];
-                    int count = 1;
-                    if (args.length > 2) {
-                        try {
-                            count = Integer.parseInt(args[2]);
-                        } catch (Exception ex) {
-                            sender.sendMessage(ChatColor.RED + "Not a valid count: " + args[2]);
-                            return;
-                        }
-                    }
-                    EntityData mobType = controller.getMagic().getMob(entityType);
-                    if (mobType == null) {
-                        sender.sendMessage(ChatColor.RED + "Not a valid mob type: " + entityType);
-                        return;
-                    }
-                    arena.addMob(mobType, count);
-                    ArenaStage stage = arena.getEditingStage();
-                    controller.save();
-                    sender.sendMessage(ChatColor.AQUA + "Added " + ChatColor.YELLOW + count + ChatColor.BLUE
-                            + " " + mobType.describe() + ChatColor.AQUA + " to " + ChatColor.GOLD + stage.getName());
-                    return;
-                } else if (subItem.equalsIgnoreCase("mob") && !isAdd) {
-                    if (args.length <= 1) {
-                        sender.sendMessage(ChatColor.RED + "Missing mob type specifier");
-                        return;
-                    }
-
-                    String entityType = args[1];
-                    EntityData mobType = controller.getMagic().getMob(entityType);
-                    if (mobType == null) {
-                        sender.sendMessage(ChatColor.RED + "Not a valid mob type: " + entityType);
-                        return;
-                    }
-                    arena.removeMob(mobType);
-                    ArenaStage stage = arena.getEditingStage();
-                    controller.save();
-                    sender.sendMessage(ChatColor.AQUA + "Removed " + ChatColor.BLUE
-                            + mobType.describe() + ChatColor.AQUA + " from " + ChatColor.GOLD + stage.getName());
                     return;
                 }
 
@@ -804,7 +940,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             if (propertyValue == null || propertyValue.isEmpty()) {
                 sender.sendMessage(ChatColor.RED + "Cleared name of " + arena.getName());
             } else {
-                sender.sendMessage(ChatColor.AQUA + "Change name of " + arena.getName() + " to " + propertyValue);
+                sender.sendMessage(ChatColor.AQUA + "Changed name of " + arena.getName() + " to " + propertyValue);
             }
             arena.setName(propertyValue);
             controller.save();
@@ -848,28 +984,6 @@ public class ArenaCommandExecutor implements TabExecutor {
                 sender.sendMessage(ChatColor.RED + "Cleared start commands for " + arena.getName());
             } else {
                 sender.sendMessage(ChatColor.AQUA + "Set start commands for " + arena.getName());
-            }
-            controller.save();
-            return;
-        }
-
-        if (propertyName.equalsIgnoreCase("spell_start")) {
-            arena.setStartSpell(propertyValue);
-            if (propertyValue == null || propertyValue.isEmpty()) {
-                sender.sendMessage(ChatColor.RED + "Cleared start spell for " + arena.getName());
-            } else {
-                sender.sendMessage(ChatColor.AQUA + "Set start spell for " + arena.getName());
-            }
-            controller.save();
-            return;
-        }
-
-        if (propertyName.equalsIgnoreCase("spell_end")) {
-            arena.setEndSpell(propertyValue);
-            if (propertyValue == null || propertyValue.isEmpty()) {
-                sender.sendMessage(ChatColor.RED + "Cleared end spell for " + arena.getName());
-            } else {
-                sender.sendMessage(ChatColor.AQUA + "Set end spell for " + arena.getName());
             }
             controller.save();
             return;
@@ -1023,8 +1137,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             propertyName.equalsIgnoreCase("sp_win") || propertyName.equalsIgnoreCase("sp_lose") || propertyName.equalsIgnoreCase("sp_draw") ||
             propertyName.equalsIgnoreCase("money_win") || propertyName.equalsIgnoreCase("money_lose") || propertyName.equalsIgnoreCase("money_draw") ||
             propertyName.equalsIgnoreCase("countdown") || propertyName.equalsIgnoreCase("countdown_max") || propertyName.equalsIgnoreCase("announcer_range") ||
-            propertyName.equalsIgnoreCase("duration") || propertyName.equalsIgnoreCase("sudden_death") ||
-            propertyName.equalsIgnoreCase("stage_money_win") || propertyName.equalsIgnoreCase("stage_xp_win")|| propertyName.equalsIgnoreCase("stage_sp_win")
+            propertyName.equalsIgnoreCase("duration") || propertyName.equalsIgnoreCase("sudden_death")
         ) {
             Integer intValue;
             try {
@@ -1174,30 +1287,6 @@ public class ArenaCommandExecutor implements TabExecutor {
             if (propertyName.equalsIgnoreCase("money_draw")) {
                 arena.setDrawMoney(intValue);
                 sender.sendMessage(ChatColor.AQUA + "Set draw money of " + arena.getName() + " to " + intValue);
-                controller.save();
-                return;
-            }
-
-            if (propertyName.equalsIgnoreCase("stage_sp_win")) {
-                ArenaStage stage = arena.getEditingStage();
-                stage.setWinSP(intValue);
-                sender.sendMessage(ChatColor.AQUA + "Set winning SP of " + stage.getName() + " to " + intValue);
-                controller.save();
-                return;
-            }
-
-            if (propertyName.equalsIgnoreCase("stage_xp_win")) {
-                ArenaStage stage = arena.getEditingStage();
-                stage.setWinXP(intValue);
-                sender.sendMessage(ChatColor.AQUA + "Set winning XP of " + stage.getName() + " to " + intValue);
-                controller.save();
-                return;
-            }
-
-            if (propertyName.equalsIgnoreCase("stage_money_win")) {
-                ArenaStage stage = arena.getEditingStage();
-                stage.setWinMoney(intValue);
-                sender.sendMessage(ChatColor.AQUA + "Set winning money of " + stage.getName() + " to " + intValue);
                 controller.save();
                 return;
             }

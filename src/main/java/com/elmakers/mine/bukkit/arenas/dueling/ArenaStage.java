@@ -346,6 +346,10 @@ public class ArenaStage {
         this.name = name;
     }
 
+    public String getFullName() {
+        return ChatColor.AQUA + arena.getName() + ChatColor.DARK_AQUA + " " + getName();
+    }
+
     public int getNumber() {
         return index + 1;
     }

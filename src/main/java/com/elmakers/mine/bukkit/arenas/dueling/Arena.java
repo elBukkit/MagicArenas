@@ -705,14 +705,6 @@ public class Arena {
         return spawns;
     }
 
-    public void addMobSpawn(Location location) {
-        getEditingStage().addMobSpawn(location);
-    }
-
-    public Location removeMobSpawn(Location location) {
-        return getEditingStage().removeMobSpawn(location);
-    }
-
     public void setStartSpell(String startSpell) {
         ArenaStage stage = getEditingStage();
         stage.setStartSpell(startSpell);
@@ -721,16 +713,6 @@ public class Arena {
     public void setEndSpell(String endSpell) {
         ArenaStage stage = getEditingStage();
         stage.setEndSpell(endSpell);
-    }
-
-    public void addMob(EntityData mobType, int count) {
-        ArenaStage stage = getEditingStage();
-        stage.addMob(mobType, count);
-    }
-
-    public void removeMob(EntityData mobType) {
-        ArenaStage stage = getEditingStage();
-        stage.removeMob(mobType);
     }
 
     public ArenaStage getCurrentStage() {
@@ -865,10 +847,6 @@ public class Arena {
 
     public void setRandomizeSpawn(Vector vector) {
         randomizeSpawn = vector;
-    }
-
-    public void setRandomizeMobSpawn(Vector vector) {
-        getEditingStage().setRandomizeMobSpawn(vector);
     }
 
     public void check() {
