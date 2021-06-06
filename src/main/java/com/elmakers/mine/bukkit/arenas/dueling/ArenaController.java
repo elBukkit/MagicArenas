@@ -301,4 +301,12 @@ public class ArenaController implements Runnable {
             }
         }
     }
+
+    public void cancel() {
+        for (Arena arena : arenas.values()) {
+            if (arena.isStarted()) {
+                arena.stop();
+            }
+        }
+    }
 }

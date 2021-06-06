@@ -50,6 +50,7 @@ public class ArenasPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        controller.cancel();
         save();
     }
 }
