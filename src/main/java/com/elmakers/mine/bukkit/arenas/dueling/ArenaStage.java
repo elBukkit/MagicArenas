@@ -451,6 +451,10 @@ public class ArenaStage implements EditingStage {
         return respawnDuration;
     }
 
+    public boolean isRespawning() {
+        return (arena.hasDeadPlayers() && respawnDuration > 0);
+    }
+
     public void tick() {
         if (duration <= 0 && respawnDuration <= 0) {
             return;

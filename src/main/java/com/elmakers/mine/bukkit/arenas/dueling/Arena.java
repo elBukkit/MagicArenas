@@ -710,10 +710,15 @@ public class Arena {
         ArenaPlayer arenaPlayer = new ArenaPlayer(this, player);
         if (!arenaPlayer.isValid() || arenaPlayer.isDead()) return arenaPlayer;
 
-        players.add(arenaPlayer);
+        if (getCurrentStage().isRespawning()) {
+            deadPlayers.add(arenaPlayer);
+            arenaPlayer.teleport(getLobby());
+        } else {
+            players.add(arenaPlayer);
+            spawnPlayer(arenaPlayer);
+        }
         controller.register(player, arenaPlayer);
 
-        spawnPlayer(arenaPlayer);
         return arenaPlayer;
     }
 
