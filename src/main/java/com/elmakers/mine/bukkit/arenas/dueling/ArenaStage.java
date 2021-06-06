@@ -135,7 +135,7 @@ public class ArenaStage implements EditingStage {
     }
 
     public void describe(CommandSender sender) {
-        sender.sendMessage(ChatColor.AQUA + getName());
+        sender.sendMessage(ChatColor.AQUA + getName() + ChatColor.GRAY + " (" + ChatColor.DARK_AQUA + getNumber() + ChatColor.GRAY + ")");
         int mobSpawnSize = mobSpawns.size();
         if (mobSpawnSize == 1) {
             sender.sendMessage(ChatColor.BLUE + "Spawn Mobs: " + arena.printLocation(mobSpawns.get(0)));
