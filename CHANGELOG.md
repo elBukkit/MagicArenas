@@ -12,6 +12,7 @@
  - Add arena stages:
    - New `/arena stage` command to manage stages
    - Mob spawns and rewards can be added to each stage
+ - Add `allow_interrupt` option to allow players to join mid-match  
 
 ## 3.4
 

@@ -51,7 +51,7 @@ public class ArenaCommandExecutor implements TabExecutor {
         "add", "remove", "randomize", "name", "description", "portal_damage",
         "portal_enter_damage", "portal_death_message", "leaderboard_games_required",
         "leaderboard_size", "leaderboard_record_size", "max_teleport_distance",
-        "xp_win", "xp_lose", "xp_draw", "countdown", "countdown_max", "op_check",
+        "xp_win", "xp_lose", "xp_draw", "countdown", "countdown_max", "op_check", "allow_interrupt",
         "announcer_range", "sp_win", "sp_lose", "sp_draw", "duration", "sudden_death",
         "sudden_death_effect", "start_commands", "border", "keep_inventory", "keep_level",
         "money_win", "money_lose", "money_draw", "item_wear",
@@ -110,6 +110,8 @@ public class ArenaCommandExecutor implements TabExecutor {
                 || args[2].equalsIgnoreCase("keep_level")
                 || args[2].equalsIgnoreCase("item_wear")
                 || args[2].equalsIgnoreCase("allow_consuming")
+                || args[2].equalsIgnoreCase("op_check")
+                || args[2].equalsIgnoreCase("allow_interrupt")
                 )) {
             allOptions.addAll(Arrays.asList(BOOLEAN_PROPERTIES));
         } else if (args.length == 4 && args[0].equalsIgnoreCase("configure") && args[2].equalsIgnoreCase("sudden_death_effect")) {
@@ -1040,6 +1042,19 @@ public class ArenaCommandExecutor implements TabExecutor {
                 sender.sendMessage(ChatColor.AQUA + "Disabled OP check for " + arena.getName());
             }
             arena.setOpCheck(checkOn);
+            controller.save();
+            return;
+        }
+
+        if (propertyName.equalsIgnoreCase("allow_interrupt"))
+        {
+            boolean checkOn = propertyValue.equalsIgnoreCase("true");
+            if (checkOn) {
+                sender.sendMessage(ChatColor.RED + "Allow joining mid-match for " + arena.getName());
+            } else {
+                sender.sendMessage(ChatColor.AQUA + "Don't allow joining mid-match for " + arena.getName());
+            }
+            arena.setAllowInterrupt(checkOn);
             controller.save();
             return;
         }

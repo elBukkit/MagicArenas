@@ -93,6 +93,7 @@ public class Arena {
     private int announcerRange = 64;
 
     private boolean opCheck = true;
+    private boolean allowInterrupt = false;
 
     private int duration = 0;
     private int suddenDeath = 0;
@@ -160,6 +161,7 @@ public class Arena {
         countdownMax = configuration.getInt("countdown_max", 30);
 
         opCheck = configuration.getBoolean("op_check", true);
+        allowInterrupt = configuration.getBoolean("allow_interrupt", false);
         startCommands = configuration.getString("start_commands");
 
         borderMin = configuration.getInt("border_min");
@@ -333,6 +335,7 @@ public class Arena {
         configuration.set("countdown", countdown);
         configuration.set("countdown_max", countdownMax);
         configuration.set("op_check", opCheck);
+        configuration.set("allow_interrupt", allowInterrupt);
 
         configuration.set("type", arenaType.name());
 
@@ -407,8 +410,6 @@ public class Arena {
             border.setSize(borderMin, duration / 1000);
         }
 
-        int num = 0;
-        clearPlayers();
         while (queue.size() > 0 && players.size() < maxPlayers) {
             ArenaPlayer queuedPlayer = queue.remove();
             if (queuedPlayer.isValid() && !queuedPlayer.isDead()) {
@@ -422,9 +423,25 @@ public class Arena {
             messagePlayers(ChatColor.RED + " the match did not have enough players to start.");
             return;
         }
+
+        spawnPlayers(new ArrayList<>(this.players));
+
+        ArenaStage currentStage = getCurrentStage();
+        if (currentStage != null) {
+            currentStage.start();
+        }
+
+        messageNextRoundPlayerList(ChatColor.GOLD + "You are up for the next round!");
+    }
+
+    protected List<Location> getRandomSpawns() {
         List<Location> spawns = getSpawns();
         Collections.shuffle(spawns);
-        List<ArenaPlayer> players = new ArrayList<>(this.players);
+        return spawns;
+    }
+
+    protected void spawnPlayers(Collection<ArenaPlayer> players, List<Location> spawns) {
+        int num = 0;
         for (ArenaPlayer arenaPlayer : players) {
             Player player = arenaPlayer.getPlayer();
             if (player == null) {
@@ -439,9 +456,9 @@ public class Arena {
                 spawn = spawn.clone();
                 spawn.add
                 (
-                    (2 * random.nextDouble() - 1) * randomizeSpawn.getX(),
-                    (2 * random.nextDouble() - 1) * randomizeSpawn.getY(),
-                    (2 * random.nextDouble() - 1) * randomizeSpawn.getZ()
+                (2 * random.nextDouble() - 1) * randomizeSpawn.getX(),
+                (2 * random.nextDouble() - 1) * randomizeSpawn.getY(),
+                (2 * random.nextDouble() - 1) * randomizeSpawn.getZ()
                 );
             }
 
@@ -449,13 +466,16 @@ public class Arena {
             num = (num + 1) % spawns.size();
             arenaPlayer.teleport(spawn);
         }
+    }
 
-        ArenaStage currentStage = getCurrentStage();
-        if (currentStage != null) {
-            currentStage.start();
-        }
+    protected void spawnPlayers(Collection<ArenaPlayer> players) {
+        spawnPlayers(players, getRandomSpawns());
+    }
 
-        messageNextRoundPlayerList(ChatColor.GOLD + "You are up for the next round!");
+    protected void spawnPlayer(ArenaPlayer player) {
+        List<ArenaPlayer> playerList = new ArrayList<>();
+        playerList.add(player);
+        spawnPlayers(playerList, getRandomSpawns());
     }
 
     protected void messageNextRoundPlayerList(String message) {
@@ -623,6 +643,12 @@ public class Arena {
                 controller.unregister(player);
             }
         }
+        for (ArenaPlayer arenaPlayer : deadPlayers) {
+            Player player = arenaPlayer.getPlayer();
+            if (player != null) {
+                controller.unregister(player);
+            }
+        }
         players.clear();
         deadPlayers.clear();
     }
@@ -646,11 +672,26 @@ public class Arena {
         return queue.size() >= maxPlayers;
     }
 
+    public boolean isPlayersFull() {
+        return players.size() + deadPlayers.size() >= maxPlayers;
+    }
+
     public ArenaPlayer add(Player player) {
         ArenaPlayer arenaPlayer = new ArenaPlayer(this, player);
         queue.add(arenaPlayer);
         arenaPlayer.teleport(getLobby());
         controller.register(player, arenaPlayer);
+        return arenaPlayer;
+    }
+
+    public ArenaPlayer interrupt(Player player) {
+        ArenaPlayer arenaPlayer = new ArenaPlayer(this, player);
+        if (!arenaPlayer.isValid() || arenaPlayer.isDead()) return arenaPlayer;
+
+        players.add(arenaPlayer);
+        controller.register(player, arenaPlayer);
+
+        spawnPlayer(arenaPlayer);
         return arenaPlayer;
     }
 
@@ -985,21 +1026,30 @@ public class Arena {
             }
         }
 
-        if (isFull()) {
-            player.sendMessage(ChatColor.GOLD + "You have joined the queue for the next round of " + ChatColor.AQUA + getName());
-        } else {
+        boolean queue = true;
+        boolean started = isStarted();
+        if (started && allowInterrupt && !isPlayersFull()) {
+            queue = false;
             player.sendMessage(ChatColor.YELLOW + "You have entered the current round of " + ChatColor.AQUA + getName());
+        } else {
+            if (isFull()) {
+                player.sendMessage(ChatColor.GOLD + "You have joined the queue for " + ChatColor.AQUA + getName());
+            } else {
+                player.sendMessage(ChatColor.GOLD + "You have joined the queue for the next round of " + ChatColor.AQUA + getName());
+            }
         }
         if (description != null) {
             player.sendMessage(ChatColor.LIGHT_PURPLE + getDescription());
         }
-        ArenaPlayer arenaPlayer = add(player);
-        arenaPlayer.joined();
+        ArenaPlayer arenaPlayer = queue ? add(player) : interrupt(player);
 
         int winCount = arenaPlayer.getWins();
         int lostCount = arenaPlayer.getLosses();
+        int joinedCount = arenaPlayer.getJoins();
 
-        if (winCount == 0 && lostCount == 0) {
+        arenaPlayer.joined();
+
+        if (winCount == 0 && lostCount == 0 && joinedCount == 0) {
             announce(ChatColor.AQUA + arenaPlayer.getDisplayName() + ChatColor.DARK_AQUA + " has joined " + ChatColor.AQUA + getName() + ChatColor.DARK_AQUA + " for the first time");
         } else {
             announce(ChatColor.AQUA + arenaPlayer.getDisplayName() + ChatColor.DARK_AQUA + " has joined " + ChatColor.AQUA + getName());
@@ -1050,6 +1100,9 @@ public class Arena {
         }
         if (opCheck) {
             sender.sendMessage(ChatColor.RED + "OP Wand Check Enabled");
+        }
+        if (allowInterrupt) {
+            sender.sendMessage(ChatColor.YELLOW + "Allows joining mid-match");
         }
         if (keepInventory) {
             sender.sendMessage(ChatColor.GREEN + "Players keep their inventory on death");
@@ -1744,6 +1797,14 @@ public class Arena {
 
     public void setOpCheck(boolean check) {
         opCheck = check;
+    }
+
+    public boolean getAllowInterrupt() {
+        return allowInterrupt;
+    }
+
+    public void setAllowInterrupt(boolean interrupt) {
+        allowInterrupt = interrupt;
     }
 
     public void setKeepInventory(boolean keep) {
