@@ -457,9 +457,10 @@ public class ArenaStage implements EditingStage {
         }
 
         long now = System.currentTimeMillis();
-        long previousTime = lastTick - started;
-        long currentTime = now - started;
+        long previousTick = lastTick;
         lastTick = now;
+        long previousTime = previousTick - started;
+        long currentTime = now - started;
 
         if (duration > 0) {
             long previousSecondsRemaining = (duration - previousTime) / 1000;
@@ -478,7 +479,7 @@ public class ArenaStage implements EditingStage {
             }
         }
 
-        if (respawnDuration > 0) {
+        if (respawnDuration > 0 && arena.hasDeadPlayers()) {
             long lastDeathTime = arena.getLastDeathTime();
             long deathTime = now - lastDeathTime;
             long respawnSecondsRemaining = (respawnDuration - deathTime) / 1000;
@@ -489,7 +490,7 @@ public class ArenaStage implements EditingStage {
                 }
             }
 
-            long previousDeathTime = lastTick - lastDeathTime;
+            long previousDeathTime = previousTick - lastDeathTime;
             long previousRespawnSecondsRemaining = (respawnDuration - previousDeathTime) / 1000;
 
             if (respawnSecondsRemaining > 0 && respawnSecondsRemaining < previousRespawnSecondsRemaining) {
@@ -503,6 +504,8 @@ public class ArenaStage implements EditingStage {
             if (deathTime > respawnDuration) {
                 arena.respawn();
                 return;
+            } else {
+                arena.showRespawnBossBar((double)deathTime / respawnDuration);
             }
         }
     }

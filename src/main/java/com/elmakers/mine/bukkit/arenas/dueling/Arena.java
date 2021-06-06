@@ -23,6 +23,9 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.WallSign;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
@@ -123,6 +126,8 @@ public class Arena {
     private boolean allowConsuming = true;
     private boolean allowMelee = true;
     private boolean allowProjectiles = true;
+
+    private BossBar respawnBar;
 
     public Arena(final String key, final ArenaController controller) {
         this.key = key;
@@ -392,6 +397,8 @@ public class Arena {
                 players.add(dead);
             }
         }
+        deadPlayers.clear();
+        hideRespawnBossBar();
     }
 
     public void start() {
@@ -456,13 +463,8 @@ public class Arena {
             if (!arenaPlayer.isValid() || arenaPlayer.isDead()) {
                 continue;
             }
-            Player player = arenaPlayer.getPlayer();
-            if (player == null) {
-                continue;
-            }
-
             arenaPlayer.heal();
-            player.sendMessage(ChatColor.GOLD + "BEGIN!");
+            arenaPlayer.sendMessage("t:" + ChatColor.GOLD + "GO!");
 
             Location spawn = spawns.get(num);
             if (randomizeSpawn != null) {
@@ -617,7 +619,7 @@ public class Arena {
         }
 
         if (time % 10 == 0 || time <= 5) {
-            messageNextRoundPlayers("a:" + ChatColor.DARK_AQUA + "Match is starting in " + ChatColor.AQUA + Integer.toString(time) + ChatColor.DARK_AQUA + " seconds");
+            messageNextRoundPlayers("a:" + ChatColor.DARK_AQUA + "Starting in " + ChatColor.AQUA + Integer.toString(time) + ChatColor.DARK_AQUA + " seconds");
         }
         BukkitScheduler scheduler = controller.getPlugin().getServer().getScheduler();
         scheduler.runTaskLater(controller.getPlugin(), new Runnable() {
@@ -641,6 +643,7 @@ public class Arena {
             currentStage.finish();
         }
         state = ArenaState.LOBBY;
+        hideRespawnBossBar();
         clearPlayers();
 
         // Check for a new start
@@ -1068,8 +1071,8 @@ public class Arena {
         if (winCount == 0 && lostCount == 0 && joinedCount == 0) {
             announce(ChatColor.AQUA + arenaPlayer.getDisplayName() + ChatColor.DARK_AQUA + " has joined " + ChatColor.AQUA + getName() + ChatColor.DARK_AQUA + " for the first time");
         } else {
-            announce(ChatColor.AQUA + arenaPlayer.getDisplayName() + ChatColor.DARK_AQUA + " has joined " + ChatColor.AQUA + getName());
-            announce(ChatColor.DARK_AQUA + " with " + ChatColor.GREEN + Integer.toString(winCount) + ChatColor.DARK_AQUA + " wins and "
+            announce(ChatColor.AQUA + arenaPlayer.getDisplayName() + ChatColor.DARK_AQUA + " has joined " + ChatColor.AQUA + getName()
+                    + ChatColor.DARK_AQUA + " with " + ChatColor.GREEN + Integer.toString(winCount) + ChatColor.DARK_AQUA + " wins and "
                     + ChatColor.RED + Integer.toString(lostCount) + ChatColor.DARK_AQUA + " losses.");
         }
         checkStart();
@@ -1343,7 +1346,7 @@ public class Arena {
                 if (respawnDuration > 0) {
                     Location lobby = getLobby();
                     player.setMetadata("respawnLocation", new FixedMetadataValue(controller.getPlugin(), lobby));
-                    long seconds = respawnDuration / 60;
+                    long seconds = respawnDuration / 1000;
                     player.sendMessage(ChatColor.AQUA + "You have died, but you can get back in the fight in " + ChatColor.YELLOW + seconds + ChatColor.AQUA + " seconds!");
                 } else {
                     Location specroom = getLoseLocation();
@@ -1357,7 +1360,6 @@ public class Arena {
             }
             queue.remove(arenaPlayer);
         }
-        controller.unregister(player);
         check();
     }
 
@@ -2000,5 +2002,25 @@ public class Arena {
 
     public long getLastDeathTime() {
         return lastDeath;
+    }
+
+    public void showRespawnBossBar(double progress) {
+        if (respawnBar == null) {
+            respawnBar = controller.getPlugin().getServer().createBossBar(ChatColor.GREEN + "Respawning", BarColor.GREEN, BarStyle.SOLID);
+        }
+        for (ArenaPlayer dead : deadPlayers) {
+            respawnBar.addPlayer(dead.getPlayer());
+        }
+        respawnBar.setProgress(progress);
+    }
+
+    public void hideRespawnBossBar() {
+        if (respawnBar != null) {
+            respawnBar.removeAll();
+        }
+    }
+
+    public boolean hasDeadPlayers() {
+        return !deadPlayers.isEmpty();
     }
 }
