@@ -517,8 +517,12 @@ public class Arena {
     public void remove(Player player) {
         ArenaPlayer removePlayer = new ArenaPlayer(this, player);
         players.remove(removePlayer);
+        deadPlayers.remove(removePlayer);
         queue.remove(removePlayer);
         controller.unregister(player);
+        if (respawnBar != null) {
+            respawnBar.removePlayer(player);
+        }
     }
 
     public ArenaPlayer getWinner() {
@@ -645,6 +649,7 @@ public class Arena {
             currentStage.finish();
         }
         state = ArenaState.LOBBY;
+        exitPlayers();
         hideRespawnBossBar();
         clearPlayers();
 
@@ -655,6 +660,11 @@ public class Arena {
     protected void exitPlayers() {
         for (ArenaPlayer arenaPlayer : players) {
             arenaPlayer.teleport(getExit());
+        }
+        if (getCurrentStage().isRespawnEnabled()) {
+            for (ArenaPlayer arenaPlayer : deadPlayers) {
+                arenaPlayer.teleport(getExit());
+            }
         }
     }
 
