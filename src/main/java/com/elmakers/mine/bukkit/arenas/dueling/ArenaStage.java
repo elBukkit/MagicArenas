@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-public class ArenaStage {
+public class ArenaStage implements EditingStage {
     private static Random random = new Random();
     private final Arena arena;
     private int index;
@@ -109,10 +109,12 @@ public class ArenaStage {
         }
     }
 
+    @Override
     public void addMob(EntityData entityType, int count) {
         mobs.add(new ArenaMobSpawner(entityType, count));
     }
 
+    @Override
     public void removeMob(EntityData entityType) {
         Iterator<ArenaMobSpawner> it = mobs.iterator();
         while (it.hasNext()) {
@@ -123,39 +125,37 @@ public class ArenaStage {
         }
     }
 
-    public void describe(CommandSender sender, String prefix) {
-        sender.sendMessage(prefix + ChatColor.AQUA + getName());
+    public void describe(CommandSender sender) {
+        sender.sendMessage(ChatColor.AQUA + getName());
         int mobSpawnSize = mobSpawns.size();
         if (mobSpawnSize == 1) {
-            sender.sendMessage(prefix + ChatColor.BLUE + "Spawn Mobs: " + arena.printLocation(mobSpawns.get(0)));
+            sender.sendMessage(ChatColor.BLUE + "Spawn Mobs: " + arena.printLocation(mobSpawns.get(0)));
         } else if (mobSpawnSize > 1) {
-            sender.sendMessage(prefix + ChatColor.BLUE + "Spawns Mobs: " + ChatColor.GRAY + mobSpawnSize);
+            sender.sendMessage(ChatColor.BLUE + "Spawns Mobs: " + ChatColor.GRAY + mobSpawnSize);
             for (Location spawn : mobSpawns) {
-                sender.sendMessage(prefix + arena.printLocation(spawn));
+                sender.sendMessage(arena.printLocation(spawn));
             }
         }
 
         int numMobs = mobs.size();
         if (numMobs == 0) {
-            sender.sendMessage(prefix + ChatColor.GRAY + "(No Mobs)");
-        } else if (numMobs == 1) {
-            sender.sendMessage(prefix + describeMob(mobs.get(0)));
+            sender.sendMessage(ChatColor.GRAY + "(No Mobs)");
         } else {
-            sender.sendMessage(prefix + ChatColor.DARK_BLUE + "Mobs: " + ChatColor.BLUE + numMobs);
+            sender.sendMessage(ChatColor.DARK_GREEN + "Mobs: " + ChatColor.BLUE + numMobs);
             for (ArenaMobSpawner mob : mobs) {
-                sender.sendMessage(prefix + " " + describeMob(mob));
+                sender.sendMessage(" " + describeMob(mob));
             }
         }
         if (randomizeMobSpawn != null) {
-            sender.sendMessage(ChatColor.DARK_BLUE + " Randomize Spawning: " + ChatColor.BLUE + randomizeMobSpawn);
+            sender.sendMessage(ChatColor.DARK_GREEN + " Randomize Spawning: " + ChatColor.BLUE + randomizeMobSpawn);
         }
 
         if (startSpell != null) {
-            sender.sendMessage(prefix + ChatColor.DARK_AQUA + "Cast at Start: " + ChatColor.AQUA + startSpell);
+            sender.sendMessage(ChatColor.DARK_AQUA + "Cast at Start: " + ChatColor.AQUA + startSpell);
         }
 
         if (endSpell != null) {
-            sender.sendMessage(prefix + ChatColor.DARK_AQUA + "Cast at End: " + ChatColor.AQUA + endSpell);
+            sender.sendMessage(ChatColor.DARK_AQUA + "Cast at End: " + ChatColor.AQUA + endSpell);
         }
 
         if (winXP > 0) {
@@ -183,6 +183,7 @@ public class ArenaStage {
         return startSpell;
     }
 
+    @Override
     public void setStartSpell(String startSpell) {
         this.startSpell = startSpell;
     }
@@ -191,14 +192,17 @@ public class ArenaStage {
         return endSpell;
     }
 
+    @Override
     public void setEndSpell(String endSpell) {
         this.endSpell = endSpell;
     }
 
+    @Override
     public void addMobSpawn(Location location) {
         mobSpawns.add(location.clone());
     }
 
+    @Override
     public Location removeMobSpawn(Location location) {
         int rangeSquared = 3 * 3;
         for (Location spawn : mobSpawns) {
@@ -335,6 +339,7 @@ public class ArenaStage {
         }
     }
 
+    @Override
     public String getName() {
         if (name != null) {
             return ChatColor.translateAlternateColorCodes('&', name);
@@ -342,12 +347,14 @@ public class ArenaStage {
         return "Stage " + getNumber();
     }
 
+    @Override
     public void setName(String name) {
         this.name = name;
     }
 
-    public String getFullName() {
-        return ChatColor.AQUA + arena.getName() + ChatColor.DARK_AQUA + " " + getName();
+    @Override
+    public Arena getArena() {
+        return arena;
     }
 
     public int getNumber() {
@@ -364,18 +371,22 @@ public class ArenaStage {
         spawned.clear();
     }
 
+    @Override
     public void setRandomizeMobSpawn(Vector vector) {
         randomizeMobSpawn = vector;
     }
 
+    @Override
     public void setWinXP(int xp) {
         winXP = Math.max(xp, 0);
     }
 
+    @Override
     public void setWinSP(int sp) {
         winSP = Math.max(sp, 0);
     }
 
+    @Override
     public void setWinMoney(int money) {
         winMoney = Math.max(money, 0);
     }
@@ -391,5 +402,17 @@ public class ArenaStage {
 
     public void setIndex(int index) {
         this.index = index;
+    }
+
+    @Override
+    public Collection<EntityData> getSpawns() {
+        List<EntityData> spawns = new ArrayList<>();
+        List<ArenaMobSpawner> spawners = getMobSpawners();
+        for (ArenaMobSpawner spawner : spawners) {
+            if (spawner.isValid()) {
+                spawns.add(spawner.getEntity());
+            }
+        }
+        return spawns;
     }
 }

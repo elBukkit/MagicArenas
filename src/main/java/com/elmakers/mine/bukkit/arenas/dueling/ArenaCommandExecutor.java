@@ -30,12 +30,12 @@ public class ArenaCommandExecutor implements TabExecutor {
     };
 
     private final static String[] STAGE_PROPERTIES = {
-        "sp_win", "xp_win", "money_win", "randomize", "spell_start", "spell_end",
+        "sp_win", "xp_win", "money_win", "randomize", "spell_start", "spell_end", "add", "remove"
     };
 
     private final static String[] STAGE_COMMANDS = {
         "add", "remove", "name", "next", "previous", "go", "describe", "addbefore", "addafter", "move",
-        "configure"
+        "configure", "all"
     };
 
     private final static String[] STAGE_RANDOMIZE = {
@@ -126,21 +126,20 @@ public class ArenaCommandExecutor implements TabExecutor {
             }
         } else if (args.length == 3 && (args[0].equalsIgnoreCase("join") || args[0].equalsIgnoreCase("leave") || args[0].equalsIgnoreCase("stats") || args[0].equalsIgnoreCase("reset"))) {
             allOptions.addAll(controller.getMagic().getPlayerNames());
-        } else if (args.length == 5 && args[0].equalsIgnoreCase("configure") && args[2].equalsIgnoreCase("add") && args[3].equalsIgnoreCase("mob")) {
+        } else if (args.length == 6 && args[0].equalsIgnoreCase("stage") && args[2].equalsIgnoreCase("configure") && args[3].equalsIgnoreCase("add") && args[4].equalsIgnoreCase("mob")) {
             allOptions.addAll(controller.getMagic().getMobKeys());
             for (EntityType entityType : EntityType.values()) {
                 if (entityType.isAlive() && entityType.isSpawnable()) {
                     allOptions.add(entityType.name().toLowerCase());
                 }
             }
-        } else if (args.length == 5 && args[0].equalsIgnoreCase("configure") && args[2].equalsIgnoreCase("remove") && args[3].equalsIgnoreCase("mob")) {
+        } else if (args.length == 6 && args[0].equalsIgnoreCase("stage") && args[2].equalsIgnoreCase("configure") && args[3].equalsIgnoreCase("remove") && args[4].equalsIgnoreCase("mob")) {
             Arena arena = controller.getArena(args[1]);
             if (arena != null) {
-                ArenaStage stage = arena.getIfEditingStage();
+                EditingStage stage = arena.getIfEditingStage();
                 if (stage != null) {
-                    List<ArenaMobSpawner> spawners = stage.getMobSpawners();
-                    for (ArenaMobSpawner spawner : spawners) {
-                        String key = spawner.isValid() ? spawner.getEntity().getKey() : null;
+                    for (EntityData mob : stage.getSpawns()) {
+                        String key = mob.getKey();
                         if (key != null && !key.isEmpty()) {
                             allOptions.add(key);
                         }
@@ -450,6 +449,9 @@ public class ArenaCommandExecutor implements TabExecutor {
             case "name":
                 onNameArenaStage(sender, arena, args);
                 break;
+            case "all":
+                onAllArenaStage(sender, arena);
+                break;
             case "go":
                 onGoArenaStage(sender, arena, args);
                 break;
@@ -510,7 +512,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             sender.sendMessage(ChatColor.RED + "Can't remove the last stage");
             return;
         }
-        ArenaStage stage = arena.getEditingStage();
+        EditingStage stage = arena.getEditingStage();
         arena.removeStage();
         sender.sendMessage(ChatColor.AQUA + "Removed stage: " + ChatColor.DARK_AQUA + stage.getFullName());
         showCurrentStage(sender, arena);
@@ -518,7 +520,7 @@ public class ArenaCommandExecutor implements TabExecutor {
     }
 
     protected void showCurrentStage(CommandSender sender, Arena arena) {
-        ArenaStage stage = arena.getEditingStage();
+        EditingStage stage = arena.getEditingStage();
         int stageNumber = arena.getEditingStageIndex() + 1;
         sender.sendMessage(ChatColor.AQUA + "Current stage is now " + ChatColor.GOLD +
                 stage.getFullName() + ChatColor.GRAY + " (" + ChatColor.YELLOW + stageNumber + ChatColor.GRAY + ")");
@@ -605,12 +607,17 @@ public class ArenaCommandExecutor implements TabExecutor {
     }
 
     protected void onDescribeArenaStage(CommandSender sender, Arena arena) {
-        ArenaStage stage = arena.getEditingStage();
-        stage.describe(sender, "");
+        EditingStage stage = arena.getEditingStage();
+        stage.describe(sender);
+    }
+
+    protected void onAllArenaStage(CommandSender sender, Arena arena) {
+        arena.setEditAllStages(true);
+        sender.sendMessage("Arena " + ChatColor.AQUA + arena.getName() + ChatColor.WHITE + " now editing all stages at once");
     }
 
     protected void onNameArenaStage(CommandSender sender, Arena arena, String[] args) {
-        ArenaStage stage = arena.getEditingStage();
+        EditingStage stage = arena.getEditingStage();
         if (args.length == 0) {
             stage.setName(null);
             sender.sendMessage("Cleared name of " + ChatColor.YELLOW + stage.getName());
@@ -622,7 +629,7 @@ public class ArenaCommandExecutor implements TabExecutor {
         controller.save();
     }
 
-    protected void onConfigureArenaStage(CommandSender sender, ArenaStage stage, String[] args) {
+    protected void onConfigureArenaStage(CommandSender sender, EditingStage stage, String[] args) {
         if (args.length == 0) {
             sender.sendMessage(ChatColor.RED + "Usage: " + ChatColor.WHITE + "/area stage <arena> configure <property> [value]");
             return;

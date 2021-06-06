@@ -38,7 +38,6 @@ import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.util.Vector;
 
 import com.elmakers.mine.bukkit.api.block.MaterialAndData;
-import com.elmakers.mine.bukkit.api.entity.EntityData;
 import com.elmakers.mine.bukkit.api.item.ItemUpdatedCallback;
 import com.elmakers.mine.bukkit.api.magic.Mage;
 import com.elmakers.mine.bukkit.block.DefaultMaterials;
@@ -56,8 +55,10 @@ public class Arena {
 
     private List<Location> spawns = new ArrayList<Location>();
     private List<ArenaStage> stages = new ArrayList<ArenaStage>();
+    private final AllStages allStages;
     private int currentStage = 0;
     private int editingStage = 0;
+    private boolean editAllStages = false;
     private final ArenaController controller;
 
     private Location center;
@@ -124,6 +125,7 @@ public class Arena {
     public Arena(final String key, final ArenaController controller) {
         this.key = key;
         this.controller = controller;
+        allStages = new AllStages(this);
     }
 
     public Arena(final String name, final ArenaController plugin, Location location, int min, int max, ArenaType type) {
@@ -705,16 +707,6 @@ public class Arena {
         return spawns;
     }
 
-    public void setStartSpell(String startSpell) {
-        ArenaStage stage = getEditingStage();
-        stage.setStartSpell(startSpell);
-    }
-
-    public void setEndSpell(String endSpell) {
-        ArenaStage stage = getEditingStage();
-        stage.setEndSpell(endSpell);
-    }
-
     public ArenaStage getCurrentStage() {
         if (currentStage >= 0 && currentStage < stages.size()) {
             return stages.get(currentStage);
@@ -768,11 +760,17 @@ public class Arena {
         }
     }
 
-    public ArenaStage getEditingStage() {
+    public EditingStage getEditingStage() {
+        if (editAllStages) {
+            return allStages;
+        }
         return stages.get(getEditingStageIndex());
     }
 
-    public ArenaStage getIfEditingStage() {
+    public EditingStage getIfEditingStage() {
+        if (editAllStages) {
+            return allStages;
+        }
         if (editingStage < 0 || editingStage >= stages.size()) {
             return null;
         }
@@ -781,6 +779,7 @@ public class Arena {
 
     public void setEditingStage(int stage) {
         editingStage = stage;
+        editAllStages = false;
     }
 
     public int getEditingStageIndex() {
@@ -1146,13 +1145,17 @@ public class Arena {
         sender.sendMessage(ChatColor.BLUE + "Center: " + printLocation(center));
         int numStages = stages.size();
         if (numStages > 0) {
-            if (numStages == 1) {
-                stages.get(0).describe(sender, " ");
-            } else {
-                sender.sendMessage(ChatColor.BLUE + "Stages: " + ChatColor.GRAY + numStages);
-                for (ArenaStage stage : stages) {
-                    sender.sendMessage(" " + ChatColor.GRAY + stage.getName() + ": " + ChatColor.AQUA + stage.getName());
+            sender.sendMessage(ChatColor.BLUE + "Stages: " + ChatColor.GRAY + numStages);
+            int stageNumber = 1;
+            for (ArenaStage stage : stages) {
+                String prefix = " ";
+                if (editAllStages || stageNumber == stage.getNumber()) {
+                    prefix = ChatColor.YELLOW + "*";
+                } else {
+                    prefix = " ";
                 }
+                stageNumber++;
+                sender.sendMessage(prefix + ChatColor.GRAY + stage.getName() + ": " + ChatColor.AQUA + stage.getName());
             }
             if (state == ArenaState.ACTIVE) {
                 ArenaStage currentStage = getCurrentStage();
@@ -1894,5 +1897,13 @@ public class Arena {
 
     public boolean isBattling(ArenaPlayer player) {
         return players.contains(player);
+    }
+
+    public Collection<ArenaStage> getStages() {
+        return stages;
+    }
+
+    public void setEditAllStages(boolean all) {
+        this.editAllStages = all;
     }
 }
