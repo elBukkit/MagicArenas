@@ -285,7 +285,7 @@ public class ArenaStage implements EditingStage {
                     }
                 }
             } catch (Exception ex) {
-                ex.printStackTrace();;
+                ex.printStackTrace();
             }
             magic.setForceSpawn(false);
         }
@@ -455,6 +455,10 @@ public class ArenaStage implements EditingStage {
         return (arena.hasDeadPlayers() && respawnDuration > 0);
     }
 
+    public boolean isRespawnEnabled() {
+        return respawnDuration > 0;
+    }
+
     public void tick() {
         if (duration <= 0 && respawnDuration <= 0) {
             return;
@@ -470,8 +474,8 @@ public class ArenaStage implements EditingStage {
             long previousSecondsRemaining = (duration - previousTime) / 1000;
             long secondsRemaining = (duration - currentTime) / 1000;
             if (secondsRemaining > 0 && secondsRemaining < previousSecondsRemaining) {
-                if (secondsRemaining == 10) {
-                    arena.messageInGamePlayers("t:" + ChatColor.RED + "10 Seconds!");
+                if (secondsRemaining == 10 || secondsRemaining == 30) {
+                    arena.messageInGamePlayers("t:" + ChatColor.RED + secondsRemaining + " Seconds!");
                 } else if (secondsRemaining <= 5) {
                     arena.messageInGamePlayers("t:" + ChatColor.RED + secondsRemaining);
                 }
