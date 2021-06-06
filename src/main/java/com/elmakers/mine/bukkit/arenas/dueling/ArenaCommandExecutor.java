@@ -30,7 +30,8 @@ public class ArenaCommandExecutor implements TabExecutor {
     };
 
     private final static String[] STAGE_PROPERTIES = {
-        "sp_win", "xp_win", "money_win", "randomize", "spell_start", "spell_end", "add", "remove", "duration"
+        "sp_win", "xp_win", "money_win", "randomize", "spell_start", "spell_end", "add", "remove",
+        "duration", "respawn_duration"
     };
 
     private final static String[] STAGE_COMMANDS = {
@@ -806,6 +807,13 @@ public class ArenaCommandExecutor implements TabExecutor {
         if (propertyName.equalsIgnoreCase("duration")) {
             stage.setDuration(intValue * 1000);
             sender.sendMessage(ChatColor.AQUA + "Set duration of " + stage.getFullName() + " to " + intValue + " seconds");
+            controller.save();
+            return;
+        }
+
+        if (propertyName.equalsIgnoreCase("respawn_duration")) {
+            stage.setRespawnDuration(intValue * 1000);
+            sender.sendMessage(ChatColor.AQUA + "Set respawn duration of " + stage.getFullName() + " to " + intValue + " seconds");
             controller.save();
             return;
         }

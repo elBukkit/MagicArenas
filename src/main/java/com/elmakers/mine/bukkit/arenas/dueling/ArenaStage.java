@@ -42,6 +42,7 @@ public class ArenaStage implements EditingStage {
     private int winSP = 0;
     private int winMoney = 0;
     private int duration = 0;
+    private int respawnDuration = 0;
 
     private boolean defaultDrops = false;
     private boolean forceTarget = true;
@@ -79,6 +80,7 @@ public class ArenaStage implements EditingStage {
         defaultDrops = configuration.getBoolean("drops");
         forceTarget = configuration.getBoolean("aggro", true);
         duration = configuration.getInt("duration", 0);
+        respawnDuration = configuration.getInt("respawn_duration", 0);
 
         if (configuration.contains("randomize_mob_spawn")) {
             randomizeMobSpawn = ConfigurationUtils.toVector(configuration.getString("randomize_mob_spawn"));
@@ -109,6 +111,7 @@ public class ArenaStage implements EditingStage {
         configuration.set("drops", defaultDrops);
         configuration.set("aggro", forceTarget);
         configuration.set("duration", duration);
+        configuration.set("respawn_duration", respawnDuration);
 
         if (randomizeMobSpawn != null) {
             configuration.set("randomize_mob_spawn", ConfigurationUtils.fromVector(randomizeMobSpawn));
@@ -159,6 +162,11 @@ public class ArenaStage implements EditingStage {
         if (duration > 0) {
             int minutes = (int)Math.ceil((double)duration / 60 / 1000);
             sender.sendMessage(ChatColor.AQUA + "Duration: " + ChatColor.DARK_AQUA + minutes + ChatColor.WHITE + " minutes");
+        }
+
+        if (respawnDuration > 0) {
+            int seconds = (int)Math.ceil((double)respawnDuration / 1000);
+            sender.sendMessage(ChatColor.AQUA + "Respawn: " + ChatColor.DARK_AQUA + seconds + ChatColor.WHITE + " seconds");
         }
 
         if (startSpell != null) {
@@ -434,8 +442,17 @@ public class ArenaStage implements EditingStage {
         this.duration = duration;
     }
 
+    @Override
+    public void setRespawnDuration(int duration) {
+        this.respawnDuration = duration;
+    }
+
+    public long getRespawnDuration() {
+        return respawnDuration;
+    }
+
     public void tick() {
-        if (duration <= 0) {
+        if (duration <= 0 && respawnDuration <= 0) {
             return;
         }
 
@@ -444,18 +461,49 @@ public class ArenaStage implements EditingStage {
         long currentTime = now - started;
         lastTick = now;
 
-        long previousSecondsRemaining = (duration - previousTime) / 1000;
-        long secondsRemaining = (duration - currentTime) / 1000;
-        if (secondsRemaining > 0 && secondsRemaining < previousSecondsRemaining) {
-            if (secondsRemaining == 10) {
-                arena.messageInGamePlayers("t:" + ChatColor.RED + "10 Seconds!");
-            } else if (secondsRemaining <= 5) {
-                arena.messageInGamePlayers("t:" + ChatColor.RED + secondsRemaining);
+        if (duration > 0) {
+            long previousSecondsRemaining = (duration - previousTime) / 1000;
+            long secondsRemaining = (duration - currentTime) / 1000;
+            if (secondsRemaining > 0 && secondsRemaining < previousSecondsRemaining) {
+                if (secondsRemaining == 10) {
+                    arena.messageInGamePlayers("t:" + ChatColor.RED + "10 Seconds!");
+                } else if (secondsRemaining <= 5) {
+                    arena.messageInGamePlayers("t:" + ChatColor.RED + secondsRemaining);
+                }
+            }
+
+            if (currentTime > duration) {
+                arena.draw();
+                return;
             }
         }
 
-        if (currentTime > duration) {
-            arena.draw();
+        if (respawnDuration > 0) {
+            long lastDeathTime = arena.getLastDeathTime();
+            long deathTime = now - lastDeathTime;
+            long respawnSecondsRemaining = (respawnDuration - deathTime) / 1000;
+            if (duration > 0) {
+                long secondsRemaining = (duration - currentTime) / 1000;
+                if (secondsRemaining <= respawnSecondsRemaining) {
+                    return;
+                }
+            }
+
+            long previousDeathTime = lastTick - lastDeathTime;
+            long previousRespawnSecondsRemaining = (respawnDuration - previousDeathTime) / 1000;
+
+            if (respawnSecondsRemaining > 0 && respawnSecondsRemaining < previousRespawnSecondsRemaining) {
+                if (respawnSecondsRemaining == 10) {
+                    arena.messageDeadPlayers("t:" + ChatColor.GREEN + "Respawning\n" + ChatColor.GRAY + "in 10 Seconds!");
+                } else if (respawnSecondsRemaining <= 5) {
+                    arena.messageDeadPlayers("t:" + ChatColor.GREEN + respawnSecondsRemaining);
+                }
+            }
+
+            if (deathTime > respawnDuration) {
+                arena.respawn();
+                return;
+            }
         }
     }
 }

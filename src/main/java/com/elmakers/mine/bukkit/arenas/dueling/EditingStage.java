@@ -31,4 +31,5 @@ public interface EditingStage {
     void describe(CommandSender sender);
     Collection<EntityData> getSpawns();
     void setDuration(int duration);
+    void setRespawnDuration(int duration);
 }

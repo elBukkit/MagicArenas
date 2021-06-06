@@ -49,6 +49,7 @@ public class Arena {
     private ArenaState state = ArenaState.LOBBY;
     private long started;
     private long lastTick;
+    private long lastDeath;
     private Queue<ArenaPlayer> queue = new LinkedList<ArenaPlayer>();
     private Set<ArenaPlayer> players = new HashSet<ArenaPlayer>();
     private Set<ArenaPlayer> deadPlayers = new HashSet<ArenaPlayer>();
@@ -384,6 +385,15 @@ public class Arena {
         }
     }
 
+    public void respawn() {
+        spawnPlayers(new ArrayList<>(this.deadPlayers));
+        for (ArenaPlayer dead : deadPlayers) {
+            if (dead.isValid() && !dead.isDead()) {
+                players.add(dead);
+            }
+        }
+    }
+
     public void start() {
         if (!isValid()) return;
 
@@ -443,6 +453,9 @@ public class Arena {
     protected void spawnPlayers(Collection<ArenaPlayer> players, List<Location> spawns) {
         int num = 0;
         for (ArenaPlayer arenaPlayer : players) {
+            if (!arenaPlayer.isValid() || arenaPlayer.isDead()) {
+                continue;
+            }
             Player player = arenaPlayer.getPlayer();
             if (player == null) {
                 continue;
@@ -572,6 +585,10 @@ public class Arena {
 
     public void messageInGamePlayers(String message) {
         messagePlayers(message, players);
+    }
+
+    public void messageDeadPlayers(String message) {
+        messagePlayers(message, deadPlayers);
     }
 
     public void messageNextRoundPlayers(String message) {
@@ -1318,11 +1335,21 @@ public class Arena {
         ArenaPlayer arenaPlayer = new ArenaPlayer(this, player);
         if (isStarted()) {
             if (players.contains(arenaPlayer)) {
+                lastDeath = System.currentTimeMillis();
                 deadPlayers.add(arenaPlayer);
                 players.remove(arenaPlayer);
-                Location specroom = getLoseLocation();
-                player.setMetadata("respawnLocation", new FixedMetadataValue(controller.getPlugin(), specroom));
-                player.sendMessage(ChatColor.AQUA + "You have lost - Better luck next time!");
+
+                long respawnDuration = getCurrentStage().getRespawnDuration();
+                if (respawnDuration > 0) {
+                    Location lobby = getLobby();
+                    player.setMetadata("respawnLocation", new FixedMetadataValue(controller.getPlugin(), lobby));
+                    long seconds = respawnDuration / 60;
+                    player.sendMessage(ChatColor.AQUA + "You have died, but you can get back in the fight in " + ChatColor.YELLOW + seconds + ChatColor.AQUA + " seconds!");
+                } else {
+                    Location specroom = getLoseLocation();
+                    player.setMetadata("respawnLocation", new FixedMetadataValue(controller.getPlugin(), specroom));
+                    player.sendMessage(ChatColor.AQUA + "You have lost - Better luck next time!");
+                }
             }
         } else {
             if (queue.contains(arenaPlayer)) {
@@ -1969,5 +1996,9 @@ public class Arena {
 
     public void setEditAllStages(boolean all) {
         this.editAllStages = all;
+    }
+
+    public long getLastDeathTime() {
+        return lastDeath;
     }
 }

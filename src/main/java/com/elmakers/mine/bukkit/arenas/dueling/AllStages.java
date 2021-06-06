@@ -129,4 +129,11 @@ public class AllStages implements EditingStage {
             stage.setDuration(duration);
         }
     }
+
+    @Override
+    public void setRespawnDuration(int duration) {
+        for (ArenaStage stage : arena.getStages()) {
+            stage.setRespawnDuration(duration);
+        }
+    }
 }
