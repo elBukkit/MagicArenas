@@ -317,8 +317,13 @@ public class ArenaPlayer implements Comparable<ArenaPlayer> {
     public void teleport(Location location) {
         Player player = getPlayer();
         if (player != null) {
-            player.setMetadata("allow_teleport", new FixedMetadataValue(arena.getController().getPlugin(), true));
-            player.teleport(location);
+
+            if (player.isDead()) {
+                player.setMetadata("respawnLocation", new FixedMetadataValue(arena.getController().getPlugin(), location));
+            } else {
+                player.setMetadata("allow_teleport", new FixedMetadataValue(arena.getController().getPlugin(), true));
+                player.teleport(location);
+            }
         }
     }
 
