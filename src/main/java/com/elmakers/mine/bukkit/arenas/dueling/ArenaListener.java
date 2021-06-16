@@ -30,13 +30,11 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 
-import com.elmakers.mine.bukkit.api.block.UndoList;
 import com.elmakers.mine.bukkit.api.event.PreCastEvent;
 import com.elmakers.mine.bukkit.api.event.SaveEvent;
 import com.elmakers.mine.bukkit.api.magic.Mage;
 import com.elmakers.mine.bukkit.api.wand.Wand;
 import com.elmakers.mine.bukkit.block.DefaultMaterials;
-import com.elmakers.mine.bukkit.utility.CompatibilityUtils;
 
 public class ArenaListener implements Listener {
     private final ArenaController controller;
@@ -108,10 +106,10 @@ public class ArenaListener implements Listener {
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
         Entity damager = event.getDamager();
-        damager = CompatibilityUtils.getSource(damager);
+        damager = controller.getMagic().getDamageSource(damager);
         if (!(damager instanceof Player)) return;
         Arena arena = controller.getArena((Player)damager);
-        if (arena != null && !CompatibilityUtils.isDamaging()) {
+        if (arena != null && !controller.getMagic().isDamaging()) {
             boolean isProjectile = event.getCause() == EntityDamageEvent.DamageCause.PROJECTILE;
             boolean isMelee = event.getCause() == EntityDamageEvent.DamageCause.ENTITY_ATTACK;
             if (isProjectile && !arena.isAllowProjectiles()) {
