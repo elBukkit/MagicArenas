@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 5.0
+
+ - Requires Magic 9.0 or above
+
 ## 4.0
 
  - Updated to Spigot API 1.14, will no longer work on previous versions. May also require Magic 8.1 or higher.
