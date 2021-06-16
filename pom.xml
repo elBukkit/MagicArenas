@@ -10,7 +10,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<version.java>16</version.java>
+		<version.java>1.8</version.java>
 		<magic.version>9.0-SNAPSHOT</magic.version>
 		<bukkit.version>1.14-R0.1-SNAPSHOT</bukkit.version>
 	</properties>
