@@ -3,6 +3,7 @@
 ## 5.0
 
  - Requires Magic 9.0 or above
+ - Fix some errors with basic arenas in 4.0
 
 ## 4.0
 

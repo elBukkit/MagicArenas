@@ -661,7 +661,8 @@ public class Arena {
         for (ArenaPlayer arenaPlayer : players) {
             arenaPlayer.teleport(getExit());
         }
-        if (getCurrentStage().isRespawnEnabled()) {
+        ArenaStage stage = getCurrentStage();
+        if (stage != null && stage.isRespawnEnabled()) {
             for (ArenaPlayer arenaPlayer : deadPlayers) {
                 arenaPlayer.teleport(getExit());
             }
@@ -720,7 +721,8 @@ public class Arena {
         ArenaPlayer arenaPlayer = new ArenaPlayer(this, player);
         if (!arenaPlayer.isValid() || arenaPlayer.isDead()) return arenaPlayer;
 
-        if (getCurrentStage().isRespawning()) {
+        ArenaStage stage = getCurrentStage();
+        if (stage != null && stage.isRespawning()) {
             deadPlayers.add(arenaPlayer);
             arenaPlayer.teleport(getLobby());
         } else {
@@ -954,8 +956,10 @@ public class Arena {
 
         if (state != ArenaState.WON && isMobArena()) {
             ArenaStage currentStage = getCurrentStage();
-            if (currentStage.isFinished()) {
-                currentStage.completed();
+            if (currentStage == null || currentStage.isFinished()) {
+                if (currentStage != null) {
+                    currentStage.completed();
+                }
                 if (!nextStage()) {
                     state = ArenaState.WON;
                     server.getScheduler().runTaskLater(controller.getPlugin(), new Runnable() {
@@ -1359,7 +1363,8 @@ public class Arena {
                 deadPlayers.add(arenaPlayer);
                 players.remove(arenaPlayer);
 
-                long respawnDuration = getCurrentStage().getRespawnDuration();
+                ArenaStage currentStage = getCurrentStage();
+                long respawnDuration = currentStage != null ? currentStage.getRespawnDuration() : 0;
                 if (respawnDuration > 0) {
                     Location lobby = getLobby();
                     player.setMetadata("respawnLocation", new FixedMetadataValue(controller.getPlugin(), lobby));
