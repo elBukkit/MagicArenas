@@ -1914,7 +1914,10 @@ public class Arena {
     }
 
     public void tick() {
-        getCurrentStage().tick();
+        ArenaStage currentStage = getCurrentStage();
+        if (currentStage != null) {
+            currentStage.tick();
+        }
         if (duration <= 0) {
             return;
         }
