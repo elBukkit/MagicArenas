@@ -1253,23 +1253,11 @@ public class Arena {
         int numStages = stages.size();
         if (numStages > 0) {
             sender.sendMessage(ChatColor.BLUE + "Stages: " + ChatColor.GRAY + numStages);
-            int stageNumber = 1;
-            for (ArenaStage stage : stages) {
-                String prefix = " ";
-                if (editAllStages || stageNumber == stage.getNumber()) {
-                    prefix = ChatColor.YELLOW + "*";
-                } else {
-                    prefix = " ";
-                }
-                stageNumber++;
-                sender.sendMessage(prefix + ChatColor.GRAY + stage.getName() + ": " + ChatColor.AQUA + stage.getName());
-            }
-            if (state == ArenaState.ACTIVE) {
-                ArenaStage currentStage = getCurrentStage();
-                sender.sendMessage(ChatColor.BLUE + "Active mobs: " + ChatColor.GRAY + currentStage.getActiveMobs());
-            }
         }
-
+        if (state == ArenaState.ACTIVE) {
+            ArenaStage currentStage = getCurrentStage();
+            sender.sendMessage(ChatColor.BLUE + "Active mobs: " + ChatColor.GRAY + currentStage.getActiveMobs());
+        }
         if (portalDamage > 0 || portalEnterDamage > 0) {
             sender.sendMessage(ChatColor.LIGHT_PURPLE + "Portal Entry Damage: " + ChatColor.DARK_PURPLE + portalEnterDamage);
             sender.sendMessage(ChatColor.LIGHT_PURPLE + "Portal Damage: " + ChatColor.DARK_PURPLE + portalDamage);
@@ -1295,6 +1283,22 @@ public class Arena {
         sender.sendMessage(ChatColor.YELLOW + "Queued Players: " + ChatColor.GOLD + queuedPlayers);
         for (ArenaPlayer player : queue) {
             sender.sendMessage(ChatColor.YELLOW + " " + player.getDisplayName());
+        }
+    }
+
+    public void describeStages(CommandSender sender) {
+        int numStages = stages.size();
+        sender.sendMessage(ChatColor.BLUE + "Stages: " + ChatColor.GRAY + numStages);
+        int stageNumber = 1;
+        for (ArenaStage stage : stages) {
+            String prefix = " ";
+            if (editAllStages || stageNumber == stage.getNumber()) {
+                prefix = ChatColor.YELLOW + "*";
+            } else {
+                prefix = " ";
+            }
+            stageNumber++;
+            sender.sendMessage(prefix + ChatColor.GRAY + stage.getName() + ": " + ChatColor.AQUA + stage.getName());
         }
     }
 

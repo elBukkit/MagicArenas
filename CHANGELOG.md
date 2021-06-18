@@ -4,6 +4,7 @@
 
  - Requires Magic 9.0 or above
  - Fix some errors with basic arenas in 4.0
+ - Add `/arena stage list` command
 
 ## 4.0
 

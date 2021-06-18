@@ -36,7 +36,7 @@ public class ArenaCommandExecutor implements TabExecutor {
 
     private final static String[] STAGE_COMMANDS = {
         "add", "remove", "name", "next", "previous", "go", "describe", "addbefore", "addafter", "move",
-        "configure", "all"
+        "configure", "all", "list"
     };
 
     private final static String[] STAGE_RANDOMIZE = {
@@ -485,6 +485,9 @@ public class ArenaCommandExecutor implements TabExecutor {
             case "previous":
                 onPreviousArenaStage(sender, arena);
                 break;
+            case "list":
+                onListArenaStage(sender, arena);
+                break;
             default:
                 sender.sendMessage(ChatColor.RED + "Not a valid stage command: " + stageCommand);
                 sender.sendMessage(ChatColor.AQUA + "Options: " + StringUtils.join(STAGE_COMMANDS, ", "));
@@ -612,6 +615,10 @@ public class ArenaCommandExecutor implements TabExecutor {
     protected void onDescribeArenaStage(CommandSender sender, Arena arena) {
         EditingStage stage = arena.getEditingStage();
         stage.describe(sender);
+    }
+
+    protected void onListArenaStage(CommandSender sender, Arena arena) {
+        arena.describeStages(sender);
     }
 
     protected void onAllArenaStage(CommandSender sender, Arena arena) {
