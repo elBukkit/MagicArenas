@@ -788,15 +788,25 @@ public class Arena {
     }
 
     public ArenaStage getCurrentStage() {
-        if (currentStage >= 0 && currentStage < stages.size()) {
+        if (currentStage >= stages.size() - 1) {
+            return stages.get(stages.size() - 1);
+        }
+        if (currentStage >= 0) {
             return stages.get(currentStage);
         }
         return null;
     }
 
     public boolean nextStage() {
+        if (stages.isEmpty()) {
+            return false;
+        }
+        if (currentStage >= stages.size() - 1) {
+            return false;
+        }
         currentStage++;
         ArenaStage currentStage = getCurrentStage();
+        // This should really never be null now, since we know we have stages
         if (currentStage != null) {
             currentStage.start();
         }
