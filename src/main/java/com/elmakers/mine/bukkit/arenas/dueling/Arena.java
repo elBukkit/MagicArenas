@@ -657,15 +657,19 @@ public class Arena {
         checkStart();
     }
 
-    protected void exitPlayers() {
-        for (ArenaPlayer arenaPlayer : players) {
-            arenaPlayer.teleport(getExit());
-        }
+    protected Collection<ArenaPlayer> getParticipants() {
         ArenaStage stage = getCurrentStage();
-        if (stage != null && stage.isRespawnEnabled()) {
-            for (ArenaPlayer arenaPlayer : deadPlayers) {
-                arenaPlayer.teleport(getExit());
-            }
+        if (stage == null || !stage.isRespawnEnabled() || deadPlayers.isEmpty()) {
+            return players;
+        }
+        List<ArenaPlayer> participants = new ArrayList<>(players);
+        participants.addAll(deadPlayers);
+        return participants;
+    }
+
+    protected void exitPlayers() {
+        for (ArenaPlayer arenaPlayer : getParticipants()) {
+            arenaPlayer.teleport(getExit());
         }
     }
 
@@ -975,7 +979,7 @@ public class Arena {
                     server.getScheduler().runTaskLater(controller.getPlugin(), new Runnable() {
                         @Override
                         public void run() {
-                            for (final ArenaPlayer winner : players) {
+                            for (final ArenaPlayer winner : getParticipants()) {
                                 if (winner != null)
                                 {
                                     playerWon(winner);
@@ -1319,7 +1323,7 @@ public class Arena {
         return players.size();
     }
 
-    public Set<ArenaPlayer> getAllInGamePlayers() {
+    public Set<ArenaPlayer> getLivingParticipants() {
         return players;
     }
 

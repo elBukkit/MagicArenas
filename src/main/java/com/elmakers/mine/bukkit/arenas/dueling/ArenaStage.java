@@ -251,7 +251,7 @@ public class ArenaStage implements EditingStage {
             arena.messageInGamePlayers("t:" + getName());
             MageController magic = arena.getController().getMagic();
             magic.setForceSpawn(true);
-            List<ArenaPlayer> players = new ArrayList<>(arena.getAllInGamePlayers());
+            List<ArenaPlayer> players = new ArrayList<>(arena.getLivingParticipants());
             try {
                 List<Location> spawns = getMobSpawns();
                 int num = 0;
@@ -308,7 +308,7 @@ public class ArenaStage implements EditingStage {
     public void completed() {
         arena.messageInGamePlayers(ChatColor.GREEN + "Congratulations!" + ChatColor.AQUA + "  You have passed " + ChatColor.DARK_AQUA + getName());
 
-        Set<ArenaPlayer> players = arena.getAllInGamePlayers();
+        Collection<ArenaPlayer> players = arena.getParticipants();
         for (ArenaPlayer player : players) {
             Mage mage = player.getMage();
             if (winXP > 0) {
