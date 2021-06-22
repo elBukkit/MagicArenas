@@ -4,7 +4,7 @@
 
 	<groupId>com.elmakers.mine.bukkit.plugins</groupId>
 	<artifactId>MagicArenas</artifactId>
-	<version>5.1</version>
+	<version>5.2-SNAPSHOT</version>
 
 	<name>Magic Arenas</name>
 
