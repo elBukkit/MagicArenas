@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 5.1
+
+ - Requires Magic 9.1 or above (oops, sorry)
+
 ## 5.0
 
  - Requires Magic 9.0 or above
