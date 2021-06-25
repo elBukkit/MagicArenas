@@ -792,6 +792,9 @@ public class Arena {
     }
 
     public ArenaStage getCurrentStage() {
+        if (stages.isEmpty()) {
+            return null;
+        }
         if (currentStage >= stages.size() - 1) {
             return stages.get(stages.size() - 1);
         }
