@@ -84,6 +84,8 @@ public class ArenaCommandExecutor implements TabExecutor {
         List<String> allOptions = new ArrayList<String>();
         if (args.length < 2) {
             allOptions.addAll(Arrays.asList(SUB_COMMANDS));
+        } else if (args.length == 2 && args[0].equalsIgnoreCase("leave")) {
+            allOptions.addAll(controller.getMagic().getPlayerNames());
         } else if (args.length == 2) {
             Collection<Arena> arenas = controller.getArenas();
             for (Arena arena : arenas) {
@@ -127,7 +129,7 @@ public class ArenaCommandExecutor implements TabExecutor {
             for (SpellTemplate spell : spells) {
                 allOptions.add(spell.getKey());
             }
-        } else if (args.length == 3 && (args[0].equalsIgnoreCase("join") || args[0].equalsIgnoreCase("leave") || args[0].equalsIgnoreCase("stats") || args[0].equalsIgnoreCase("reset"))) {
+        } else if (args.length == 3 && (args[0].equalsIgnoreCase("join") || args[0].equalsIgnoreCase("stats") || args[0].equalsIgnoreCase("reset"))) {
             allOptions.addAll(controller.getMagic().getPlayerNames());
         } else if (args.length == 6 && args[0].equalsIgnoreCase("stage") && args[2].equalsIgnoreCase("configure") && args[3].equalsIgnoreCase("add") && args[4].equalsIgnoreCase("mob")) {
             allOptions.addAll(controller.getMagic().getMobKeys());
